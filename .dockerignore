@@ -1,0 +1,23 @@
+# Dependencias
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Builds y cachés
+dist/
+.turbo/
+.next/
+build/
+coverage/
+
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Git y SO
+.git/
+.github/
+.DS_Store
+Thumbs.db
