@@ -11,6 +11,13 @@ services:
     env_file:
       - .env
       - apps/api-gateway/.env
+    environment:
+      - AUTH_SERVICE_URL=http://chambitas-auth-service:3001
+      - PROFILE_SERVICE_URL=http://chambitas-profile-service:3002
+      - MATCHING_SERVICE_URL=http://chambitas-matching-service:3003
+      - MARKETPLACE_SERVICE_URL=http://chambitas-marketplace-service:3004
+      - NOTIFICATION_SERVICE_URL=http://chambitas-notification-service:3005
+      - ML_ENGINE_URL=http://chambitas-ml-engine:8000
     restart: unless-stopped
 
   auth-service:
