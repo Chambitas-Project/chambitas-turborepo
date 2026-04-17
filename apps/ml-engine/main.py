@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from database import supabase
 
 app = FastAPI(title="Chambitas ML Engine")
 
