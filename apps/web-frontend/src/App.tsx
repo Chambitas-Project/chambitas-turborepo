@@ -2,6 +2,7 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
+import { Button } from '@chambitas/ui/Button'
 import './App.css'
 
 function App() {
@@ -27,6 +28,9 @@ function App() {
         >
           Count is {count}
         </button>
+        <div style={{ marginTop: '20px' }}>
+          <Button onClick={() => alert('¡Funciona!')}>Botón Monorepo</Button>
+        </div>
       </section>
 
       <div className="ticks"></div>

@@ -635,6 +635,9 @@ importers:
 
   apps/web-frontend:
     dependencies:
+      '@chambitas/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       react:
         specifier: ^19.2.4
         version: 19.2.5
