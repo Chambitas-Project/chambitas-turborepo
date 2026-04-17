@@ -1,7 +1,7 @@
 FROM node:22-alpine AS builder
 
 WORKDIR /app
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8
 
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
 COPY packages ./packages

@@ -1,8 +1,12 @@
 import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from pathlib import Path
 
-# Cargar variables de entorno del archivo .env
+# Cargar el .env de la raíz del monorepo explícitamente
+root_env = Path(__file__).resolve().parent.parent.parent / '.env'
+load_dotenv(dotenv_path=root_env)
+# Cargar el .env local de la app (para PORT=8000)
 load_dotenv()
 
 SUPABASE_URL: str = os.environ.get("SUPABASE_URL")
