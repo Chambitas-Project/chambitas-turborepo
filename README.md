@@ -1,159 +1,88 @@
-# Turborepo starter
+# Chambitas
 
-This Turborepo starter is maintained by the Turborepo core team.
+**Plataforma Web con microservicios y Machine Learning para la reducción del desempleo juvenil en Perú.**
 
-## Using this example
+---
 
-Run the following command:
+## Tabla de Contenidos
+- [Contexto del Proyecto](#-contexto-del-proyecto)
+- [Stack Tecnológico](#-stack-tecnológico)
+- [Estructura del Monorepo](#-estructura-del-monorepo)
+- [Guía de Instalación](#-guía-de-instalación)
 
-```sh
-npx create-turbo@latest
+---
+
+## Contexto del Proyecto
+
+**Chambitas** es una plataforma orientada a estudiantes universitarios en Perú, diseñada con el objetivo de reducir el impacto del desempleo juvenil. La plataforma hace uso de un **motor de recomendación híbrido** basado en Inteligencia Artificial (Machine Learning) para conectar el talento joven con oportunidades laborales que se ajustan idealmente a su perfil y habilidades.
+
+Todo el sistema está construido sobre una moderna **arquitectura de microservicios**, asegurando resiliencia, alta disponibilidad y un despliegue altamente escalable.
+
+---
+
+## Stack Tecnológico
+
+El proyecto se sustenta en tecnologías líderes de la industria y la comunidad:
+
+- **Frontend:** React + Vite + TypeScript *(Arquitectura basada en Atomic Design y Feature-Driven Architecture)*.
+- **Backend:** NestJS *(Arquitectura guiada por Microservicios y Feature-Driven Architecture)*.
+- **ML Engine:** Python + FastAPI + Scikit-learn.
+- **Base de Datos:** Supabase *(PostgreSQL con soporte pgvector para búsquedas e indexación semántica)*.
+- **Infraestructura:** Turborepo, Docker, Railway, Vercel.
+
+---
+
+## Estructura del Monorepo
+
+Este proyecto consolida sus bases de código en un ecosistema robusto mantenido por [Turborepo](https://turbo.build/repo), optimizando el flujo de trabajo, caching y concurrencia.
+
+La distribución de espacios de trabajo (`apps`) se organiza de la siguiente manera:
+
+- `apps/web-frontend`: Interfaz de usuario donde interactúan los estudiantes.
+- `apps/api-gateway`: Punto de entrada único que enruta las solicitudes a los microservicios correspondientes.
+- `apps/auth-service`: Responsable de la autenticación, autorización multitenant, y control de accesos (RBAC).
+- `apps/marketplace-service`: Gestión de ofertas laborales y empresas.
+- `apps/notification-service`: Gestión de notificaciones.
+- `apps/profile-service`: Gestión del portafolio, currículum vitae (CV) e información laboral de los usuarios.
+- `apps/matching-service`: Orquestador principal de la lógica transaccional de cruces (Empresas - Talento).
+- `apps/ml-engine`: Motor analítico de Inteligencia Artificial desarrollado en Python.
+
+---
+
+## Guía de Instalación
+
+Por favor sigue estos pasos con precaución para arrancar el ecosistema en un entorno local (Desarrollo):
+
+### 1. Gestión de Paquetes (Obligatorio)
+
+Este proyecto está configurado para manejar su resolución de dependencias estrictamente bajo `pnpm`. Si no lo tienes, debes instalarlo de manera global:
+
+```bash
+npm install -g pnpm
 ```
 
-## What's inside?
+### 2. Inicializar Proyecto
 
-This Turborepo includes the following packages/apps:
+En la raíz del proyecto, instala todos los módulos y dependencias cruzadas ejecutando:
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+pnpm install
 ```
 
-Without global `turbo`, use your package manager:
+### 3. Configurar Compilación Nativa (NestJS)
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
+Al disponer de un monorepo, NestJS requiere compiladores de alto rendimiento como `@swc/core`. Es crítico **aprobar su empaquetado nativo** corriendo el siguiente comando:
+
+```bash
+pnpm approve-builds
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 4. Lanzamiento de Entornos
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+Para levantar toda la maquinaria de aplicaciones Frontend y Microservicios conjuntamente, ejecuta:
 
-```sh
-turbo build --filter=docs
+```bash
+pnpm dev
 ```
 
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Este comando lanzará las configuraciones de desarrollo y mantendrá el *hot-reload* sobre todo el ecosistema de Chambitas.
