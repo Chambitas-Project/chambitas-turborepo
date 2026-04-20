@@ -54,7 +54,7 @@ function App() {
 
         <div className="relative max-w-3xl mx-auto space-y-6">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[oklch(0.52_0.140_163/0.4)] bg-[oklch(0.52_0.140_163/0.1)] text-sm text-[oklch(0.73_0.100_163)]">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[oklch(0.52_0.140_163/0.4)] bg-[oklch(0.52_0.140_163/0.1)] text-sm text-primary-300">
             <Zap className="size-3.5" />
             <span>Plataforma de servicios locales</span>
           </div>
@@ -242,7 +242,7 @@ function App() {
                       <span>Cercano</span>
                     </div>
                   </div>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-[oklch(0.52_0.140_163/0.15)] text-[oklch(0.73_0.100_163)] border border-[oklch(0.52_0.140_163/0.3)]">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-[oklch(0.52_0.140_163/0.15)] text-primary-300 border border-[oklch(0.52_0.140_163/0.3)]">
                     {svc.tag}
                   </span>
                 </div>
