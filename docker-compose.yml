@@ -15,6 +15,7 @@ services:
       - MATCHING_SERVICE_URL=http://chambitas-matching-service:3003
       - MARKETPLACE_SERVICE_URL=http://chambitas-marketplace-service:3004
       - NOTIFICATION_SERVICE_URL=http://chambitas-notification-service:3005
+      - ANALYTICS_AUDIT_SERVICE_URL=http://chambitas-analytics-audit-service:3006
       - ML_ENGINE_URL=http://chambitas-ml-engine:8000
     restart: unless-stopped
 
@@ -88,4 +89,16 @@ services:
     env_file:
       - .env
       - apps/ml-engine/.env
+    restart: unless-stopped
+
+  analytics-audit-service:
+    build:
+      context: .
+      dockerfile: apps/analytics-audit-service/Dockerfile
+    container_name: chambitas-analytics-audit-service
+    ports:
+      - "3006:3006"
+    env_file:
+      - .env
+      - apps/analytics-audit-service/.env
     restart: unless-stopped
