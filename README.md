@@ -46,6 +46,7 @@ La distribución de espacios de trabajo (`apps`) se organiza de la siguiente man
 - `apps/profile-service`: Gestión del portafolio, currículum vitae (CV) e información laboral de los usuarios.
 - `apps/matching-service`: Orquestador principal de la lógica transaccional de cruces (Empresas - Talento).
 - `apps/ml-engine`: Motor analítico de Inteligencia Artificial desarrollado en Python.
+- `apps/analytics-audit-service`: Servicio dedicado a la recolección y análisis de logs para auditoría y métricas de la plataforma.
 
 ---
 
