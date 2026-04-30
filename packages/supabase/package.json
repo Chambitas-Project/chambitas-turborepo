@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
+    "@supabase/supabase-js": "^2.39.0",
+    "@nestjs/common": "^11.0.1",
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "typescript": "^5.0.0"

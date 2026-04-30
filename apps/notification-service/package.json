@@ -27,7 +27,14 @@
     "@supabase/supabase-js": "^2.103.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "@chambitas/supabase": "workspace:*"
+    "@chambitas/supabase": "workspace:*",
+    "@chambitas/proto": "workspace:*",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/microservices": "^11.0.1",
+    "@grpc/grpc-js": "^1.12.5",
+    "@grpc/proto-loader": "^0.7.13",
+    "@nestjs/bullmq": "^11.0.1",
+    "bullmq": "^5.34.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
