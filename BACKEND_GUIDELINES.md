@@ -60,8 +60,35 @@ const COOKIE_OPTIONS: CookieOptions = {
 };
 ```
 
-### 3. Guardián Global (SupabaseAuthGuard)
-Por defecto, todas las rutas en el API Gateway están cerradas. Se utiliza un `SupabaseAuthGuard` global que requiere una sesión válida. Para abrir una ruta, se debe usar explícitamente el decorador `@Public()`.
+### 3. Guardián Global (JwtAuthGuard)
+Por defecto, todas las rutas en el API Gateway están protegidas. Se utiliza el `JwtAuthGuard` que valida el token contra Supabase Auth y propaga el `user-id` y `role` hacia los microservicios internos mediante metadatos de gRPC. Para abrir una ruta, se debe usar explícitamente el decorador `@Public()`.
+
+---
+
+## 📖 Documentación de API (OpenAPI / Swagger)
+
+Es **obligatorio** que todos los microservicios y el API Gateway expongan su documentación técnica.
+
+### 1. Inicialización
+Cada `main.ts` debe usar la utilidad centralizada de `@chambitas/common`:
+```typescript
+import { setupSwagger } from '@chambitas/common';
+
+setupSwagger(app, {
+  title: 'Nombre del Servicio',
+  description: 'Descripción...',
+  version: '1.0.0'
+});
+```
+
+### 2. Decoradores Obligatorios en Endpoints
+Para garantizar una documentación útil, cada método de controlador debe incluir:
+- `@ApiOperation({ summary: '...' })`: Descripción breve de la acción.
+- `@ApiResponse({ status: 200, description: '...' })`: Documentar al menos el caso de éxito y el error más común.
+- `@ApiBearerAuth('JWT-auth')`: Si el endpoint requiere autenticación.
+
+### 3. DTOs y Esquemas
+Todas las clases DTO deben usar el decorador `@ApiProperty()` para que sus campos aparezcan en los esquemas de Swagger.
 
 ---
 
@@ -111,17 +138,19 @@ async getProfile(id: string) {
 Implementamos patrones de diseño resilientes en la capa de comunicación del Gateway.
 
 ### 1. Circuit Breaker (Patrón Disyuntor)
-Todas las llamadas gRPC deben estar protegidas (ej: `opossum`). Si un microservicio falla repetidamente, el circuito se abre y el Gateway devuelve una respuesta de **fallback** controlada.
+Todas las llamadas gRPC deben estar protegidas por el `GrpcCircuitBreakerInterceptor` de `@chambitas/common`. Si un microservicio falla repetidamente, el circuito se abre para evitar el agotamiento de recursos.
+- **Retries**: Se implementa un **Exponential Backoff** de 3 reintentos antes de considerar la petición como fallida.
 
 ### 2. Manejo de Timeouts
-Límite estricto: Ninguna llamada gRPC debe bloquear el Gateway por más de **5 segundos**.
+Límite estricto: Ninguna llamada gRPC debe bloquear el Gateway por más de **3 segundos**.
 
 ---
 
 ## 📊 Observabilidad y Telemetría
 
-- **Reporte Obligatorio**: Cada microservicio debe reportar métricas (latencia, CPU, tasa de éxito) al `analytics-audit-service`.
-- **Sustento de Tesis**: Estos datos alimentan el **Dominio 7** para reportes de rendimiento académicos.
+- **Correlation ID**: Cada petición debe incluir un `x-correlation-id` generado en el Gateway y propagado a través de todos los microservicios internos mediante el `CorrelationIdInterceptor`.
+- **Logs Estructurados**: Es obligatorio usar el `StructuredLogger` para emitir logs en formato JSON que incluyan el ID de correlación.
+- **Reporte de Tesis**: Estos datos alimentan el **Dominio 7** para reportes de rendimiento académicos.
 
 ---
 
