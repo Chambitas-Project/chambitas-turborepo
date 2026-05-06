@@ -92,10 +92,10 @@ export class AuthService {
 
     const userId = authData.user?.id;
     
-    // Obtener role de public.users
+    // Obtener role y is_onboarded de public.users
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('role')
+      .select('role, is_onboarded')
       .eq('id', userId)
       .single();
 
@@ -111,6 +111,7 @@ export class AuthService {
       email: data.email,
       role: userData.role,
       accessToken: authData.session?.access_token,
+      isOnboarded: userData.is_onboarded || false,
     };
   }
 

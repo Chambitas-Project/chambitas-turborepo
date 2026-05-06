@@ -14,18 +14,15 @@ async function bootstrap() {
     tag: 'Profile',
   });
 
-  // El servicio de perfil también puede exponer gRPC si es necesario
-  /*
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: 'profile',
-      protoPath: join(__dirname, './profile.proto'), // Ajustar cuando exista el proto
+      package: 'user', // Match PROTO_PACKAGE.USER since ProfileService is in user.proto
+      protoPath: join(__dirname, '../../packages/proto/user.proto'), // Path to user.proto relative to dist/apps/profile-service
       url: process.env.PROFILE_SERVICE_GRPC_URL || '0.0.0.0:50052',
     },
   });
   await app.startAllMicroservices();
-  */
 
   const httpPort = process.env.PROFILE_SERVICE_HTTP_PORT || 3002;
   await app.listen(httpPort);

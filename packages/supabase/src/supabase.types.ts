@@ -881,6 +881,7 @@ export type Database = {
           email: string
           email_verified: boolean | null
           id: string
+          is_onboarded: boolean | null
           role: Database["public"]["Enums"]["user_role"]
           university_id: string | null
         }
@@ -889,6 +890,7 @@ export type Database = {
           email: string
           email_verified?: boolean | null
           id: string
+          is_onboarded?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
           university_id?: string | null
         }
@@ -897,6 +899,7 @@ export type Database = {
           email?: string
           email_verified?: boolean | null
           id?: string
+          is_onboarded?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
           university_id?: string | null
         }

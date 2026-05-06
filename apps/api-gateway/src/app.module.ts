@@ -5,6 +5,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AuthController } from './auth/auth.controller';
 import { AppService } from './app.service';
+import { ProfileController } from './profile/profile.controller';
 import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor, getEnvFiles } from '@chambitas/common';
 import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
 
@@ -24,9 +25,18 @@ import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
           url: process.env.AUTH_SERVICE_URL || 'localhost:50051',
         },
       },
+      {
+        name: 'PROFILE_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: PROTO_PACKAGE.USER,
+          protoPath: PROTO_PATH.USER,
+          url: process.env.PROFILE_SERVICE_URL || 'localhost:50052',
+        },
+      },
     ]),
   ],
-  controllers: [AppController, AuthController],
+  controllers: [AppController, AuthController, ProfileController],
   providers: [
     AppService,
     {

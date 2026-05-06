@@ -51,6 +51,7 @@ export class AuthController implements OnModuleInit {
       userId: response.userId,
       email: response.email,
       role: response.role,
+      isOnboarded: response.isOnboarded,
     };
   }
 

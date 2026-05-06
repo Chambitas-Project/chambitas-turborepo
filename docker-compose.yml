@@ -77,6 +77,10 @@ services:
     env_file:
       - .env
       - apps/notification-service/.env
+    environment:
+      - REDIS_URL=redis://chambitas-redis:6379
+    depends_on:
+      - redis
     restart: unless-stopped
 
   ml-engine:
@@ -101,4 +105,16 @@ services:
     env_file:
       - .env
       - apps/analytics-audit-service/.env
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: chambitas-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
