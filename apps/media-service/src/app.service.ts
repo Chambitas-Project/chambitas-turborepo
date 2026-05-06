@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { v2 as cloudinary } from 'cloudinary';
 import * as streamifier from 'streamifier';
 import { getEnvFiles } from '@chambitas/common';
@@ -9,6 +9,8 @@ config({ path: getEnvFiles() });
 
 @Injectable()
 export class AppService {
+  private readonly logger = new Logger(AppService.name);
+
   constructor() {
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -17,13 +19,22 @@ export class AppService {
     });
   }
 
-  async uploadFileToCloudinary(buffer: Buffer, mimeType: string): Promise<string> {
+  async uploadFileToCloudinary(
+    buffer: Buffer, 
+    mimeType: string, 
+    folder: string, 
+    userId: string
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
-      const isVideo = mimeType.startsWith('video/');
-      const resourceType = isVideo ? 'video' : 'image';
+      const fullPath = `chambitas/${folder}`;
+      const publicId = `${folder}_${userId}_${Date.now()}`;
 
       const uploadStream = cloudinary.uploader.upload_stream(
-        { resource_type: resourceType, folder: 'chambitas' },
+        { 
+          resource_type: 'auto', // Detecta si es imagen o video automáticamente
+          folder: fullPath,
+          public_id: publicId
+        },
         (error, result) => {
           if (error) {
             return reject(error);
@@ -31,6 +42,8 @@ export class AppService {
           if (!result) {
             return reject(new Error('Cloudinary response is empty'));
           }
+          
+          this.logger.log(`[MediaService] File uploaded successfully as: ${publicId} in folder: ${fullPath}`);
           resolve(result.secure_url);
         },
       );

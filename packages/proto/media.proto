@@ -10,6 +10,7 @@ service MediaService {
 message UploadRequest {
   bytes file_buffer = 1;
   string mime_type = 2;
+  string folder = 3;
 }
 
 message UploadResponse {

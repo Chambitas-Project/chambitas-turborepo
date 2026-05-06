@@ -1,11 +1,11 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Inject, OnModuleInit, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, Inject, OnModuleInit, HttpException, HttpStatus, BadRequestException, Body } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { lastValueFrom } from 'rxjs';
 
 interface MediaService {
-  uploadFile(data: { fileBuffer: any, mimeType: string }): any;
+  uploadFile(data: { fileBuffer: any, mimeType: string, folder: string }): any;
 }
 
 @ApiTags('Media')
@@ -30,11 +30,17 @@ export class MediaController implements OnModuleInit {
           type: 'string',
           format: 'binary',
         },
+        folder: {
+          type: 'string',
+          enum: ['assets', 'evidence', 'projects', 'profiles'],
+          description: 'Categoría de destino para organizar el archivo',
+        },
       },
+      required: ['file', 'folder'],
     },
   })
   @ApiResponse({ status: 201, description: 'Archivo subido con éxito.' })
-  @ApiResponse({ status: 400, description: 'Archivo inválido.' })
+  @ApiResponse({ status: 400, description: 'Archivo o categoría inválida.' })
   @UseInterceptors(FileInterceptor('file', {
     limits: {
       fileSize: 5 * 1024 * 1024, // 5MB
@@ -47,9 +53,16 @@ export class MediaController implements OnModuleInit {
       cb(null, true);
     }
   }))
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('folder') folder: string
+  ) {
     if (!file) {
       throw new BadRequestException('Archivo no proporcionado');
+    }
+
+    if (!folder) {
+      throw new BadRequestException('La categoría (folder) es obligatoria');
     }
 
     try {
@@ -57,6 +70,7 @@ export class MediaController implements OnModuleInit {
         this.mediaService.uploadFile({
           fileBuffer: file.buffer,
           mimeType: file.mimetype,
+          folder,
         })
       );
       
