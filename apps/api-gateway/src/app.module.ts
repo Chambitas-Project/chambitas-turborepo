@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AuthController } from './auth/auth.controller';
 import { AppService } from './app.service';
 import { ProfileController } from './profile/profile.controller';
+import { MediaController } from './media/media.controller';
 import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor, getEnvFiles } from '@chambitas/common';
 import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
 
@@ -34,9 +35,18 @@ import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
           url: process.env.PROFILE_SERVICE_URL || 'localhost:50052',
         },
       },
+      {
+        name: 'MEDIA_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: PROTO_PACKAGE.MEDIA,
+          protoPath: PROTO_PATH.MEDIA,
+          url: process.env.MEDIA_SERVICE_GRPC_URL || 'localhost:50056',
+        },
+      },
     ]),
   ],
-  controllers: [AppController, AuthController, ProfileController],
+  controllers: [AppController, AuthController, ProfileController, MediaController],
   providers: [
     AppService,
     {

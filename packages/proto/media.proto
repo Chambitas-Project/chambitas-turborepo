@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package media;
+
+service MediaService {
+  rpc UploadFile (UploadRequest) returns (UploadResponse);
+  rpc DeleteFile (DeleteRequest) returns (DeleteResponse);
+}
+
+message UploadRequest {
+  bytes file_buffer = 1;
+  string mime_type = 2;
+}
+
+message UploadResponse {
+  string url = 1;
+}
+
+message DeleteRequest {
+  string url = 1;
+}
+
+message DeleteResponse {
+  bool success = 1;
+}
