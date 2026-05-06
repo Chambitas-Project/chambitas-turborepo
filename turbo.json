@@ -1,24 +1,55 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "concurrency": "20",
+  "globalDependencies": [
+    ".env"
+  ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**", "build/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        "dist/**",
+        "build/**"
+      ]
     },
     "lint": {
-      "dependsOn": ["^lint"],
-      "inputs": ["$TURBO_DEFAULT$", ".eslintrc*", ".eslintignore"]
+      "dependsOn": [
+        "^lint"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".eslintrc*",
+        ".eslintignore"
+      ]
     },
     "check-types": {
-      "dependsOn": ["^check-types"],
-      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"]
+      "dependsOn": [
+        "^check-types"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "tsconfig.json"
+      ]
     },
     "test": {
-      "dependsOn": ["build"],
-      "inputs": ["$TURBO_DEFAULT$", "jest.config.*", "test/**/*"],
-      "outputs": ["coverage/**"]
+      "dependsOn": [
+        "build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "jest.config.*",
+        "test/**/*"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
     },
     "dev": {
       "cache": false,

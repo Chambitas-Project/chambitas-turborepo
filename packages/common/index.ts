@@ -4,3 +4,4 @@ export * from './interceptors/grpc-context.interceptor';
 export * from './filters/rpc-exception.filter';
 export * from './logging/logger.service';
 export * from './swagger/swagger.util';
+export * from './utils/env.util';

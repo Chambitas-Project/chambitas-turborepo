@@ -1,13 +1,18 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EmailProcessor } from './processors/email.processor';
+import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: getEnvFiles(),
+    }),
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -21,6 +26,17 @@ import { EmailProcessor } from './processors/email.processor';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, EmailProcessor],
+  providers: [
+    AppService,
+    EmailProcessor,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CorrelationIdInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: GrpcContextInterceptor,
+    },
+  ],
 })
 export class AppModule {}

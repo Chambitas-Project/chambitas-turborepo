@@ -5,14 +5,14 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AuthController } from './auth/auth.controller';
 import { AppService } from './app.service';
-import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor } from '@chambitas/common';
+import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor, getEnvFiles } from '@chambitas/common';
 import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env', 'apps/api-gateway/.env'],
+      envFilePath: getEnvFiles(),
     }),
     ClientsModule.register([
       {
@@ -39,4 +39,4 @@ import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
