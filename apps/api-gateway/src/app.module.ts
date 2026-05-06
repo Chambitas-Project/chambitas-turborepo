@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GrpcCircuitBreakerInterceptor } from '@chambitas/common';
+import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
 
 @Module({
   imports: [
@@ -18,8 +18,8 @@ import { GrpcCircuitBreakerInterceptor } from '@chambitas/common';
         name: 'AUTH_PACKAGE',
         transport: Transport.GRPC,
         options: {
-          package: 'user',
-          protoPath: join(__dirname, '../../../packages/proto/user.proto'),
+          package: PROTO_PACKAGE.USER,
+          protoPath: PROTO_PATH.USER,
           url: process.env.AUTH_SERVICE_URL || 'localhost:50051',
         },
       },

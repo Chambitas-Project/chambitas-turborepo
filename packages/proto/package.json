@@ -1,9 +1,17 @@
 {
   "name": "@chambitas/proto",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
+    "dist",
     "*.proto"
   ],
-  "dependencies": {}
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
 }
