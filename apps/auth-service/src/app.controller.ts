@@ -1,12 +1,25 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, UseFilters } from '@nestjs/common';
+import { GrpcMethod } from '@nestjs/microservices';
 import { AppService } from './app.service';
+import { GlobalRpcExceptionFilter } from '@chambitas/common';
 
 @Controller()
+@UseFilters(GlobalRpcExceptionFilter)
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService) { }
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @GrpcMethod('UserService', 'FindOne')
+  findOne(data: { id: string }, metadata: any, call: any) {
+    // El GrpcContextInterceptor ha inyectado el usuario en data
+    const userContext = (data as any).user;
+    const correlationId = (data as any).correlationId;
+
+    console.log(`[${correlationId}] Buscando usuario ${data.id} solicitado por ${userContext?.id}`);
+
+    return {
+      id: data.id,
+      email: 'test@example.com',
+      name: 'User Name',
+    };
   }
 }

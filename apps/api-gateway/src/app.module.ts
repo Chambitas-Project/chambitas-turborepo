@@ -4,7 +4,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { GrpcCircuitBreakerInterceptor } from '@chambitas/common';
+import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor } from '@chambitas/common';
 import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
 
 @Module({
@@ -28,6 +28,10 @@ import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CorrelationIdInterceptor,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: GrpcCircuitBreakerInterceptor,

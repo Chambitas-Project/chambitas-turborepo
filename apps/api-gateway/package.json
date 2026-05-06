@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@chambitas/supabase": "workspace:*",
-    "@chambitas/common": "workspace:*",
+        "@chambitas/common": "workspace:*",
     "@chambitas/proto": "workspace:*",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
