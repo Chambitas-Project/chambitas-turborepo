@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
+import { AuthController } from './auth/auth.controller';
 import { AppService } from './app.service';
 import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor } from '@chambitas/common';
 import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
@@ -25,7 +26,7 @@ import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
       },
     ]),
   ],
-  controllers: [AppController],
+  controllers: [AppController, AuthController],
   providers: [
     AppService,
     {

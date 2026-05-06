@@ -97,15 +97,13 @@ export type Database = {
           id: string
           ruc: string | null
           sector: string | null
-          user_id: string
           verified: boolean | null
         }
         Insert: {
           company_name?: string | null
-          id?: string
+          id: string
           ruc?: string | null
           sector?: string | null
-          user_id: string
           verified?: boolean | null
         }
         Update: {
@@ -113,13 +111,12 @@ export type Database = {
           id?: string
           ruc?: string | null
           sector?: string | null
-          user_id?: string
           verified?: boolean | null
         }
         Relationships: [
           {
-            foreignKeyName: "employer_profiles_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "employer_profiles_id_fkey"
+            columns: ["id"]
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -764,7 +761,6 @@ export type Database = {
           id: string
           university_id: string
           updated_at: string | null
-          user_id: string
         }
         Insert: {
           academic_cycle?: number | null
@@ -774,10 +770,9 @@ export type Database = {
           embedding?: string | null
           full_name?: string | null
           gpa?: number | null
-          id?: string
+          id: string
           university_id: string
           updated_at?: string | null
-          user_id: string
         }
         Update: {
           academic_cycle?: number | null
@@ -790,21 +785,20 @@ export type Database = {
           id?: string
           university_id?: string
           updated_at?: string | null
-          user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "student_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "student_profiles_university_id_fkey"
             columns: ["university_id"]
             isOneToOne: false
             referencedRelation: "universities"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
