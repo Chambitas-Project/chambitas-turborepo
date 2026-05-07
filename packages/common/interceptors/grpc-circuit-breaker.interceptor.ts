@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   CallHandler,
   ServiceUnavailableException,
+  GatewayTimeoutException,
 } from '@nestjs/common';
 import { Observable, from, throwError, catchError, retry, timer } from 'rxjs';
 import CircuitBreaker from 'opossum';
@@ -19,19 +20,22 @@ export class GrpcCircuitBreakerInterceptor implements NestInterceptor {
 
     if (!this.breakers.has(breakerKey)) {
       const options = {
-        timeout: 3000, // Reducido a 3s para fallos más rápidos
+        timeout: 10000, // Aumentado a 10s según requerimiento
         errorThresholdPercentage: 50,
-        resetTimeout: 10000,
+        resetTimeout: 30000,
       };
 
-      // Nota: Opossum requiere una función que devuelva una promesa.
-      // Seguimos usando defer para convertir el handle en promesa solo cuando el breaker dispara.
       const breaker = new CircuitBreaker(
         (handler: CallHandler) => handler.handle().toPromise(),
         options,
       );
 
-      breaker.fallback(() => {
+      breaker.fallback((error) => {
+        if (error?.message?.includes('Timed out')) {
+          throw new GatewayTimeoutException(
+            `Service ${targetName}.${methodName} timed out after 10s`,
+          );
+        }
         throw new ServiceUnavailableException(
           `Service currently unavailable (Circuit Open for ${breakerKey})`,
         );
@@ -44,8 +48,8 @@ export class GrpcCircuitBreakerInterceptor implements NestInterceptor {
 
     return from(breaker!.fire(next)).pipe(
       retry({
-        count: 3,
-        delay: (error, retryCount) => timer(Math.pow(2, retryCount) * 1000), // Exponential backoff
+        count: 2,
+        delay: (error, retryCount) => timer(Math.pow(2, retryCount) * 500),
       }),
       catchError((err) => {
         return throwError(() => err);

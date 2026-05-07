@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package analytics;
+
+service AnalyticsService {
+  rpc TrackEvent (TrackEventRequest) returns (TrackEventResponse) {}
+}
+
+message TrackEventRequest {
+  string userId = 1;
+  string eventType = 2;
+  string source = 3;
+  string payloadJson = 4; // Usamos string para evitar google.protobuf.Any
+  string timestamp = 5;
+}
+
+message TrackEventResponse {
+  bool success = 1;
+}

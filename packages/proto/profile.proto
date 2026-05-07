@@ -3,8 +3,37 @@ syntax = "proto3";
 package profile;
 
 service ProfileService {
-  rpc UpdateStudentProfile (UpdateStudentProfileRequest) returns (UpdateProfileResponse) {}
-  rpc UpdateEmployerProfile (UpdateEmployerProfileRequest) returns (UpdateProfileResponse) {}
+  // Student Profile
+  rpc CreateStudentProfile (CreateStudentProfileRequest) returns (ProfileResponse) {}
+  rpc GetStudentProfile (GetProfileRequest) returns (StudentProfileResponse) {}
+  rpc UpdateStudentProfile (UpdateStudentProfileRequest) returns (ProfileResponse) {}
+  
+  // Employer Profile
+  rpc CreateEmployerProfile (CreateEmployerProfileRequest) returns (ProfileResponse) {}
+  rpc GetEmployerProfile (GetProfileRequest) returns (EmployerProfileResponse) {}
+  rpc UpdateEmployerProfile (UpdateEmployerProfileRequest) returns (ProfileResponse) {}
+
+  // Common
+  rpc DeleteProfile (DeleteProfileRequest) returns (ProfileResponse) {}
+}
+
+message GetProfileRequest {
+  string id = 1; // Can be userId or profileId
+}
+
+message DeleteProfileRequest {
+  string userId = 1;
+}
+
+message CreateStudentProfileRequest {
+  string userId = 1;
+  string fullName = 2;
+  string career = 3;
+  int32 academicCycle = 4;
+  string universityId = 5;
+  optional string bio = 6;
+  optional string availabilityBlocks = 7;
+  repeated string skills = 8;
 }
 
 message UpdateStudentProfileRequest {
@@ -13,8 +42,17 @@ message UpdateStudentProfileRequest {
   optional string career = 3;
   optional int32 academicCycle = 4;
   optional string bio = 5;
-  optional string universityId = 6;
-  optional string availabilityBlocks = 7;
+  optional string availabilityBlocks = 6;
+  repeated string skills = 7;
+  optional float gpa = 8;
+}
+
+message CreateEmployerProfileRequest {
+  string userId = 1;
+  string companyName = 2;
+  string ruc = 3;
+  string sector = 4;
+  optional string description = 5;
 }
 
 message UpdateEmployerProfileRequest {
@@ -22,8 +60,38 @@ message UpdateEmployerProfileRequest {
   optional string companyName = 2;
   optional string ruc = 3;
   optional string sector = 4;
+  optional string description = 5;
 }
 
-message UpdateProfileResponse {
-  bool isOnboarded = 1;
+message StudentProfileResponse {
+  string id = 1;
+  string fullName = 2;
+  string career = 3;
+  int32 academicCycle = 4;
+  string universityId = 5;
+  string bio = 6;
+  string availabilityBlocks = 7;
+  repeated string skills = 8;
+  float gpa = 9;
+  bool isOnboarded = 10;
+  string createdAt = 11;
+  string updatedAt = 12;
+}
+
+message EmployerProfileResponse {
+  string id = 1;
+  string companyName = 2;
+  string ruc = 3;
+  string sector = 4;
+  string description = 5;
+  bool verified = 6;
+  bool isOnboarded = 7;
+  string createdAt = 8;
+  string updatedAt = 9;
+}
+
+message ProfileResponse {
+  bool success = 1;
+  bool isOnboarded = 2;
+  optional string message = 3;
 }
