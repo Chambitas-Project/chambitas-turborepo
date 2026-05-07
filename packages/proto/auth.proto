@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package user;
+package auth;
 
 service AuthService {
   rpc Register (RegisterRequest) returns (RegisterResponse) {}
@@ -47,30 +47,4 @@ message OnboardingRequest {
 
 message OnboardingResponse {
   bool success = 1;
-}
-
-service ProfileService {
-  rpc UpdateStudentProfile (UpdateStudentProfileRequest) returns (UpdateProfileResponse) {}
-  rpc UpdateEmployerProfile (UpdateEmployerProfileRequest) returns (UpdateProfileResponse) {}
-}
-
-message UpdateStudentProfileRequest {
-  string user_id = 1;
-  optional string full_name = 2;
-  optional string career = 3;
-  optional int32 academic_cycle = 4;
-  optional string bio = 5;
-  optional string university_id = 6;
-  optional string availability_blocks = 7; // JSON string
-}
-
-message UpdateEmployerProfileRequest {
-  string user_id = 1;
-  optional string company_name = 2;
-  optional string ruc = 3;
-  optional string sector = 4;
-}
-
-message UpdateProfileResponse {
-  bool is_onboarded = 1;
 }

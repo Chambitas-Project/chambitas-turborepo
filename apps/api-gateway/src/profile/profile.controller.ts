@@ -4,6 +4,7 @@ import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiBearerAuth } from '@nes
 import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { UpdateStudentProfileDto, UpdateEmployerProfileDto } from './dto/profile.dto';
+import { IProfileService } from '@chambitas/proto';
 // Assuming JwtAuthGuard is globally applied or explicitly applied via @UseGuards
 // If it's globally applied via APP_GUARD, we don't need to import it here.
 
@@ -11,12 +12,12 @@ import { UpdateStudentProfileDto, UpdateEmployerProfileDto } from './dto/profile
 @ApiBearerAuth('JWT-auth')
 @Controller('profile')
 export class ProfileController implements OnModuleInit {
-  private profileService: any;
+  private profileService!: IProfileService;
 
   constructor(@Inject('PROFILE_PACKAGE') private client: ClientGrpc) {}
 
   onModuleInit() {
-    this.profileService = this.client.getService('ProfileService');
+    this.profileService = this.client.getService<IProfileService>('ProfileService');
   }
 
   @Patch('student')

@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { Observable } from 'rxjs';
 
 /**
  * Robustly resolves the path to a .proto file.
@@ -23,11 +24,31 @@ const findProto = (filename: string) => {
 };
 
 export const PROTO_PATH = {
-  USER: findProto('user.proto'),
+  AUTH: findProto('auth.proto'),
+  PROFILE: findProto('profile.proto'),
   MEDIA: findProto('media.proto'),
 };
 
 export const PROTO_PACKAGE = {
-  USER: 'user',
+  AUTH: 'auth',
+  PROFILE: 'profile',
   MEDIA: 'media',
 };
+
+// --- Shared Interfaces for Type Safety ---
+
+export interface IAuthService {
+  Register(data: any): Observable<any>;
+  Login(data: any): Observable<any>;
+  UpdateOnboarding(data: any): Observable<any>;
+}
+
+export interface IProfileService {
+  UpdateStudentProfile(data: any): Observable<any>;
+  UpdateEmployerProfile(data: any): Observable<any>;
+}
+
+export interface IMediaService {
+  UploadFile(data: { fileBuffer: Uint8Array, mimeType: string, folder: string }): Observable<{ url: string }>;
+  DeleteFile(data: { url: string }): Observable<{ success: boolean }>;
+}

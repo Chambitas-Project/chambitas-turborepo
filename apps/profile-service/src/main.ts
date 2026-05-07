@@ -10,8 +10,8 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: PROTO_PACKAGE.USER, // Match PROTO_PACKAGE.USER since ProfileService is in user.proto
-      protoPath: PROTO_PATH.USER,
+      package: PROTO_PACKAGE.PROFILE,
+      protoPath: PROTO_PATH.PROFILE,
       url: process.env.PROFILE_SERVICE_GRPC_URL || '0.0.0.0:50052',
     },
   });
@@ -21,5 +21,6 @@ async function bootstrap() {
   await app.listen(httpPort);
 
   console.log(`Profile Service (HTTP) is running on port: ${httpPort}`);
+  console.log(`Profile Service (gRPC) is running on port: 50052`);
 }
 bootstrap();

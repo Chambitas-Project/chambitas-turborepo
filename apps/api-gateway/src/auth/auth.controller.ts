@@ -5,6 +5,7 @@ import { Response, Request } from 'express';
 import { RegisterDto, LoginDto, UpdateOnboardingDto } from './dto/auth.dto';
 import { firstValueFrom } from 'rxjs';
 import { Public } from './decorators/public.decorator';
+import { IAuthService } from '@chambitas/proto';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -16,12 +17,12 @@ const COOKIE_OPTIONS = {
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController implements OnModuleInit {
-  private authService: any;
+  private authService!: IAuthService;
 
   constructor(@Inject('AUTH_PACKAGE') private client: ClientGrpc) {}
 
   onModuleInit() {
-    this.authService = this.client.getService('AuthService');
+    this.authService = this.client.getService<IAuthService>('AuthService');
   }
 
   @Public()
