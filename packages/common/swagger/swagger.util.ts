@@ -15,16 +15,17 @@ export interface SwaggerConfig {
 export function setupSwagger(
   app: INestApplication,
   config: SwaggerConfig,
-  isProduction: boolean = process.env.NODE_ENV === 'production',
 ): void {
-  // En producción, podríamos querer desactivar Swagger por seguridad o requerir credenciales
-  if (isProduction) {
-    Logger.log('Swagger is disabled in production environment', 'SwaggerSetup');
+  const env = process.env.NODE_ENV || 'development';
+
+  // Solo se ejecuta si estamos en desarrollo
+  if (env !== 'development') {
+    Logger.log(`Swagger is disabled in ${env} environment`, 'SwaggerSetup');
     return;
   }
 
-  const path = config.path || 'api/docs';
-  
+  const path = config.path || 'swagger-ui';
+
   const options = new DocumentBuilder()
     .setTitle(`Chambitas - ${config.title}`)
     .setDescription(config.description)
