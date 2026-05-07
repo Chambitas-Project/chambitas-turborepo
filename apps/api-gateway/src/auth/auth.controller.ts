@@ -5,7 +5,7 @@ import { Response, Request } from 'express';
 import { RegisterDto, LoginDto, UpdateOnboardingDto } from './dto/auth.dto';
 import { firstValueFrom } from 'rxjs';
 import { Public } from './decorators/public.decorator';
-import { IAuthService } from '@chambitas/proto';
+import { IAuthService, RegisterResponse, LoginResponse, OnboardingResponse } from '@chambitas/proto';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -30,8 +30,8 @@ export class AuthController implements OnModuleInit {
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente' })
-  async register(@Body() registerDto: RegisterDto) {
-    const response: any = await firstValueFrom(this.authService.Register(registerDto));
+  async register(@Body() registerDto: RegisterDto): Promise<RegisterResponse> {
+    const response = await firstValueFrom(this.authService.Register(registerDto));
     return response;
   }
 
@@ -41,7 +41,7 @@ export class AuthController implements OnModuleInit {
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'Sesión iniciada exitosamente' })
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const response: any = await firstValueFrom(this.authService.Login(loginDto));
+    const response = await firstValueFrom(this.authService.Login(loginDto));
     
     // Extraer access_token y configurar cookie
     if (response.accessToken) {
@@ -87,7 +87,7 @@ export class AuthController implements OnModuleInit {
       role,
     };
 
-    const response: any = await firstValueFrom(
+    const response = await firstValueFrom(
       this.authService.UpdateOnboarding(requestPayload)
     );
     return response;

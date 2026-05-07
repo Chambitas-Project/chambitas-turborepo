@@ -4,7 +4,7 @@ import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiBearerAuth } from '@nes
 import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { UpdateStudentProfileDto, UpdateEmployerProfileDto } from './dto/profile.dto';
-import { IProfileService } from '@chambitas/proto';
+import { IProfileService, UpdateProfileResponse } from '@chambitas/proto';
 // Assuming JwtAuthGuard is globally applied or explicitly applied via @UseGuards
 // If it's globally applied via APP_GUARD, we don't need to import it here.
 
@@ -37,7 +37,7 @@ export class ProfileController implements OnModuleInit {
       userId,
     };
 
-    const response: any = await firstValueFrom(
+    const response = await firstValueFrom(
       this.profileService.UpdateStudentProfile(requestPayload)
     );
     return response;
@@ -60,7 +60,7 @@ export class ProfileController implements OnModuleInit {
       userId,
     };
 
-    const response: any = await firstValueFrom(
+    const response = await firstValueFrom(
       this.profileService.UpdateEmployerProfile(requestPayload)
     );
     return response;

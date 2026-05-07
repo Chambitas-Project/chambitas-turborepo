@@ -12,11 +12,11 @@ message RegisterRequest {
   string email = 1;
   string password = 2;
   string role = 3;
-  string university_id = 4;
+  string universityId = 4;
 }
 
 message RegisterResponse {
-  string user_id = 1;
+  string userId = 1;
   string email = 2;
 }
 
@@ -26,22 +26,22 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  string user_id = 1;
+  string userId = 1;
   string email = 2;
   string role = 3;
-  string access_token = 4;
-  bool is_onboarded = 5;
+  string accessToken = 4;
+  bool isOnboarded = 5;
 }
 
 message OnboardingRequest {
-  string user_id = 1;
+  string userId = 1;
   string role = 2;
   // Student fields
-  optional string full_name = 3;
+  optional string fullName = 3;
   optional string career = 4;
-  optional int32 academic_cycle = 5;
+  optional int32 academicCycle = 5;
   // Employer fields
-  optional string company_name = 6;
+  optional string companyName = 6;
   optional string sector = 7;
 }
 

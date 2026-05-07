@@ -35,18 +35,90 @@ export const PROTO_PACKAGE = {
   MEDIA: 'media',
 };
 
-// --- Shared Interfaces for Type Safety ---
+// --- Shared Types & Enums ---
+
+export enum UserRole {
+  STUDENT = 'student',
+  EMPLOYER = 'employer',
+  ADMIN = 'admin',
+}
+
+// --- Auth Service Interfaces ---
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  role: UserRole;
+  universityId: string;
+}
+
+export interface RegisterResponse {
+  userId: string;
+  email: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  userId: string;
+  email: string;
+  role: UserRole;
+  accessToken: string;
+  isOnboarded: boolean;
+}
+
+export interface OnboardingRequest {
+  userId: string;
+  role: UserRole;
+  fullName?: string;
+  career?: string;
+  academicCycle?: number;
+  companyName?: string;
+  sector?: string;
+}
+
+export interface OnboardingResponse {
+  success: boolean;
+}
 
 export interface IAuthService {
-  Register(data: any): Observable<any>;
-  Login(data: any): Observable<any>;
-  UpdateOnboarding(data: any): Observable<any>;
+  Register(data: RegisterRequest): Observable<RegisterResponse>;
+  Login(data: LoginRequest): Observable<LoginResponse>;
+  UpdateOnboarding(data: OnboardingRequest): Observable<OnboardingResponse>;
+}
+
+// --- Profile Service Interfaces ---
+
+export interface UpdateStudentProfileRequest {
+  userId: string;
+  fullName?: string;
+  career?: string;
+  academicCycle?: number;
+  bio?: string;
+  universityId?: string;
+  availabilityBlocks?: string;
+}
+
+export interface UpdateEmployerProfileRequest {
+  userId: string;
+  companyName?: string;
+  ruc?: string;
+  sector?: string;
+}
+
+export interface UpdateProfileResponse {
+  isOnboarded: boolean;
 }
 
 export interface IProfileService {
-  UpdateStudentProfile(data: any): Observable<any>;
-  UpdateEmployerProfile(data: any): Observable<any>;
+  UpdateStudentProfile(data: UpdateStudentProfileRequest): Observable<UpdateProfileResponse>;
+  UpdateEmployerProfile(data: UpdateEmployerProfileRequest): Observable<UpdateProfileResponse>;
 }
+
+// --- Media Service Interfaces ---
 
 export interface IMediaService {
   UploadFile(data: { fileBuffer: Uint8Array, mimeType: string, folder: string }): Observable<{ url: string }>;
