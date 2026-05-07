@@ -21,18 +21,18 @@ import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
         name: 'AUTH_PACKAGE',
         transport: Transport.GRPC,
         options: {
-          package: PROTO_PACKAGE.USER,
-          protoPath: PROTO_PATH.USER,
-          url: process.env.AUTH_SERVICE_URL || 'localhost:50051',
+          package: PROTO_PACKAGE.AUTH,
+          protoPath: PROTO_PATH.AUTH,
+          url: process.env.AUTH_SERVICE_GRPC_URL || 'localhost:50051',
         },
       },
       {
         name: 'PROFILE_PACKAGE',
         transport: Transport.GRPC,
         options: {
-          package: PROTO_PACKAGE.USER,
-          protoPath: PROTO_PATH.USER,
-          url: process.env.PROFILE_SERVICE_URL || 'localhost:50052',
+          package: PROTO_PACKAGE.PROFILE,
+          protoPath: PROTO_PATH.PROFILE,
+          url: process.env.PROFILE_SERVICE_GRPC_URL || 'localhost:50052',
         },
       },
       {

@@ -5,6 +5,7 @@
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "rootDir": "./src",
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
     "sourceMap": true,

@@ -1,10 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
 
-export enum UserRole {
-  STUDENT = 'student',
-  EMPLOYER = 'employer',
-}
+import { UserRole } from '@chambitas/proto';
 
 export class RegisterDto {
   @ApiProperty({ example: 'user@example.com' })
@@ -20,7 +17,7 @@ export class RegisterDto {
   @ApiProperty({ enum: UserRole, example: 'student' })
   @IsEnum(UserRole)
   @IsNotEmpty()
-  role!: string;
+  role!: UserRole;
 
   @ApiProperty({ example: 'uni-1234' })
   @IsString()

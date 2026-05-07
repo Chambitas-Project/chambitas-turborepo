@@ -5,12 +5,12 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AppService implements OnModuleInit {
-  private userService: any;
+  private authService: any;
 
-  constructor(@Inject('AUTH_PACKAGE') private client: ClientGrpc) {}
+  constructor(@Inject('AUTH_PACKAGE') private client: ClientGrpc) { }
 
   onModuleInit() {
-    this.userService = this.client.getService<any>('UserService');
+    this.authService = this.client.getService<any>('AuthService');
   }
 
   getHello(): string {
@@ -24,7 +24,7 @@ export class AppService implements OnModuleInit {
     metadata.add('x-correlation-id', correlationId);
 
     return firstValueFrom(
-      this.userService.findOne({ id: user.id }, metadata),
+      this.authService.findOne({ id: user.id }, metadata),
     );
   }
 }

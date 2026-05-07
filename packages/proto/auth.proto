@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package auth;
+
+service AuthService {
+  rpc Register (RegisterRequest) returns (RegisterResponse) {}
+  rpc Login (LoginRequest) returns (LoginResponse) {}
+  rpc UpdateOnboarding (OnboardingRequest) returns (OnboardingResponse) {}
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string role = 3;
+  string universityId = 4;
+}
+
+message RegisterResponse {
+  string userId = 1;
+  string email = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string userId = 1;
+  string email = 2;
+  string role = 3;
+  string accessToken = 4;
+  bool isOnboarded = 5;
+}
+
+message OnboardingRequest {
+  string userId = 1;
+  string role = 2;
+  // Student fields
+  optional string fullName = 3;
+  optional string career = 4;
+  optional int32 academicCycle = 5;
+  // Employer fields
+  optional string companyName = 6;
+  optional string sector = 7;
+}
+
+message OnboardingResponse {
+  bool success = 1;
+}

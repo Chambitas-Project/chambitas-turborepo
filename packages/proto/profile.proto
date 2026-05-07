@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package profile;
+
+service ProfileService {
+  rpc UpdateStudentProfile (UpdateStudentProfileRequest) returns (UpdateProfileResponse) {}
+  rpc UpdateEmployerProfile (UpdateEmployerProfileRequest) returns (UpdateProfileResponse) {}
+}
+
+message UpdateStudentProfileRequest {
+  string userId = 1;
+  optional string fullName = 2;
+  optional string career = 3;
+  optional int32 academicCycle = 4;
+  optional string bio = 5;
+  optional string universityId = 6;
+  optional string availabilityBlocks = 7;
+}
+
+message UpdateEmployerProfileRequest {
+  string userId = 1;
+  optional string companyName = 2;
+  optional string ruc = 3;
+  optional string sector = 4;
+}
+
+message UpdateProfileResponse {
+  bool isOnboarded = 1;
+}

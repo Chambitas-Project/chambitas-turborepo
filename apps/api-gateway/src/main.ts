@@ -21,8 +21,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT') || 3000;
+  const port = process.env.API_GATEWAY_PORT || 3000;
 
   await app.listen(port);
   console.log(`API Gateway is running on port: ${port}`);
