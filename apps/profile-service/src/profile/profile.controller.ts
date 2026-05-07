@@ -51,4 +51,14 @@ export class ProfileController {
   async deleteProfile(data: DeleteProfileRequest): Promise<ProfileResponse> {
     return await this.profileService.deleteProfile(data.userId);
   }
+
+  @GrpcMethod('ProfileService', 'SearchProfiles')
+  async searchProfiles(data: any) {
+    return await this.profileService.searchProfiles(data.query, data.role, data.limit, data.offset);
+  }
+
+  @GrpcMethod('ProfileService', 'GetProfile')
+  async getProfile(data: any) {
+    return await this.profileService.getProfile(data.id);
+  }
 }

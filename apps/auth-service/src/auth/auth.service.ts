@@ -206,4 +206,18 @@ export class AuthService {
 
     return { success: true };
   }
+
+  async listUniversities() {
+    const supabase = this.supabaseService.getClient<Database>();
+    const { data, error } = await supabase
+      .from('universities')
+      .select('id, name, email_domain, slug')
+      .eq('is_active', true);
+
+    if (error) {
+      throw new RpcException({ code: 13, message: error.message });
+    }
+
+    return { universities: data || [] };
+  }
 }

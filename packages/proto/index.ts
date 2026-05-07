@@ -92,10 +92,22 @@ export interface OnboardingResponse {
   success: boolean;
 }
 
+export interface UniversityResponse {
+  id: string;
+  name: string;
+  email_domain: string;
+  slug: string;
+}
+
+export interface UniversityListResponse {
+  universities: UniversityResponse[];
+}
+
 export interface IAuthService {
   Register(data: RegisterRequest): Observable<RegisterResponse>;
   Login(data: LoginRequest): Observable<LoginResponse>;
   UpdateOnboarding(data: OnboardingRequest): Observable<OnboardingResponse>;
+  ListUniversities(data: any): Observable<UniversityListResponse>;
 }
 
 // --- Profile Service Interfaces ---
@@ -187,8 +199,30 @@ export interface IProfileService {
   CreateEmployerProfile(data: CreateEmployerProfileRequest): Observable<ProfileResponse>;
   GetEmployerProfile(data: GetProfileRequest): Observable<EmployerProfileResponse>;
   UpdateEmployerProfile(data: UpdateEmployerProfileRequest): Observable<ProfileResponse>;
-
   DeleteProfile(data: DeleteProfileRequest): Observable<ProfileResponse>;
+  SearchProfiles(data: SearchProfilesRequest): Observable<SearchProfilesResponse>;
+  GetProfile(data: GetProfileRequest): Observable<UnifiedProfileResponse>;
+}
+
+export interface SearchProfilesRequest {
+  query: string;
+  role?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface SearchProfilesResponse {
+  profiles: UnifiedProfileResponse[];
+}
+
+export interface UnifiedProfileResponse {
+  id: string;
+  role: string;
+  fullName: string;
+  career?: string;
+  universityId?: string;
+  sector?: string;
+  bio?: string;
 }
 
 // --- Media Service Interfaces ---

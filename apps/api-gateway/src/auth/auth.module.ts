@@ -3,6 +3,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PROTO_PACKAGE, PROTO_PATH } from '@chambitas/proto';
 import { SupabaseModule } from '@chambitas/supabase';
 import { AuthController } from './auth.controller';
+import { UniversitiesController } from './universities.controller';
 import { UniversityEmailValidator } from './validators/university-email.validator';
 
 @Module({
@@ -20,7 +21,7 @@ import { UniversityEmailValidator } from './validators/university-email.validato
       },
     ]),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, UniversitiesController],
   providers: [UniversityEmailValidator],
   exports: [ClientsModule],
 })

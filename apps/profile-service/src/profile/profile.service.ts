@@ -200,6 +200,79 @@ export class ProfileService {
     }
   }
 
+  async getProfile(id: string) {
+    // Try student first
+    const student = await this.studentRepo.findByUserId(id).catch(() => null);
+    if (student) {
+      return {
+        id: student.id,
+        role: 'student',
+        fullName: student.full_name || '',
+        career: student.career || '',
+        universityId: student.university_id,
+        bio: student.bio || '',
+      };
+    }
+
+    // Try employer
+    const employer = await this.employerRepo.findByUserId(id).catch(() => null);
+    if (employer) {
+      return {
+        id: employer.id,
+        role: 'employer',
+        fullName: employer.company_name || '',
+        sector: employer.sector || '',
+        bio: employer.description || '',
+      };
+    }
+
+    throw new RpcException({ code: status.NOT_FOUND, message: 'Profile not found' });
+  }
+
+  async searchProfiles(query: string, role?: string, limit = 10, offset = 0) {
+    const supabase = this.supabaseService.getClient<Database>();
+    const profiles: any[] = [];
+
+    if (!role || role === 'student') {
+      const { data: students } = await supabase
+        .from('student_profiles')
+        .select('*')
+        .ilike('full_name', `%${query}%`)
+        .is('deleted_at', null)
+        .range(offset, offset + limit - 1);
+      
+      if (students) {
+        profiles.push(...students.map(s => ({
+          id: s.id,
+          role: 'student',
+          fullName: s.full_name,
+          career: s.career,
+          universityId: s.university_id,
+        })));
+      }
+    }
+
+    if (!role || role === 'employer') {
+      const { data: employers } = await supabase
+        .from('employer_profiles')
+        .select('*')
+        .ilike('company_name', `%${query}%`)
+        .is('deleted_at', null)
+        .range(offset, offset + limit - 1);
+
+      if (employers) {
+        profiles.push(...employers.map(e => ({
+          id: e.id,
+          role: 'employer',
+          fullName: e.company_name,
+          sector: e.sector,
+        })));
+      }
+    }
+
+    return { profiles };
+  }
+
   // --- Helpers ---
 
   private async getOnboardingStatus(userId: string): Promise<boolean> {

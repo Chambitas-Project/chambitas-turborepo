@@ -15,6 +15,29 @@ service ProfileService {
 
   // Common
   rpc DeleteProfile (DeleteProfileRequest) returns (ProfileResponse) {}
+  rpc SearchProfiles (SearchProfilesRequest) returns (SearchProfilesResponse) {}
+  rpc GetProfile (GetProfileRequest) returns (UnifiedProfileResponse) {}
+}
+
+message SearchProfilesRequest {
+  string query = 1;
+  optional string role = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message SearchProfilesResponse {
+  repeated UnifiedProfileResponse profiles = 1;
+}
+
+message UnifiedProfileResponse {
+  string id = 1;
+  string role = 2;
+  string fullName = 3; // Or companyName
+  optional string career = 4;
+  optional string universityId = 5;
+  optional string sector = 6;
+  optional string bio = 7;
 }
 
 message GetProfileRequest {

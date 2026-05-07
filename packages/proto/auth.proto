@@ -6,6 +6,20 @@ service AuthService {
   rpc Register (RegisterRequest) returns (RegisterResponse) {}
   rpc Login (LoginRequest) returns (LoginResponse) {}
   rpc UpdateOnboarding (OnboardingRequest) returns (OnboardingResponse) {}
+  rpc ListUniversities (Empty) returns (UniversityListResponse) {}
+}
+
+message Empty {}
+
+message University {
+  string id = 1;
+  string name = 2;
+  string email_domain = 3;
+  string slug = 4;
+}
+
+message UniversityListResponse {
+  repeated University universities = 1;
 }
 
 message RegisterRequest {

@@ -23,4 +23,9 @@ export class AuthController {
     // correlationId and other metadata can be found in data if GrpcContextInterceptor is used
     return this.authService.updateOnboarding(data);
   }
+
+  @GrpcMethod('AuthService', 'ListUniversities')
+  async listUniversities(data: any, metadata: any, call: any) {
+    return this.authService.listUniversities();
+  }
 }
