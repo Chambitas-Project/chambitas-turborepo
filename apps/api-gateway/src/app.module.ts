@@ -9,7 +9,6 @@ import { ProfileController } from './profile/profile.controller';
 import { MediaController } from './media/media.controller';
 import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor, getEnvFiles } from '@chambitas/common';
 import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
-import { MarketplaceController } from './marketplace/marketplace.controller';
 import { ProjectsController } from './marketplace/projects.controller';
 import { ApplicationsController } from './marketplace/applications.controller';
 import { MatchingController } from './matching/matching.controller';
@@ -93,7 +92,6 @@ import { AnalyticsController } from './analytics/analytics.controller';
     AuthController,
     ProfileController,
     MediaController,
-    MarketplaceController,
     ProjectsController,
     ApplicationsController,
     MatchingController,
