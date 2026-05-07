@@ -27,12 +27,20 @@ export const PROTO_PATH = {
   AUTH: findProto('auth.proto'),
   PROFILE: findProto('profile.proto'),
   MEDIA: findProto('media.proto'),
+  MARKETPLACE: findProto('marketplace.proto'),
+  MATCHING: findProto('matching.proto'),
+  NOTIFICATION: findProto('notification.proto'),
+  ANALYTICS: findProto('analytics.proto'),
 };
 
 export const PROTO_PACKAGE = {
   AUTH: 'auth',
   PROFILE: 'profile',
   MEDIA: 'media',
+  MARKETPLACE: 'marketplace',
+  MATCHING: 'matching',
+  NOTIFICATION: 'notification',
+  ANALYTICS: 'analytics',
 };
 
 // --- Shared Types & Enums ---
@@ -123,4 +131,105 @@ export interface IProfileService {
 export interface IMediaService {
   UploadFile(data: { fileBuffer: Uint8Array, mimeType: string, folder: string }): Observable<{ url: string }>;
   DeleteFile(data: { url: string }): Observable<{ success: boolean }>;
+}
+
+// --- Marketplace Service Interfaces ---
+
+export interface CreateJobRequest {
+  title: string;
+  description: string;
+  employerId: string;
+  salary: number;
+  location: string;
+  category: string;
+}
+
+export interface CreateJobResponse {
+  jobId: string;
+  success: boolean;
+}
+
+export interface GetJobsRequest {
+  category?: string;
+  employerId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface Job {
+  id: string;
+  title: string;
+  description: string;
+  employerId: string;
+  salary: number;
+  location: string;
+  category: string;
+  createdAt: string;
+}
+
+export interface GetJobsResponse {
+  jobs: Job[];
+  total: number;
+}
+
+export interface IMarketplaceService {
+  CreateJob(data: CreateJobRequest): Observable<CreateJobResponse>;
+  GetJobs(data: GetJobsRequest): Observable<GetJobsResponse>;
+}
+
+// --- Matching Service Interfaces ---
+
+export interface GetRecommendationsRequest {
+  userId: string;
+  limit: number;
+}
+
+export interface Recommendation {
+  jobId: string;
+  score: number;
+  reason: string;
+}
+
+export interface GetRecommendationsResponse {
+  recommendations: Recommendation[];
+}
+
+export interface IMatchingService {
+  GetRecommendations(data: GetRecommendationsRequest): Observable<GetRecommendationsResponse>;
+}
+
+// --- Notification Service Interfaces ---
+
+export interface SendEmailRequest {
+  to: string;
+  subject: string;
+  body: string;
+  templateName?: string;
+}
+
+export interface SendEmailResponse {
+  success: boolean;
+  messageId: string;
+}
+
+export interface INotificationService {
+  SendEmail(data: SendEmailRequest): Observable<SendEmailResponse>;
+}
+
+// --- Analytics Service Interfaces ---
+
+export interface TrackEventRequest {
+  userId: string;
+  eventType: string;
+  source: string;
+  payloadJson: string;
+  timestamp: string;
+}
+
+export interface TrackEventResponse {
+  success: boolean;
+}
+
+export interface IAnalyticsService {
+  TrackEvent(data: TrackEventRequest): Observable<TrackEventResponse>;
 }

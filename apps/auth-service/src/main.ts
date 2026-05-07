@@ -2,28 +2,22 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
-  // 1. Crear aplicación base (HTTP) para Swagger y Health Checks
-  const app = await NestFactory.create(AppModule);
+  const logger = new Logger('AuthService');
+  const grpcUrl = process.env.AUTH_SERVICE_GRPC_URL || '0.0.0.0:50051';
 
-
-  // 3. Conectar el microservicio gRPC
-  app.connectMicroservice<MicroserviceOptions>({
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
     transport: Transport.GRPC,
     options: {
       package: PROTO_PACKAGE.AUTH,
       protoPath: PROTO_PATH.AUTH,
-      url: process.env.AUTH_SERVICE_GRPC_URL || '0.0.0.0:50051',
+      url: grpcUrl,
     },
   });
 
-  // 4. Iniciar ambos servidores
-  await app.startAllMicroservices();
-  const httpPort = process.env.AUTH_SERVICE_PORT || 3001;
-  await app.listen(httpPort);
-
-  console.log(`Auth Service (HTTP) is running on port: ${httpPort}`);
-  console.log(`Auth Service (gRPC) is running on port: 50051`);
+  await app.listen();
+  logger.log(`Auth Microservice is listening on: ${grpcUrl}`);
 }
 bootstrap();

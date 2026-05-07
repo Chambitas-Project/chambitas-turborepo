@@ -1,13 +1,23 @@
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AnalyticsAuditModule } from './app.module';
+import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AnalyticsAuditModule);
+  const logger = new Logger('AnalyticsAuditService');
+  const grpcUrl = process.env.ANALYTICS_AUDIT_SERVICE_GRPC_URL || '0.0.0.0:50057';
 
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AnalyticsAuditModule, {
+    transport: Transport.GRPC,
+    options: {
+      package: PROTO_PACKAGE.ANALYTICS,
+      protoPath: PROTO_PATH.ANALYTICS,
+      url: grpcUrl,
+    },
+  });
 
-  const httpPort = process.env.ANALYTICS_AUDIT_SERVICE_PORT || 3006;
-  await app.listen(httpPort);
-
-  console.log(`Analytics Service (HTTP) is running on port: ${httpPort}`);
+  await app.listen();
+  logger.log(`Analytics Audit Microservice is listening on: ${grpcUrl}`);
 }
 bootstrap();

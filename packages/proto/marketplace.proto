@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package marketplace;
+
+service MarketplaceService {
+  rpc CreateJob (CreateJobRequest) returns (CreateJobResponse) {}
+  rpc GetJobs (GetJobsRequest) returns (GetJobsResponse) {}
+}
+
+message CreateJobRequest {
+  string title = 1;
+  string description = 2;
+  string employerId = 3;
+  double salary = 4;
+  string location = 5;
+  string category = 6;
+}
+
+message CreateJobResponse {
+  string jobId = 1;
+  bool success = 2;
+}
+
+message GetJobsRequest {
+  optional string category = 1;
+  optional string employerId = 2;
+  optional int32 limit = 3;
+  optional int32 offset = 4;
+}
+
+message Job {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string employerId = 4;
+  double salary = 5;
+  string location = 6;
+  string category = 7;
+  string createdAt = 8;
+}
+
+message GetJobsResponse {
+  repeated Job jobs = 1;
+  int32 total = 2;
+}

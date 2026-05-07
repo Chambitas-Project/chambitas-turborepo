@@ -9,6 +9,10 @@ import { ProfileController } from './profile/profile.controller';
 import { MediaController } from './media/media.controller';
 import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor, getEnvFiles } from '@chambitas/common';
 import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
+import { MarketplaceController } from './marketplace/marketplace.controller';
+import { MatchingController } from './matching/matching.controller';
+import { NotificationController } from './notification/notification.controller';
+import { AnalyticsController } from './analytics/analytics.controller';
 
 @Module({
   imports: [
@@ -44,9 +48,54 @@ import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
           url: process.env.MEDIA_SERVICE_GRPC_URL || 'localhost:50056',
         },
       },
+      {
+        name: 'MARKETPLACE_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: PROTO_PACKAGE.MARKETPLACE,
+          protoPath: PROTO_PATH.MARKETPLACE,
+          url: process.env.MARKETPLACE_SERVICE_GRPC_URL || 'localhost:50054',
+        },
+      },
+      {
+        name: 'MATCHING_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: PROTO_PACKAGE.MATCHING,
+          protoPath: PROTO_PATH.MATCHING,
+          url: process.env.MATCHING_SERVICE_GRPC_URL || 'localhost:50053',
+        },
+      },
+      {
+        name: 'NOTIFICATION_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: PROTO_PACKAGE.NOTIFICATION,
+          protoPath: PROTO_PATH.NOTIFICATION,
+          url: process.env.NOTIFICATION_SERVICE_GRPC_URL || 'localhost:50055',
+        },
+      },
+      {
+        name: 'ANALYTICS_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: PROTO_PACKAGE.ANALYTICS,
+          protoPath: PROTO_PATH.ANALYTICS,
+          url: process.env.ANALYTICS_AUDIT_SERVICE_GRPC_URL || 'localhost:50057',
+        },
+      },
     ]),
   ],
-  controllers: [AppController, AuthController, ProfileController, MediaController],
+  controllers: [
+    AppController,
+    AuthController,
+    ProfileController,
+    MediaController,
+    MarketplaceController,
+    MatchingController,
+    NotificationController,
+    AnalyticsController,
+  ],
   providers: [
     AppService,
     {

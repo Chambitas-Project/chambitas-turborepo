@@ -1,10 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
-import { setupSwagger } from '@chambitas/common';
+import { ValidationPipe } from '@nestjs/common';
+import { setupSwagger, GlobalRpcExceptionFilter } from '@chambitas/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Habilitar Validación Global (class-validator)
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
+
+  // Habilitar Filtro de Excepciones Global (gRPC -> HTTP)
+  app.useGlobalFilters(new GlobalRpcExceptionFilter());
 
   // Habilitar Swagger
   setupSwagger(app, {
