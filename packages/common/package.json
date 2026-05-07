@@ -7,8 +7,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.1",
+    "@grpc/grpc-js": "^1.12.5",
+    "@nestjs/common": "^11.1.19",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/microservices": "^11.0.1",
     "@nestjs/swagger": "^11.4.2",
     "opossum": "^8.1.0",
     "rxjs": "^7.8.2",
