@@ -103,7 +103,7 @@
     0 0 40px oklch(0.52 0.140 163 / 0.15);
 
   /* ----------------------------------------------------------
-     VARIABLES SHADCN — Jerarquía semántica dark mode
+     VARIABLES SHADCN — Jerarquía semántica
      Foregrounds siempre del mismo matiz, nunca gris puro.
      ---------------------------------------------------------- */
   --color-background:         oklch(0.13 0.010 165); /* slate-950 */
@@ -116,7 +116,7 @@
   --color-popover-foreground: oklch(0.93 0.008 165); /* slate-100 */
 
   --color-primary:            oklch(0.52 0.140 163); /* primary-500 */
-  --color-primary-foreground: oklch(0.96 0.030 163); /* primary-50 — tono claro del mismo matiz */
+  --color-primary-foreground: oklch(0.96 0.030 163); /* primary-50 */
 
   --color-secondary:          oklch(0.23 0.015 165); /* slate-800 */
   --color-secondary-foreground: oklch(0.93 0.008 165);
@@ -124,7 +124,7 @@
   --color-muted:              oklch(0.23 0.015 165); /* slate-800 */
   --color-muted-foreground:   oklch(0.63 0.014 165); /* slate-400 */
 
-  --color-accent:             oklch(0.44 0.160 163); /* primary-600 — hover con +Chroma */
+  --color-accent:             oklch(0.44 0.160 163); /* primary-600 */
   --color-accent-foreground:  oklch(0.96 0.030 163); /* primary-50 */
 
   --color-destructive:        oklch(0.55 0.220 25);
@@ -134,15 +134,44 @@
   --color-input:              oklch(0.23 0.015 165); /* slate-800 */
   --color-ring:               oklch(0.52 0.140 163); /* primary-500 */
 
-  /* Chart colors para analytics */
+  /* Chart colors */
   --color-chart-1: oklch(0.52 0.140 163);
   --color-chart-2: oklch(0.57 0.170 230);
   --color-chart-3: oklch(0.80 0.150 75);
   --color-chart-4: oklch(0.65 0.200 25);
   --color-chart-5: oklch(0.68 0.150 290);
 
-  /* Alias de radio para Shadcn */
   --radius: 0.5rem;
+}
+
+/* ============================================================
+   LIGHT MODE OVERRIDES
+   ============================================================ */
+.light {
+  --color-background:         oklch(0.99 0.002 165); /* Casi blanco */
+  --color-foreground:         oklch(0.23 0.015 165); /* slate-800 */
+
+  --color-card:               oklch(1.0 0.0 0);      /* Blanco puro */
+  --color-card-foreground:    oklch(0.23 0.015 165);
+
+  --color-popover:            oklch(1.0 0.0 0);
+  --color-popover-foreground: oklch(0.23 0.015 165);
+
+  --color-primary:            oklch(0.52 0.140 163); /* Verde base */
+  --color-primary-foreground: oklch(0.99 0.005 163);
+
+  --color-secondary:          oklch(0.96 0.006 165); /* slate-50 */
+  --color-secondary-foreground: oklch(0.31 0.016 165);
+
+  --color-muted:              oklch(0.96 0.006 165);
+  --color-muted-foreground:   oklch(0.50 0.015 165); /* slate-500 */
+
+  --color-accent:             oklch(0.92 0.015 163); /* primary-100 sutil */
+  --color-accent-foreground:  oklch(0.37 0.170 163);
+
+  --color-border:             oklch(0.92 0.008 165); /* slate-100 */
+  --color-input:              oklch(0.98 0.005 165);
+  --color-ring:               oklch(0.52 0.140 163);
 }
 
 /* ============================================================
@@ -157,7 +186,7 @@
   }
 
   html {
-    color-scheme: dark;
+    color-scheme: dark light;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
   }
