@@ -51,7 +51,7 @@ export class ProfileController implements OnModuleInit {
     );
   }
 
-  @Get('student/:id?')
+  @Get(['student', 'student/:id'])
   @ApiOperation({ summary: 'Obtener perfil de Estudiante (por ID o el actual)' })
   @ApiParam({ name: 'id', required: false, description: 'ID de perfil o userId' })
   async getStudentProfile(@Req() req: Request, @Param('id') id?: string) {
@@ -94,7 +94,7 @@ export class ProfileController implements OnModuleInit {
     );
   }
 
-  @Get('employer/:id?')
+  @Get(['employer', 'employer/:id'])
   @ApiOperation({ summary: 'Obtener perfil de Empleador (por ID o el actual)' })
   @ApiParam({ name: 'id', required: false, description: 'ID de perfil o userId' })
   async getEmployerProfile(@Req() req: Request, @Param('id') id?: string) {
