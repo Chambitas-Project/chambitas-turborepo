@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { SupabaseService, Database } from '@chambitas/supabase';
+import { UNIVERSITY_EMAIL_PATTERNS } from '@chambitas/common';
 
 @Injectable()
 export class AuthService {
@@ -8,8 +9,64 @@ export class AuthService {
 
   async register(data: any) {
     const supabase = this.supabaseService.getClient<Database>();
+
+    // 1. Strict Security Check
+    if (data.role === 'student') {
+      if (!data.university_id) {
+        throw new RpcException({
+          code: 3, // INVALID_ARGUMENT
+          message: 'University ID is required for student registration',
+        });
+      }
+
+      // Fetch university for validation
+      const { data: university, error: uniError } = await supabase
+        .from('universities')
+        .select('email_domain, slug')
+        .eq('id', data.university_id)
+        .single();
+
+      if (uniError || !university) {
+        throw new RpcException({
+          code: 3,
+          message: 'Invalid university ID',
+        });
+      }
+
+      const [localPart, domain] = data.email.split('@');
+      let isValid = true;
+
+      // Validate Domain
+      if (domain !== university.email_domain) {
+        isValid = false;
+      }
+
+      // Validate Regex
+      if (isValid && university.slug) {
+        const pattern = UNIVERSITY_EMAIL_PATTERNS[university.slug];
+        if (pattern && !pattern.test(localPart)) {
+          isValid = false;
+        }
+      }
+
+      if (!isValid) {
+        // Audit failure
+        await supabase.from('security_audit_logs').insert({
+          event_type: 'regex_fail',
+          severity: 'warning',
+          university_id: data.university_id,
+          metadata: { email: data.email, reason: 'University email validation failed' },
+          created_at: new Date().toISOString(),
+        });
+
+        throw new RpcException({
+          code: 3,
+          message: 'Email is invalid for the selected university or does not match requirements',
+        });
+      }
+    }
     
-    // 1. Crear usuario en Supabase Auth
+    // 2. Crear usuario en Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
@@ -38,7 +95,7 @@ export class AuthService {
           id: userId,
           email: data.email,
           role: data.role,
-          university_id: data.universityId, // from gRPC university_id
+          university_id: data.university_id, // from gRPC university_id
         });
 
       if (userError) throw new Error(userError.message);
@@ -49,7 +106,7 @@ export class AuthService {
           .from('student_profiles')
           .insert({
             id: userId,
-            university_id: data.universityId,
+            university_id: data.university_id,
           });
         if (profileError) throw new Error(profileError.message);
       } else if (data.role === 'employer') {

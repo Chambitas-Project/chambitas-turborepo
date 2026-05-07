@@ -22,13 +22,13 @@ export class CreateProjectDto {
 
   @ApiProperty({ example: 'Software Development' })
   @IsString()
-  serviceCategory!: string;
+  service_category!: string;
 
   @ApiPropertyOptional({ example: ['uuid-1', 'uuid-2'], description: 'Lista de IDs de universidades (opcional para proyectos globales)' })
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
-  universityIds?: string[];
+  university_ids?: string[];
 
   @ApiPropertyOptional({ example: '2024-12-31' })
   @IsOptional()
@@ -39,7 +39,7 @@ export class CreateProjectDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  maxHoursWeek?: number;
+  max_hours_week?: number;
 }
 
 export class UpdateProjectDto {
@@ -73,13 +73,13 @@ export class UpdateProjectDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  serviceCategory?: string;
+  service_category?: string;
 
   @ApiPropertyOptional({ example: ['uuid-1', 'uuid-2'] })
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
-  universityIds?: string[];
+  university_ids?: string[];
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -89,5 +89,5 @@ export class UpdateProjectDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
-  maxHoursWeek?: number;
+  max_hours_week?: number;
 }

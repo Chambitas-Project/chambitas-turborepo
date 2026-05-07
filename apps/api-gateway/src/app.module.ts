@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
-import { AuthController } from './auth/auth.controller';
+import { AuthModule } from './auth/auth.module';
 import { AppService } from './app.service';
 import { ProfileController } from './profile/profile.controller';
 import { MediaController } from './media/media.controller';
@@ -21,16 +21,8 @@ import { AnalyticsController } from './analytics/analytics.controller';
       isGlobal: true,
       envFilePath: getEnvFiles(),
     }),
+    AuthModule,
     ClientsModule.register([
-      {
-        name: 'AUTH_PACKAGE',
-        transport: Transport.GRPC,
-        options: {
-          package: PROTO_PACKAGE.AUTH,
-          protoPath: PROTO_PATH.AUTH,
-          url: process.env.AUTH_SERVICE_GRPC_URL || 'localhost:50051',
-        },
-      },
       {
         name: 'PROFILE_PACKAGE',
         transport: Transport.GRPC,
@@ -89,7 +81,6 @@ import { AnalyticsController } from './analytics/analytics.controller';
   ],
   controllers: [
     AppController,
-    AuthController,
     ProfileController,
     MediaController,
     ProjectsController,

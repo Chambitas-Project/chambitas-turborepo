@@ -5,3 +5,4 @@ export * from './filters/rpc-exception.filter';
 export * from './logging/logger.service';
 export * from './swagger/swagger.util';
 export * from './utils/env.util';
+export * from './utils/university-patterns';

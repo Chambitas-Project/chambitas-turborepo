@@ -2,11 +2,13 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
 
 import { UserRole } from '@chambitas/proto';
+import { IsUniversityEmail } from '../validators/university-email.validator';
 
 export class RegisterDto {
   @ApiProperty({ example: 'user@example.com' })
   @IsEmail()
   @IsNotEmpty()
+  @IsUniversityEmail()
   email!: string;
 
   @ApiProperty({ example: 'StrongPassword123!' })
@@ -22,7 +24,7 @@ export class RegisterDto {
   @ApiProperty({ example: 'uni-1234' })
   @IsString()
   @IsNotEmpty()
-  universityId!: string;
+  university_id!: string;
 }
 
 export class LoginDto {

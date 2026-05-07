@@ -36,11 +36,11 @@ export class ProjectsController implements OnModuleInit {
         description: dto.description,
         budget: dto.budget,
         requirements: dto.requirements,
-        serviceCategory: dto.serviceCategory,
-        universityIds: dto.universityIds,
+        service_category: dto.service_category,
+        university_ids: dto.university_ids,
         deadline: dto.deadline,
-        maxHoursWeek: dto.maxHoursWeek,
-        employerId: user.id,
+        max_hours_week: dto.max_hours_week,
+        employer_id: user.id,
       })
     );
   }
@@ -64,10 +64,10 @@ export class ProjectsController implements OnModuleInit {
   ) {
     return firstValueFrom(
       this.marketplaceService.ListProjects({
-        employerId,
+        employer_id: employerId,
         status,
-        serviceCategory,
-        universityId,
+        service_category: serviceCategory,
+        university_id: universityId,
         limit: limit ? Number(limit) : undefined,
         offset: offset ? Number(offset) : undefined,
       })
@@ -85,10 +85,10 @@ export class ProjectsController implements OnModuleInit {
         budget: dto.budget,
         requirements: dto.requirements,
         status: dto.status,
-        serviceCategory: dto.serviceCategory,
-        universityIds: dto.universityIds,
+        service_category: dto.service_category,
+        university_ids: dto.university_ids,
         deadline: dto.deadline,
-        maxHoursWeek: dto.maxHoursWeek,
+        max_hours_week: dto.max_hours_week,
       })
     );
   }

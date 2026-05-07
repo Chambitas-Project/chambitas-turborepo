@@ -927,28 +927,34 @@ export type Database = {
       }
       universities: {
         Row: {
-          active: boolean | null
-          country: string | null
           created_at: string | null
-          domain_pattern: string
+          email_domain: string
           id: string
+          is_active: boolean | null
+          logo_url: string | null
           name: string
+          slug: string | null
+          updated_at: string | null
         }
         Insert: {
-          active?: boolean | null
-          country?: string | null
           created_at?: string | null
-          domain_pattern: string
+          email_domain: string
           id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
           name: string
+          slug?: string | null
+          updated_at?: string | null
         }
         Update: {
-          active?: boolean | null
-          country?: string | null
           created_at?: string | null
-          domain_pattern?: string
+          email_domain?: string
           id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
           name?: string
+          slug?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
