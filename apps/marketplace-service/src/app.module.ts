@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { MarketplaceModule } from './marketplace/marketplace.module';
+import { ProjectsModule } from './features/projects/projects.module';
 import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
 
 @Module({
@@ -11,6 +12,7 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
       envFilePath: getEnvFiles(),
     }),
     MarketplaceModule,
+    ProjectsModule,
   ],
   controllers: [],
   providers: [

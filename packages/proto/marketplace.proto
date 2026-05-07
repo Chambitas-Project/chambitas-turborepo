@@ -3,43 +3,81 @@ syntax = "proto3";
 package marketplace;
 
 service MarketplaceService {
-  rpc CreateJob (CreateJobRequest) returns (CreateJobResponse) {}
-  rpc GetJobs (GetJobsRequest) returns (GetJobsResponse) {}
+  // Projects
+  rpc CreateProject (CreateProjectRequest) returns (Project) {}
+  rpc GetProject (GetProjectRequest) returns (Project) {}
+  rpc ListProjects (ListProjectsRequest) returns (ListProjectsResponse) {}
+  rpc UpdateProject (UpdateProjectRequest) returns (Project) {}
+  rpc DeleteProject (DeleteProjectRequest) returns (DeleteProjectResponse) {}
 }
 
-message CreateJobRequest {
-  string title = 1;
-  string description = 2;
-  string employerId = 3;
-  double salary = 4;
-  string location = 5;
-  string category = 6;
-}
-
-message CreateJobResponse {
-  string jobId = 1;
-  bool success = 2;
-}
-
-message GetJobsRequest {
-  optional string category = 1;
-  optional string employerId = 2;
-  optional int32 limit = 3;
-  optional int32 offset = 4;
-}
-
-message Job {
+message Project {
   string id = 1;
   string title = 2;
   string description = 3;
-  string employerId = 4;
-  double salary = 5;
-  string location = 6;
-  string category = 7;
-  string createdAt = 8;
+  string employer_id = 4;
+  double budget = 5;
+  repeated string requirements = 6;
+  string status = 7;
+  string service_category = 8;
+  repeated string university_ids = 9;
+  string deadline = 10;
+  int32 max_hours_week = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  string deleted_at = 14;
 }
 
-message GetJobsResponse {
-  repeated Job jobs = 1;
+message CreateProjectRequest {
+  string title = 1;
+  string description = 2;
+  string employer_id = 3;
+  double budget = 4;
+  repeated string requirements = 5;
+  string service_category = 6;
+  repeated string university_ids = 7;
+  string deadline = 8;
+  int32 max_hours_week = 9;
+}
+
+message GetProjectRequest {
+  string id = 1;
+}
+
+message ListProjectsRequest {
+  optional string employer_id = 1;
+  optional string status = 2;
+  optional string service_category = 3;
+  optional string university_id = 4; // Used for student filtering
+  optional int32 limit = 5;
+  optional int32 offset = 6;
+}
+
+message ListProjectsResponse {
+  repeated Project projects = 1;
   int32 total = 2;
 }
+
+message UpdateProjectRequest {
+  string id = 1;
+  optional string title = 2;
+  optional string description = 3;
+  optional double budget = 4;
+  repeated string requirements = 5;
+  optional string status = 6;
+  optional string service_category = 7;
+  repeated string university_ids = 8;
+  optional string deadline = 9;
+  optional int32 max_hours_week = 10;
+}
+
+message DeleteProjectRequest {
+  string id = 1;
+}
+
+message DeleteProjectResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+

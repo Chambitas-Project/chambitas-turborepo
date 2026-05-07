@@ -43,29 +43,38 @@ export type Database = {
         Row: {
           applied_at: string | null
           cover_note: string | null
+          created_at: string | null
+          deleted_at: string | null
           id: string
           match_id: string | null
           project_id: string
           status: Database["public"]["Enums"]["application_status"] | null
           student_id: string
+          updated_at: string | null
         }
         Insert: {
           applied_at?: string | null
           cover_note?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
           id?: string
           match_id?: string | null
           project_id: string
           status?: Database["public"]["Enums"]["application_status"] | null
           student_id: string
+          updated_at?: string | null
         }
         Update: {
           applied_at?: string | null
           cover_note?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
           id?: string
           match_id?: string | null
           project_id?: string
           status?: Database["public"]["Enums"]["application_status"] | null
           student_id?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -241,7 +250,7 @@ export type Database = {
           latency_ms?: number | null
           memory_usage_mb?: number | null
           microservice_name: Database["public"]["Enums"]["microservice_name"]
-          recorded_at?: string
+          recorded_at: string
           transaction_count?: number | null
           university_id?: string | null
         }
@@ -323,7 +332,7 @@ export type Database = {
           checksum?: string | null
           cross_tenant_leaks_found?: number | null
           duration_ms?: number | null
-          executed_at?: string
+          executed_at: string
           executed_by?: string | null
           expected_row_count?: number | null
           id?: string
@@ -491,51 +500,99 @@ export type Database = {
           },
         ]
       }
+      project_universities: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          id: string
+          project_id: string
+          university_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          project_id: string
+          university_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          project_id?: string
+          university_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_universities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_universities_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           budget: number | null
           created_at: string | null
           deadline: string | null
+          deleted_at: string | null
           description: string | null
           embedding: string | null
           employer_id: string
           id: string
           max_hours_week: number | null
+          requirements: string[] | null
           schedule_constraints: Json | null
           service_category: string
           status: Database["public"]["Enums"]["project_status"] | null
           title: string
-          university_id: string | null
+          updated_at: string | null
         }
         Insert: {
           budget?: number | null
           created_at?: string | null
           deadline?: string | null
+          deleted_at?: string | null
           description?: string | null
           embedding?: string | null
           employer_id: string
           id?: string
           max_hours_week?: number | null
+          requirements?: string[] | null
           schedule_constraints?: Json | null
           service_category: string
           status?: Database["public"]["Enums"]["project_status"] | null
           title: string
-          university_id?: string | null
+          updated_at?: string | null
         }
         Update: {
           budget?: number | null
           created_at?: string | null
           deadline?: string | null
+          deleted_at?: string | null
           description?: string | null
           embedding?: string | null
           employer_id?: string
           id?: string
           max_hours_week?: number | null
+          requirements?: string[] | null
           schedule_constraints?: Json | null
           service_category?: string
           status?: Database["public"]["Enums"]["project_status"] | null
           title?: string
-          university_id?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -543,13 +600,6 @@ export type Database = {
             columns: ["employer_id"]
             isOneToOne: false
             referencedRelation: "employer_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "projects_university_id_fkey"
-            columns: ["university_id"]
-            isOneToOne: false
-            referencedRelation: "universities"
             referencedColumns: ["id"]
           },
         ]
@@ -628,28 +678,34 @@ export type Database = {
           application_id: string
           comment: string | null
           created_at: string | null
+          deleted_at: string | null
           id: string
           rating: number | null
           reviewer_id: string
           reviewer_role: Database["public"]["Enums"]["reviewer_role"] | null
+          updated_at: string | null
         }
         Insert: {
           application_id: string
           comment?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           rating?: number | null
           reviewer_id: string
           reviewer_role?: Database["public"]["Enums"]["reviewer_role"] | null
+          updated_at?: string | null
         }
         Update: {
           application_id?: string
           comment?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           rating?: number | null
           reviewer_id?: string
           reviewer_role?: Database["public"]["Enums"]["reviewer_role"] | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -689,7 +745,7 @@ export type Database = {
         Insert: {
           actor_user_id?: string | null
           blocked_service_category?: string | null
-          created_at?: string
+          created_at: string
           endpoint?: string | null
           event_type: Database["public"]["Enums"]["audit_event_type"]
           http_method?: Database["public"]["Enums"]["http_method"] | null
@@ -960,7 +1016,7 @@ export type Database = {
           flow_name: Database["public"]["Enums"]["flow_name"]
           id?: string
           navigation_time_total_ms?: number | null
-          recorded_at?: string
+          recorded_at: string
           satisfaction_score_csat?: number | null
           session_id: string
           step_name: string

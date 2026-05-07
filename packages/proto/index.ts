@@ -200,47 +200,85 @@ export interface IMediaService {
 
 // --- Marketplace Service Interfaces ---
 
-export interface CreateJobRequest {
-  title: string;
-  description: string;
-  employerId: string;
-  salary: number;
-  location: string;
-  category: string;
-}
-
-export interface CreateJobResponse {
-  jobId: string;
-  success: boolean;
-}
-
-export interface GetJobsRequest {
-  category?: string;
-  employerId?: string;
-  limit?: number;
-  offset?: number;
-}
-
-export interface Job {
+export interface Project {
   id: string;
   title: string;
   description: string;
   employerId: string;
-  salary: number;
-  location: string;
-  category: string;
+  budget: number;
+  requirements: string[];
+  status: string;
+  serviceCategory: string;
+  universityIds: string[];
+  deadline: string;
+  maxHoursWeek: number;
   createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
 }
 
-export interface GetJobsResponse {
-  jobs: Job[];
+export interface CreateProjectRequest {
+  title: string;
+  description: string;
+  employerId: string;
+  budget: number;
+  requirements: string[];
+  serviceCategory: string;
+  universityIds?: string[];
+  deadline?: string;
+  maxHoursWeek?: number;
+}
+
+
+export interface GetProjectRequest {
+  id: string;
+}
+
+export interface ListProjectsRequest {
+  employerId?: string;
+  status?: string;
+  serviceCategory?: string;
+  universityId?: string; // Used for student filtering
+  limit?: number;
+  offset?: number;
+}
+
+export interface ListProjectsResponse {
+  projects: Project[];
   total: number;
 }
 
-export interface IMarketplaceService {
-  CreateJob(data: CreateJobRequest): Observable<CreateJobResponse>;
-  GetJobs(data: GetJobsRequest): Observable<GetJobsResponse>;
+export interface UpdateProjectRequest {
+  id: string;
+  title?: string;
+  description?: string;
+  budget?: number;
+  requirements?: string[];
+  status?: string;
+  serviceCategory?: string;
+  universityIds?: string[];
+  deadline?: string;
+  maxHoursWeek?: number;
 }
+
+
+export interface DeleteProjectRequest {
+  id: string;
+}
+
+export interface DeleteProjectResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface IMarketplaceService {
+  CreateProject(data: CreateProjectRequest): Observable<Project>;
+  GetProject(data: GetProjectRequest): Observable<Project>;
+  ListProjects(data: ListProjectsRequest): Observable<ListProjectsResponse>;
+  UpdateProject(data: UpdateProjectRequest): Observable<Project>;
+  DeleteProject(data: DeleteProjectRequest): Observable<DeleteProjectResponse>;
+}
+
 
 // --- Matching Service Interfaces ---
 
