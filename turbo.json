@@ -16,7 +16,8 @@
       ],
       "outputs": [
         "dist/**",
-        "build/**"
+        "build/**",
+        "dist"
       ]
     },
     "lint": {

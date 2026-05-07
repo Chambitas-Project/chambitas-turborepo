@@ -10,4 +10,4 @@ import { ProjectsRepository } from './projects.repository';
   providers: [ProjectsService, ProjectsRepository],
   exports: [ProjectsService, ProjectsRepository],
 })
-export class ProjectsModule {}
+export class ProjectsModule { }
