@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SupabaseService, Database, Tables, TablesInsert, TablesUpdate, Enums } from '@chambitas/supabase';
 
 
-type ProjectWithUniversities = Tables<'projects'> & {
+type ProjectWithUniversities = Omit<Tables<'projects'>, 'project_universities'> & {
   project_universities: { university_id: string }[];
 };
 
@@ -29,7 +29,7 @@ export class ProjectsRepository {
 
     return {
       ...projectData,
-      university_ids: projectData.project_universities.map(pu => pu.university_id),
+      university_ids: (projectData.project_universities || []).map((pu: { university_id: string }) => pu.university_id),
     };
   }
 
@@ -87,7 +87,7 @@ export class ProjectsRepository {
 
     const formattedData = ((data as unknown as ProjectWithUniversities[]) || []).map(project => ({
       ...project,
-      university_ids: (project.project_universities || []).map(pu => pu.university_id),
+      university_ids: (project.project_universities || []).map((pu: { university_id: string }) => pu.university_id),
     }));
 
     return {
