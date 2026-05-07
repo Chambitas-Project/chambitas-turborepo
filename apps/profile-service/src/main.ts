@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
-import { join } from 'path';
+import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,8 +10,8 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: 'user', // Match PROTO_PACKAGE.USER since ProfileService is in user.proto
-      protoPath: join(__dirname, '../../packages/proto/user.proto'), // Path to user.proto relative to dist/apps/profile-service
+      package: PROTO_PACKAGE.USER, // Match PROTO_PACKAGE.USER since ProfileService is in user.proto
+      protoPath: PROTO_PATH.USER,
       url: process.env.PROFILE_SERVICE_GRPC_URL || '0.0.0.0:50052',
     },
   });

@@ -23,7 +23,7 @@ import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
         options: {
           package: PROTO_PACKAGE.USER,
           protoPath: PROTO_PATH.USER,
-          url: process.env.AUTH_SERVICE_URL || 'localhost:50051',
+          url: process.env.AUTH_SERVICE_GRPC_URL || 'localhost:50051',
         },
       },
       {
@@ -32,7 +32,7 @@ import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
         options: {
           package: PROTO_PACKAGE.USER,
           protoPath: PROTO_PATH.USER,
-          url: process.env.PROFILE_SERVICE_URL || 'localhost:50052',
+          url: process.env.PROFILE_SERVICE_GRPC_URL || 'localhost:50052',
         },
       },
       {

@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
-import { PROTO_PATH } from '@chambitas/proto';
+import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
 
 async function bootstrap() {
   // 1. Crear aplicación base (HTTP) para Swagger y Health Checks
@@ -12,7 +12,7 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: 'user',
+      package: PROTO_PACKAGE.USER,
       protoPath: PROTO_PATH.USER,
       url: process.env.AUTH_SERVICE_GRPC_URL || '0.0.0.0:50051',
     },

@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { SupabaseModule } from '@chambitas/supabase';
 import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
 
 @Module({
@@ -11,6 +12,7 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
       isGlobal: true,
       envFilePath: getEnvFiles(),
     }),
+    SupabaseModule,
   ],
   controllers: [AppController],
   providers: [
