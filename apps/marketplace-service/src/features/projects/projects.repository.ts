@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseService, Database, Tables, TablesInsert, TablesUpdate, Enums } from '@chambitas/supabase';
 
+
+type ProjectWithUniversities = Tables<'projects'> & {
+  project_universities: { university_id: string }[];
+};
+
 @Injectable()
 export class ProjectsRepository {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   private get client() {
     return this.supabaseService.getClient<Database>();
@@ -20,9 +25,11 @@ export class ProjectsRepository {
 
     if (error || !data) return null;
 
+    const projectData = data as unknown as ProjectWithUniversities;
+
     return {
-      ...data,
-      university_ids: (data.project_universities as any[]).map(pu => pu.university_id),
+      ...projectData,
+      university_ids: projectData.project_universities.map(pu => pu.university_id),
     };
   }
 
@@ -33,7 +40,7 @@ export class ProjectsRepository {
     university_id?: string; // Student's university
     limit?: number;
     offset?: number;
-  }): Promise<{ data: any[]; total: number }> {
+  }): Promise<{ data: (Tables<'projects'> & { university_ids: string[] })[]; total: number }> {
     // Para el filtrado complejo de universidades (estudiante), usamos un enfoque de select con join
     let query = this.client
       .from('projects')
@@ -60,7 +67,7 @@ export class ProjectsRepository {
       // Una alternativa común es usar rpc o filtros manuales si el dataset es pequeño, 
       // pero aquí seguiremos la lógica de la política RLS si está activa.
       // Si el microservicio actúa como admin (service_role), debemos replicar la lógica.
-      
+
       // Filtramos proyectos que:
       // 1. Tengan la universidad del estudiante en project_universities
       // 2. O no tengan ninguna universidad vinculada (proyectos globales)
@@ -77,10 +84,10 @@ export class ProjectsRepository {
     const { data, error, count } = await query.order('created_at', { ascending: false });
 
     if (error) throw new Error(`Error listing projects: ${error.message}`);
-    
-    const formattedData = (data || []).map(project => ({
+
+    const formattedData = ((data as unknown as ProjectWithUniversities[]) || []).map(project => ({
       ...project,
-      university_ids: (project.project_universities as any[] || []).map(pu => pu.university_id),
+      university_ids: (project.project_universities || []).map(pu => pu.university_id),
     }));
 
     return {
@@ -127,8 +134,8 @@ export class ProjectsRepository {
   }
 
   async update(
-    id: string, 
-    data: TablesUpdate<'projects'>, 
+    id: string,
+    data: TablesUpdate<'projects'>,
     universityIds?: string[]
   ): Promise<Tables<'projects'> & { university_ids: string[] }> {
     // 1. Update project fields
@@ -172,7 +179,7 @@ export class ProjectsRepository {
 
   async softDelete(id: string): Promise<void> {
     const now = new Date().toISOString();
-    
+
     // Soft delete project
     const { error: projectError } = await this.client
       .from('projects')
