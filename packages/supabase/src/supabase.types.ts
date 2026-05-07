@@ -94,23 +94,35 @@ export type Database = {
       employer_profiles: {
         Row: {
           company_name: string | null
+          created_at: string | null
+          deleted_at: string | null
+          description: string | null
           id: string
           ruc: string | null
           sector: string | null
+          updated_at: string | null
           verified: boolean | null
         }
         Insert: {
           company_name?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          description?: string | null
           id: string
           ruc?: string | null
           sector?: string | null
+          updated_at?: string | null
           verified?: boolean | null
         }
         Update: {
           company_name?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          description?: string | null
           id?: string
           ruc?: string | null
           sector?: string | null
+          updated_at?: string | null
           verified?: boolean | null
         }
         Relationships: [
@@ -755,10 +767,13 @@ export type Database = {
           availability_blocks: Json | null
           bio: string | null
           career: string | null
+          created_at: string | null
+          deleted_at: string | null
           embedding: string | null
           full_name: string | null
           gpa: number | null
           id: string
+          skills: string[] | null
           university_id: string
           updated_at: string | null
         }
@@ -767,10 +782,13 @@ export type Database = {
           availability_blocks?: Json | null
           bio?: string | null
           career?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
           embedding?: string | null
           full_name?: string | null
           gpa?: number | null
           id: string
+          skills?: string[] | null
           university_id: string
           updated_at?: string | null
         }
@@ -779,10 +797,13 @@ export type Database = {
           availability_blocks?: Json | null
           bio?: string | null
           career?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
           embedding?: string | null
           full_name?: string | null
           gpa?: number | null
           id?: string
+          skills?: string[] | null
           university_id?: string
           updated_at?: string | null
         }

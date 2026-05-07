@@ -100,14 +100,42 @@ export interface IAuthService {
 
 // --- Profile Service Interfaces ---
 
+export interface GetProfileRequest {
+  id: string;
+}
+
+export interface DeleteProfileRequest {
+  userId: string;
+}
+
+export interface CreateStudentProfileRequest {
+  userId: string;
+  fullName: string;
+  career: string;
+  academicCycle: number;
+  universityId: string;
+  bio?: string;
+  availabilityBlocks?: string;
+  skills?: string[];
+}
+
 export interface UpdateStudentProfileRequest {
   userId: string;
   fullName?: string;
   career?: string;
   academicCycle?: number;
   bio?: string;
-  universityId?: string;
   availabilityBlocks?: string;
+  skills?: string[];
+  gpa?: number;
+}
+
+export interface CreateEmployerProfileRequest {
+  userId: string;
+  companyName: string;
+  ruc: string;
+  sector: string;
+  description?: string;
 }
 
 export interface UpdateEmployerProfileRequest {
@@ -115,15 +143,52 @@ export interface UpdateEmployerProfileRequest {
   companyName?: string;
   ruc?: string;
   sector?: string;
+  description?: string;
 }
 
-export interface UpdateProfileResponse {
+export interface StudentProfileResponse {
+  id: string;
+  fullName: string;
+  career: string;
+  academicCycle: number;
+  universityId: string;
+  bio: string;
+  availabilityBlocks: string;
+  skills: string[];
+  gpa: number;
   isOnboarded: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmployerProfileResponse {
+  id: string;
+  companyName: string;
+  ruc: string;
+  sector: string;
+  description: string;
+  verified: boolean;
+  isOnboarded: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProfileResponse {
+  success: boolean;
+  isOnboarded: boolean;
+  message?: string;
 }
 
 export interface IProfileService {
-  UpdateStudentProfile(data: UpdateStudentProfileRequest): Observable<UpdateProfileResponse>;
-  UpdateEmployerProfile(data: UpdateEmployerProfileRequest): Observable<UpdateProfileResponse>;
+  CreateStudentProfile(data: CreateStudentProfileRequest): Observable<ProfileResponse>;
+  GetStudentProfile(data: GetProfileRequest): Observable<StudentProfileResponse>;
+  UpdateStudentProfile(data: UpdateStudentProfileRequest): Observable<ProfileResponse>;
+  
+  CreateEmployerProfile(data: CreateEmployerProfileRequest): Observable<ProfileResponse>;
+  GetEmployerProfile(data: GetProfileRequest): Observable<EmployerProfileResponse>;
+  UpdateEmployerProfile(data: UpdateEmployerProfileRequest): Observable<ProfileResponse>;
+
+  DeleteProfile(data: DeleteProfileRequest): Observable<ProfileResponse>;
 }
 
 // --- Media Service Interfaces ---
