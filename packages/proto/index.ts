@@ -271,12 +271,66 @@ export interface DeleteProjectResponse {
   message: string;
 }
 
+export interface Application {
+  id: string;
+  projectId: string;
+  studentId: string;
+  status: string;
+  coverNote: string;
+  matchId?: string;
+  appliedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
+}
+
+export interface CreateApplicationRequest {
+  projectId: string;
+  studentId: string;
+  coverNote: string;
+  matchId?: string;
+}
+
+export interface GetApplicationRequest {
+  id: string;
+}
+
+export interface ListStudentApplicationsRequest {
+  studentId: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface ListProjectApplicationsRequest {
+  projectId: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface ListApplicationsResponse {
+  applications: Application[];
+  total: number;
+}
+
+export interface UpdateApplicationStatusRequest {
+  id: string;
+  status: string;
+}
+
 export interface IMarketplaceService {
-  CreateProject(data: CreateProjectRequest): Observable<Project>;
-  GetProject(data: GetProjectRequest): Observable<Project>;
-  ListProjects(data: ListProjectsRequest): Observable<ListProjectsResponse>;
-  UpdateProject(data: UpdateProjectRequest): Observable<Project>;
-  DeleteProject(data: DeleteProjectRequest): Observable<DeleteProjectResponse>;
+  // Projects
+  CreateProject(request: CreateProjectRequest): Observable<Project>;
+  GetProject(request: GetProjectRequest): Observable<Project>;
+  ListProjects(request: ListProjectsRequest): Observable<ListProjectsResponse>;
+  UpdateProject(request: UpdateProjectRequest): Observable<Project>;
+  DeleteProject(request: DeleteProjectRequest): Observable<DeleteProjectResponse>;
+  
+  // Applications
+  CreateApplication(request: CreateApplicationRequest): Observable<Application>;
+  GetApplication(request: GetApplicationRequest): Observable<Application>;
+  ListStudentApplications(request: ListStudentApplicationsRequest): Observable<ListApplicationsResponse>;
+  ListProjectApplications(request: ListProjectApplicationsRequest): Observable<ListApplicationsResponse>;
+  UpdateApplicationStatus(request: UpdateApplicationStatusRequest): Observable<Application>;
 }
 
 

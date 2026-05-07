@@ -9,6 +9,13 @@ service MarketplaceService {
   rpc ListProjects (ListProjectsRequest) returns (ListProjectsResponse) {}
   rpc UpdateProject (UpdateProjectRequest) returns (Project) {}
   rpc DeleteProject (DeleteProjectRequest) returns (DeleteProjectResponse) {}
+
+  // Applications
+  rpc CreateApplication (CreateApplicationRequest) returns (Application) {}
+  rpc GetApplication (GetApplicationRequest) returns (Application) {}
+  rpc ListStudentApplications (ListStudentApplicationsRequest) returns (ListApplicationsResponse) {}
+  rpc ListProjectApplications (ListProjectApplicationsRequest) returns (ListApplicationsResponse) {}
+  rpc UpdateApplicationStatus (UpdateApplicationStatusRequest) returns (Application) {}
 }
 
 message Project {
@@ -48,7 +55,7 @@ message ListProjectsRequest {
   optional string employer_id = 1;
   optional string status = 2;
   optional string service_category = 3;
-  optional string university_id = 4; // Used for student filtering
+  optional string university_id = 4;
   optional int32 limit = 5;
   optional int32 offset = 6;
 }
@@ -80,4 +87,50 @@ message DeleteProjectResponse {
   string message = 2;
 }
 
+// Applications
 
+message Application {
+  string id = 1;
+  string project_id = 2;
+  string student_id = 3;
+  string status = 4;
+  string cover_note = 5;
+  optional string match_id = 6;
+  string applied_at = 7;
+  string created_at = 8;
+  string updated_at = 9;
+  string deleted_at = 10;
+}
+
+message CreateApplicationRequest {
+  string project_id = 1;
+  string student_id = 2;
+  string cover_note = 3;
+  optional string match_id = 4;
+}
+
+message GetApplicationRequest {
+  string id = 1;
+}
+
+message ListStudentApplicationsRequest {
+  string student_id = 1;
+  optional int32 limit = 2;
+  optional int32 offset = 3;
+}
+
+message ListProjectApplicationsRequest {
+  string project_id = 1;
+  optional int32 limit = 2;
+  optional int32 offset = 3;
+}
+
+message ListApplicationsResponse {
+  repeated Application applications = 1;
+  int32 total = 2;
+}
+
+message UpdateApplicationStatusRequest {
+  string id = 1;
+  string status = 2;
+}

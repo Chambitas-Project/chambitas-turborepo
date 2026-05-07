@@ -11,6 +11,7 @@ import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor, getEnvFiles } 
 import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
 import { MarketplaceController } from './marketplace/marketplace.controller';
 import { ProjectsController } from './marketplace/projects.controller';
+import { ApplicationsController } from './marketplace/applications.controller';
 import { MatchingController } from './matching/matching.controller';
 import { NotificationController } from './notification/notification.controller';
 import { AnalyticsController } from './analytics/analytics.controller';
@@ -94,6 +95,7 @@ import { AnalyticsController } from './analytics/analytics.controller';
     MediaController,
     MarketplaceController,
     ProjectsController,
+    ApplicationsController,
     MatchingController,
     NotificationController,
     AnalyticsController,
