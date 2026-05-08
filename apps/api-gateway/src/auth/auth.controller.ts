@@ -13,7 +13,15 @@ import { Response, Request } from 'express';
 import { RegisterDto, LoginDto, StudentOnboardingDto, EmployerOnboardingDto } from './dto/auth.dto';
 import { firstValueFrom } from 'rxjs';
 import { Public } from './decorators/public.decorator';
-import { IAuthService, RegisterResponse, LoginResponse, OnboardingResponse } from '@chambitas/proto';
+import { 
+  IAuthService, 
+  RegisterResponse, 
+  LoginResponse, 
+  OnboardingResponse,
+  IProfileService 
+} from '@chambitas/proto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { Metadata } from '@grpc/grpc-js';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -27,11 +35,16 @@ const COOKIE_OPTIONS = {
 @Controller('auth')
 export class AuthController implements OnModuleInit {
   private authService!: IAuthService;
+  private profileService!: IProfileService;
 
-  constructor(@Inject('AUTH_PACKAGE') private client: ClientGrpc) {}
+  constructor(
+    @Inject('AUTH_PACKAGE') private client: ClientGrpc,
+    @Inject('PROFILE_PACKAGE') private profileClient: ClientGrpc,
+  ) {}
 
   onModuleInit() {
     this.authService = this.client.getService<IAuthService>('AuthService');
+    this.profileService = this.profileClient.getService<IProfileService>('ProfileService');
   }
 
   @Public()
@@ -74,6 +87,7 @@ export class AuthController implements OnModuleInit {
     return { success: true };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('onboarding')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Actualizar perfil de onboarding (Campos automáticos según rol)' })
@@ -96,15 +110,23 @@ export class AuthController implements OnModuleInit {
       throw new Error('Usuario no autenticado');
     }
 
+    // Mapear campos para asegurar snake_case y consistencia con CompleteOnboardingRequest
     const requestPayload = {
       ...dto,
       user_id: userId,
       role,
     };
 
+    // Propagar identidad mediante metadatos gRPC
+    const metadata = new Metadata();
+    metadata.add('user-id', userId);
+    metadata.add('role', role);
+
+    // Redirigir al ProfileService para un onboarding completo y robusto
     const response = await firstValueFrom(
-      this.authService.UpdateOnboarding(requestPayload)
+      this.profileService.CompleteOnboarding(requestPayload, metadata)
     );
+    
     return response;
   }
 }

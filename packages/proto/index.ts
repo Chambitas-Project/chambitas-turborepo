@@ -56,13 +56,14 @@ export interface LoginResponse {
 }
 
 export interface OnboardingRequest {
-  userId: string;
+  user_id: string;
   role: string;
-  fullName?: string;
+  full_name?: string;
   career?: string;
-  academicCycle?: number;
-  companyName?: string;
+  academic_cycle?: number;
+  company_name?: string;
   sector?: string;
+  skills?: string[];
 }
 
 export interface OnboardingResponse {

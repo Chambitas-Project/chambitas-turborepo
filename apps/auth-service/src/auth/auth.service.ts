@@ -231,30 +231,37 @@ export class AuthService {
 
   async updateOnboarding(data: any) {
     const supabase = this.supabaseService.getClient<Database>();
+    const userId = data.user_id || data.userId;
 
     if (data.role === 'student') {
       const updateData: any = {};
+      if (data.full_name !== undefined) updateData.full_name = data.full_name;
       if (data.fullName !== undefined) updateData.full_name = data.fullName;
+      
       if (data.career !== undefined) updateData.career = data.career;
+      
+      if (data.academic_cycle !== undefined) updateData.academic_cycle = data.academic_cycle;
       if (data.academicCycle !== undefined) updateData.academic_cycle = data.academicCycle;
 
       const { error } = await supabase
         .from('student_profiles')
         .update(updateData)
-        .eq('id', data.userId);
+        .eq('id', userId);
 
       if (error) {
         throw new RpcException({ code: 13, message: error.message });
       }
     } else if (data.role === 'employer') {
       const updateData: any = {};
+      if (data.company_name !== undefined) updateData.company_name = data.company_name;
       if (data.companyName !== undefined) updateData.company_name = data.companyName;
+      
       if (data.sector !== undefined) updateData.sector = data.sector;
 
       const { error } = await supabase
         .from('employer_profiles')
         .update(updateData)
-        .eq('id', data.userId);
+        .eq('id', userId);
 
       if (error) {
         throw new RpcException({ code: 13, message: error.message });

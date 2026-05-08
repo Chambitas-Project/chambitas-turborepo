@@ -48,15 +48,16 @@ message LoginResponse {
 }
 
 message OnboardingRequest {
-  string userId = 1;
+  string user_id = 1;
   string role = 2;
   // Student fields
-  optional string fullName = 3;
+  optional string full_name = 3;
   optional string career = 4;
-  optional int32 academicCycle = 5;
+  optional int32 academic_cycle = 5;
   // Employer fields
-  optional string companyName = 6;
+  optional string company_name = 6;
   optional string sector = 7;
+  repeated string skills = 8;
 }
 
 message OnboardingResponse {
