@@ -12,6 +12,7 @@ import {
   EmployerProfileResponse,
   CompleteOnboardingRequest
 } from '@chambitas/proto';
+import { CurrentUser, IUserContext } from '@chambitas/common';
 
 @Controller()
 export class ProfileController {
@@ -28,9 +29,11 @@ export class ProfileController {
   }
 
   @UseGuards(ProfileOwnerGuard)
-  @CheckOwner('userId')
+  @CheckOwner('user_id')
   @GrpcMethod('ProfileService', 'UpdateStudentProfile')
-  async updateStudentProfile(data: UpdateStudentProfileRequest): Promise<ProfileResponse> {
+  async updateStudentProfile(data: UpdateStudentProfileRequest, @CurrentUser() user: IUserContext): Promise<ProfileResponse> {
+    // Asegurar que el user_id sea el del usuario autenticado
+    data.user_id = user.id;
     return await this.profileService.updateStudentProfile(data);
   }
 
@@ -45,12 +48,16 @@ export class ProfileController {
   }
 
   @UseGuards(ProfileOwnerGuard)
-  @CheckOwner('userId')
+  @CheckOwner('user_id')
   @GrpcMethod('ProfileService', 'UpdateEmployerProfile')
-  async updateEmployerProfile(data: UpdateEmployerProfileRequest): Promise<ProfileResponse> {
+  async updateEmployerProfile(data: UpdateEmployerProfileRequest, @CurrentUser() user: IUserContext): Promise<ProfileResponse> {
+    // Asegurar que el user_id sea el del usuario autenticado
+    data.user_id = user.id;
     return await this.profileService.updateEmployerProfile(data);
   }
 
+  @UseGuards(ProfileOwnerGuard)
+  @CheckOwner('user_id')
   @GrpcMethod('ProfileService', 'DeleteProfile')
   async deleteProfile(data: { user_id: string }): Promise<ProfileResponse> {
     return await this.profileService.deleteProfile(data.user_id);
@@ -65,11 +72,19 @@ export class ProfileController {
   async getProfile(data: any) {
     return await this.profileService.getProfile(data.id);
   }
+  @GrpcMethod('ProfileService', 'ListSkills')
+  async listSkills(data: any) {
+    return await this.profileService.listSkills(data.category);
+  }
 
   @UseGuards(ProfileOwnerGuard)
-  @CheckOwner('userId')
+  @CheckOwner('user_id')
   @GrpcMethod('ProfileService', 'CompleteOnboarding')
-  async completeOnboarding(data: CompleteOnboardingRequest): Promise<ProfileResponse> {
+  async completeOnboarding(data: CompleteOnboardingRequest, @CurrentUser() user: IUserContext): Promise<ProfileResponse> {
+    // Forzar identidad desde el contexto de seguridad (JWT -> gRPC Metadata)
+    data.user_id = user.id;
+    data.role = user.role;
+    
     return await this.profileService.completeOnboarding(data);
   }
 }

@@ -5,12 +5,10 @@ import {
   ApiOperation, 
   ApiBody, 
   ApiResponse, 
-  ApiBearerAuth, 
-  ApiExtraModels, 
-  getSchemaPath 
+  ApiBearerAuth
 } from '@nestjs/swagger';
 import { Response, Request } from 'express';
-import { RegisterDto, LoginDto, StudentOnboardingDto, EmployerOnboardingDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { firstValueFrom } from 'rxjs';
 import { Public } from './decorators/public.decorator';
 import { 
@@ -21,6 +19,7 @@ import {
   IProfileService 
 } from '@chambitas/proto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { GrpcMetadataForwarder } from '@chambitas/common';
 import { Metadata } from '@grpc/grpc-js';
 
 const COOKIE_OPTIONS = {
@@ -31,7 +30,6 @@ const COOKIE_OPTIONS = {
 };
 
 @ApiTags('Auth')
-@ApiExtraModels(StudentOnboardingDto, EmployerOnboardingDto)
 @Controller('auth')
 export class AuthController implements OnModuleInit {
   private authService!: IAuthService;
@@ -87,46 +85,4 @@ export class AuthController implements OnModuleInit {
     return { success: true };
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post('onboarding')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Actualizar perfil de onboarding (Campos automáticos según rol)' })
-  @ApiBody({ 
-    description: 'Si eres estudiante, llena los campos de estudiante. Si eres empleador, los de empleador.',
-    schema: {
-      oneOf: [
-        { $ref: getSchemaPath(StudentOnboardingDto) },
-        { $ref: getSchemaPath(EmployerOnboardingDto) },
-      ],
-    },
-  })
-  @ApiResponse({ status: 200, description: 'Perfil actualizado exitosamente' })
-  async updateOnboarding(@Body() dto: any, @Req() req: Request) {
-    const user = (req as any).user;
-    const userId = user?.id;
-    const role = user?.role;
-
-    if (!userId) {
-      throw new Error('Usuario no autenticado');
-    }
-
-    // Mapear campos para asegurar snake_case y consistencia con CompleteOnboardingRequest
-    const requestPayload = {
-      ...dto,
-      user_id: userId,
-      role,
-    };
-
-    // Propagar identidad mediante metadatos gRPC
-    const metadata = new Metadata();
-    metadata.add('user-id', userId);
-    metadata.add('role', role);
-
-    // Redirigir al ProfileService para un onboarding completo y robusto
-    const response = await firstValueFrom(
-      this.profileService.CompleteOnboarding(requestPayload, metadata)
-    );
-    
-    return response;
-  }
 }

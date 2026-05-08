@@ -28,8 +28,14 @@ export class StudentOnboardingDto {
   academic_cycle!: number;
 
   @ApiProperty({ 
-    description: 'Habilidades (entre 3 y 10)', 
+    description: 'Habilidades (entre 3 y 10). Puedes enviar nombres o IDs de la lista obtenida en /profile/skills', 
     type: [String],
+    enum: [
+      'TypeScript', 'NestJS', 'PostgreSQL', 'React', 'Python', 
+      'Figma', 'Tailwind CSS', 'Docker', 'Liderazgo', 
+      'Trabajo en Equipo', 'Pensamiento Crítico', 
+      'Comunicación Efectiva', 'Resolución de Problemas'
+    ],
     example: ['TypeScript', 'NestJS', 'PostgreSQL']
   })
   @IsArray()

@@ -82,29 +82,34 @@ export class ProfileController implements OnModuleInit {
     }
   }
 
-  @Post('onboarding')
-  @ApiOperation({ summary: 'Completar el proceso de onboarding (Campos automáticos según rol)' })
-  @ApiBody({ 
-    description: 'Si eres estudiante, llena los campos de estudiante. Si eres empleador, los de empleador.',
-    schema: {
-      oneOf: [
-        { $ref: getSchemaPath(StudentOnboardingDto) },
-        { $ref: getSchemaPath(EmployerOnboardingDto) },
-      ],
-    },
-  })
-  @ApiResponse({ status: 200, description: 'Onboarding completado exitosamente' })
-  @ApiResponse({ status: 400, description: 'Datos inválidos o incompletos' })
-  async completeOnboarding(@Body() dto: any, @Req() req: Request) {
+  @Post('onboarding/student')
+  @ApiOperation({ summary: 'Completar onboarding como Estudiante' })
+  @ApiBody({ type: StudentOnboardingDto })
+  @ApiResponse({ status: 200, description: 'Onboarding completado' })
+  async completeStudentOnboarding(@Body() dto: StudentOnboardingDto, @Req() req: Request) {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
-    
-    // El rol y user_id se inyectan automáticamente desde el token/sesión
     return await firstValueFrom(
       this.profileService.CompleteOnboarding({ 
         ...dto, 
         user_id: user.id,
-        role: user.role 
+        role: 'student' 
+      }, metadata)
+    );
+  }
+
+  @Post('onboarding/employer')
+  @ApiOperation({ summary: 'Completar onboarding como Empleador' })
+  @ApiBody({ type: EmployerOnboardingDto })
+  @ApiResponse({ status: 200, description: 'Onboarding completado' })
+  async completeEmployerOnboarding(@Body() dto: EmployerOnboardingDto, @Req() req: Request) {
+    const user = (req as any).user;
+    const metadata = createGrpcMetadata(user);
+    return await firstValueFrom(
+      this.profileService.CompleteOnboarding({ 
+        ...dto, 
+        user_id: user.id,
+        role: 'employer' 
       }, metadata)
     );
   }
@@ -117,6 +122,16 @@ export class ProfileController implements OnModuleInit {
     const metadata = createGrpcMetadata(user);
     return await firstValueFrom(
       this.profileService.DeleteProfile({ user_id: user.id }, metadata)
+    );
+  }
+
+  @Get('skills')
+  @ApiOperation({ summary: 'Obtener todas las habilidades disponibles' })
+  @ApiResponse({ status: 200, description: 'Lista completa de habilidades' })
+  async getSkills(@Req() req: Request) {
+    const metadata = createGrpcMetadata((req as any).user);
+    return await firstValueFrom(
+      this.profileService.ListSkills({}, metadata)
     );
   }
 

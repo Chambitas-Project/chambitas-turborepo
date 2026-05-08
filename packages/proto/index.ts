@@ -188,6 +188,21 @@ export interface CompleteOnboardingRequest {
   description?: string;
 }
 
+export interface Skill {
+  id: string;
+  name: string;
+  category: string;
+  type: string;
+}
+
+export interface ListSkillsRequest {
+  category?: string;
+}
+
+export interface ListSkillsResponse {
+  skills: Skill[];
+}
+
 export interface StudentProfileResponse {
   id: string;
   full_name: string;
@@ -409,6 +424,7 @@ export interface IProfileService {
   SearchProfiles(data: { query: string, role?: string, limit?: number, offset?: number }, metadata?: any): Observable<{ profiles: UnifiedProfileResponse[] }>;
   GetProfile(data: { id: string }, metadata?: any): Observable<UnifiedProfileResponse>;
   CompleteOnboarding(data: CompleteOnboardingRequest, metadata?: any): Observable<ProfileResponse>;
+  ListSkills(data: ListSkillsRequest, metadata?: any): Observable<ListSkillsResponse>;
 }
 
 export interface IMarketplaceService {

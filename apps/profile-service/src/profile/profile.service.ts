@@ -66,23 +66,32 @@ export class ProfileService {
           });
         }
 
-        // 3. Operación Atómica - Perfil
-        const { error: profileError } = await supabase.from('student_profiles').upsert({
-          id: data.user_id,
-          full_name: data.full_name || null,
-          career: data.career || null,
-          academic_cycle: data.academic_cycle || null,
-          university_id: data.university_id || '',
-        });
+        // 3. Resolver university_id si no viene en el payload
+        let universityId = data.university_id;
+        if (!universityId) {
+          const { data: userData } = await supabase.from('users').select('university_id').eq('id', data.user_id).single();
+          universityId = userData?.university_id || '';
+        }
+
+        // 4. Operación Atómica - Perfil (Evitar sobreescribir con nulls si los campos son opcionales)
+        const profileUpdate: any = { id: data.user_id, university_id: universityId };
+        if (data.full_name !== undefined) profileUpdate.full_name = data.full_name;
+        if (data.career !== undefined) profileUpdate.career = data.career;
+        if (data.academic_cycle !== undefined) profileUpdate.academic_cycle = data.academic_cycle;
+
+        const { error: profileError } = await supabase.from('student_profiles').upsert(profileUpdate);
 
         if (profileError) throw profileError;
 
-        // 4. Operación Atómica - Skills
+        // 5. Resolver Skill IDs (nombres a UUIDs)
+        const resolvedSkillIds = await this.resolveSkillIds(data.skills as string[]);
+
+        // 6. Operación Atómica - Skills
         const { error: deleteError } = await supabase.from('student_skills').delete().eq('student_id', data.user_id);
         if (deleteError) throw deleteError;
 
         const { error: insertError } = await supabase.from('student_skills').insert(
-          (data.skills as string[]).map((skillId: string) => ({
+          resolvedSkillIds.map((skillId: string) => ({
             student_id: data.user_id,
             skill_id: skillId,
             proficiency_level: 1
@@ -91,7 +100,8 @@ export class ProfileService {
         if (insertError) throw insertError;
 
       } else if (data.role === 'employer') {
-        // 1. Validar campos mandatorios
+        // 1. Validar campos mandatorios (Solo si es la primera vez o si se envían)
+        // Pero para onboarding, usualmente requerimos todo.
         if (!data.company_name || !data.ruc || !data.sector || !data.description) {
           throw new RpcException({ 
             code: status.INVALID_ARGUMENT, 
@@ -99,14 +109,14 @@ export class ProfileService {
           });
         }
 
-        // 2. Upsert Profile
-        const { error: employerError } = await supabase.from('employer_profiles').upsert({
-          id: data.user_id,
-          company_name: data.company_name,
-          ruc: data.ruc,
-          sector: data.sector,
-          description: data.description,
-        });
+        // 2. Upsert Profile (Evitar sobreescribir con nulls)
+        const employerUpdate: any = { id: data.user_id };
+        if (data.company_name !== undefined) employerUpdate.company_name = data.company_name;
+        if (data.ruc !== undefined) employerUpdate.ruc = data.ruc;
+        if (data.sector !== undefined) employerUpdate.sector = data.sector;
+        if (data.description !== undefined) employerUpdate.description = data.description;
+
+        const { error: employerError } = await supabase.from('employer_profiles').upsert(employerUpdate);
 
         if (employerError) throw employerError;
       } else {
@@ -130,6 +140,75 @@ export class ProfileService {
       if (error instanceof RpcException) throw error;
       throw new RpcException({ code: status.INTERNAL, message: `Onboarding failed: ${error.message}` });
     }
+  }
+
+  async listSkills(category?: string): Promise<{ skills: any[] }> {
+    const supabase = this.supabaseService.getClient<Database>();
+    let query = supabase.from('skills').select('*');
+    if (category) {
+      query = query.eq('category', category);
+    }
+    const { data, error } = await query;
+    if (error) throw new RpcException({ code: status.INTERNAL, message: error.message });
+    return { skills: data || [] };
+  }
+
+  private async resolveSkillIds(skillNamesOrIds: string[]): Promise<string[]> {
+    const supabase = this.supabaseService.getClient<Database>();
+    const resolvedIds: string[] = [];
+    const namesToResolve: string[] = [];
+
+    // Separar UUIDs de nombres
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    
+    skillNamesOrIds.forEach(item => {
+      if (uuidRegex.test(item)) {
+        resolvedIds.push(item);
+      } else {
+        namesToResolve.push(item);
+      }
+    });
+
+    if (namesToResolve.length > 0) {
+      this.logger.log(`Resolving ${namesToResolve.length} skill names: ${namesToResolve.join(', ')}`);
+      
+      // Buscar habilidades existentes por nombre
+      const { data: existingSkills, error: selectError } = await supabase
+        .from('skills')
+        .select('id, name')
+        .in('name', namesToResolve);
+
+      if (selectError) {
+        this.logger.error(`Error searching skills: ${selectError.message}`);
+        throw new RpcException({ code: status.INTERNAL, message: `Error resolving skills: ${selectError.message}` });
+      }
+
+      const skillsFound = existingSkills || [];
+      skillsFound.forEach(s => resolvedIds.push(s.id));
+      
+      // Habilidades que no existen y deben ser creadas
+      const existingNames = skillsFound.map(s => s.name.toLowerCase());
+      const missingNames = namesToResolve.filter(n => !existingNames.includes(n.toLowerCase()));
+
+      if (missingNames.length > 0) {
+        this.logger.log(`Creating ${missingNames.length} new skills: ${missingNames.join(', ')}`);
+        const { data: newSkills, error: insertError } = await supabase
+          .from('skills')
+          .insert(missingNames.map(name => ({ name })))
+          .select('id');
+
+        if (insertError) {
+          this.logger.error(`Error creating skills: ${insertError.message}`);
+          throw new RpcException({ code: status.INTERNAL, message: `Error creating skills: ${insertError.message}` });
+        }
+
+        if (newSkills) {
+          newSkills.forEach(s => resolvedIds.push(s.id));
+        }
+      }
+    }
+
+    return resolvedIds;
   }
 
   // --- Helpers ---
