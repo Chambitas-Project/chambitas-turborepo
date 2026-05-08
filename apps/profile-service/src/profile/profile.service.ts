@@ -29,6 +29,11 @@ export class ProfileService {
   // --- Student CRUD ---
 
   async createStudentProfile(data: CreateStudentProfileRequest): Promise<ProfileResponse> {
+    // Validaciones Estrictas
+    if (data.academicCycle < 1 || data.academicCycle > 12) {
+      throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'Academic cycle must be between 1 and 12' });
+    }
+
     const existing = await this.studentRepo.findByUserId(data.userId);
     if (existing) {
       throw new RpcException({
@@ -46,8 +51,19 @@ export class ProfileService {
         university_id: data.university_id,
         bio: data.bio || null,
         availability_blocks: data.availabilityBlocks ? JSON.parse(data.availabilityBlocks) : null,
-        skills: data.skills || [],
       });
+
+      // Si se enviaron skills iniciales (IDs)
+      if (data.skills && data.skills.length > 0) {
+        const supabase = this.supabaseService.getClient<Database>();
+        await supabase.from('student_skills').upsert(
+          data.skills.map(skillId => ({
+            student_id: data.userId,
+            skill_id: skillId,
+            proficiency_level: 1 // Nivel inicial
+          }))
+        );
+      }
 
       const isOnboarded = await this.checkAndUpdateOnboarding(data.userId, 'student');
       return { success: true, isOnboarded };
@@ -79,7 +95,7 @@ export class ProfileService {
       university_id: profile.university_id,
       bio: profile.bio || '',
       availabilityBlocks: profile.availability_blocks ? JSON.stringify(profile.availability_blocks) : '{}',
-      skills: profile.skills || [],
+      skills: [], // Enriquecido en getProfile unificado
       gpa: profile.gpa || 0,
       isOnboarded,
       createdAt: profile.created_at || '',
@@ -88,6 +104,14 @@ export class ProfileService {
   }
 
   async updateStudentProfile(data: UpdateStudentProfileRequest): Promise<ProfileResponse> {
+    // Validaciones Estrictas
+    if (data.academicCycle !== undefined && (data.academicCycle < 1 || data.academicCycle > 12)) {
+      throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'Academic cycle must be between 1 and 12' });
+    }
+    if (data.gpa !== undefined && (data.gpa < 0 || data.gpa > 20)) {
+      throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'GPA must be between 0 and 20' });
+    }
+
     const updateData: any = {};
     if (data.fullName !== undefined) updateData.full_name = data.fullName;
     if (data.career !== undefined) updateData.career = data.career;
@@ -96,14 +120,37 @@ export class ProfileService {
     if (data.availabilityBlocks !== undefined) {
       updateData.availability_blocks = data.availabilityBlocks ? JSON.parse(data.availabilityBlocks) : null;
     }
-    if (data.skills !== undefined) updateData.skills = data.skills;
     if (data.gpa !== undefined) updateData.gpa = data.gpa;
 
     try {
-      await this.studentRepo.update(data.userId, updateData);
+      const supabase = this.supabaseService.getClient<Database>();
+
+      // 1. Actualizar perfil base
+      if (Object.keys(updateData).length > 0) {
+        await this.studentRepo.update(data.userId, updateData);
+      }
+
+      // 2. Gestión masiva de Skills
+      if (data.skillUpdates && data.skillUpdates.length > 0) {
+        for (const update of data.skillUpdates) {
+          if (update.deleted) {
+            await supabase.from('student_skills')
+              .delete()
+              .match({ student_id: data.userId, skill_id: update.skillId });
+          } else {
+            await supabase.from('student_skills').upsert({
+              student_id: data.userId,
+              skill_id: update.skillId,
+              proficiency_level: update.proficiencyLevel
+            });
+          }
+        }
+      }
+
       const isOnboarded = await this.checkAndUpdateOnboarding(data.userId, 'student');
       return { success: true, isOnboarded };
     } catch (error: any) {
+      this.logger.error(`Failed to update student profile: ${error.message}`);
       throw new RpcException({
         code: status.INTERNAL,
         message: error.message,
@@ -186,6 +233,8 @@ export class ProfileService {
 
   // --- Common ---
 
+  // --- Common ---
+
   async deleteProfile(userId: string): Promise<ProfileResponse> {
     try {
       await this.studentRepo.softDelete(userId);
@@ -200,33 +249,111 @@ export class ProfileService {
     }
   }
 
-  async getProfile(id: string) {
-    // Try student first
-    const student = await this.studentRepo.findByUserId(id).catch(() => null);
-    if (student) {
-      return {
-        id: student.id,
-        role: 'student',
-        fullName: student.full_name || '',
-        career: student.career || '',
-        universityId: student.university_id,
-        bio: student.bio || '',
-      };
+  async getProfile(id: string): Promise<any> {
+    const supabase = this.supabaseService.getClient<Database>();
+
+    // 1. Obtener la base del usuario para determinar el rol
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id, role, is_onboarded, university_id')
+      .eq('id', id)
+      .single();
+
+    if (userError || !user) {
+      throw new RpcException({ code: status.NOT_FOUND, message: 'User not found' });
     }
 
-    // Try employer
-    const employer = await this.employerRepo.findByUserId(id).catch(() => null);
-    if (employer) {
+    if (user.role === 'student') {
+      // 2a. Aggregator para Estudiantes
+      const { data: student, error: studentError } = await supabase
+        .from('student_profiles')
+        .select(`
+          *,
+          universities (id, name, logo_url, slug),
+          student_skills (
+            proficiency_level,
+            verified,
+            skills (id, name)
+          ),
+          applications (
+            id,
+            status,
+            created_at,
+            projects (id, title)
+          )
+        `)
+        .eq('id', id)
+        .is('deleted_at', null)
+        .single();
+
+      if (studentError || !student) {
+        throw new RpcException({ code: status.NOT_FOUND, message: 'Student profile not found' });
+      }
+
       return {
-        id: employer.id,
-        role: 'employer',
+        id: user.id,
+        role: user.role,
+        fullName: student.full_name || '',
+        career: student.career || '',
+        universityId: student.universities?.id,
+        universityName: student.universities?.name,
+        universityLogo: student.universities?.logo_url,
+        bio: student.bio || '',
+        academicCycle: student.academic_cycle || 0,
+        gpa: student.gpa || 0,
+        isOnboarded: user.is_onboarded || false,
+        skills: (student.student_skills as any[] || []).map(ss => ({
+          id: ss.skills?.id,
+          name: ss.skills?.name,
+          proficiencyLevel: ss.proficiency_level,
+          verified: ss.verified
+        })),
+        activity: (student.applications as any[] || []).map(app => ({
+          id: app.id,
+          title: app.projects?.title,
+          status: app.status,
+          type: 0, // APPLICATION
+          date: app.created_at
+        }))
+      };
+    } else {
+      // 2b. Aggregator para Empleadores
+      const { data: employer, error: employerError } = await supabase
+        .from('employer_profiles')
+        .select(`
+          *,
+          projects (
+            id,
+            title,
+            status,
+            created_at
+          )
+        `)
+        .eq('id', id)
+        .is('deleted_at', null)
+        .single();
+
+      if (employerError || !employer) {
+        throw new RpcException({ code: status.NOT_FOUND, message: 'Employer profile not found' });
+      }
+
+      return {
+        id: user.id,
+        role: user.role,
         fullName: employer.company_name || '',
         sector: employer.sector || '',
         bio: employer.description || '',
+        isOnboarded: user.is_onboarded || false,
+        skills: [],
+        activity: (employer.projects as any[] || []).map(p => ({
+          id: p.id,
+          title: p.title,
+          status: p.status,
+          type: 1, // PROJECT
+          date: p.created_at
+        }))
       };
     }
-
-    throw new RpcException({ code: status.NOT_FOUND, message: 'Profile not found' });
   }
 
   async searchProfiles(query: string, role?: string, limit = 10, offset = 0) {

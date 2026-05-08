@@ -30,14 +30,41 @@ message SearchProfilesResponse {
   repeated UnifiedProfileResponse profiles = 1;
 }
 
+enum ActivityType {
+  APPLICATION = 0;
+  PROJECT = 1;
+}
+
+message SkillInfo {
+  string id = 1;
+  string name = 2;
+  int32 proficiencyLevel = 3;
+  bool verified = 4;
+}
+
+message ActivityInfo {
+  string id = 1;
+  string title = 2;
+  string status = 3;
+  ActivityType type = 4;
+  string date = 5;
+}
+
 message UnifiedProfileResponse {
   string id = 1;
   string role = 2;
-  string fullName = 3; // Or companyName
+  string fullName = 3;
   optional string career = 4;
   optional string universityId = 5;
-  optional string sector = 6;
-  optional string bio = 7;
+  optional string universityName = 6;
+  optional string universityLogo = 7;
+  optional string sector = 8;
+  optional string bio = 9;
+  optional int32 academicCycle = 10;
+  optional float gpa = 11;
+  repeated SkillInfo skills = 12;
+  repeated ActivityInfo activity = 13;
+  bool isOnboarded = 14;
 }
 
 message GetProfileRequest {
@@ -59,6 +86,12 @@ message CreateStudentProfileRequest {
   repeated string skills = 8;
 }
 
+message SkillUpdate {
+  string skillId = 1;
+  int32 proficiencyLevel = 2;
+  bool deleted = 3;
+}
+
 message UpdateStudentProfileRequest {
   string userId = 1;
   optional string fullName = 2;
@@ -66,7 +99,7 @@ message UpdateStudentProfileRequest {
   optional int32 academicCycle = 4;
   optional string bio = 5;
   optional string availabilityBlocks = 6;
-  repeated string skills = 7;
+  repeated SkillUpdate skillUpdates = 7;
   optional float gpa = 8;
 }
 

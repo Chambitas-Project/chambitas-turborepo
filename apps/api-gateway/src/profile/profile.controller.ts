@@ -9,6 +9,7 @@ import {
   Param, 
   Inject, 
   OnModuleInit, 
+  UseGuards,
   Req, 
   Query, 
   ParseUUIDPipe,
@@ -25,9 +26,12 @@ import {
   UpdateEmployerProfileDto 
 } from './dto/profile.dto';
 import { IProfileService } from '@chambitas/proto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
 
 @ApiTags('Profile')
 @ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard)
 @Controller('profile')
 export class ProfileController implements OnModuleInit {
   private profileService!: IProfileService;
@@ -43,9 +47,10 @@ export class ProfileController implements OnModuleInit {
   @Get('me')
   @ApiOperation({ summary: 'Obtener el perfil del usuario actual' })
   async getMyProfile(@Req() req: Request) {
-    const userId = (req as any).user.id;
+    const user = (req as any).user;
+    const metadata = createGrpcMetadata(user);
     return await firstValueFrom(
-      this.profileService.GetProfile({ id: userId })
+      this.profileService.GetProfile({ id: user.id }, metadata)
     );
   }
 
@@ -53,16 +58,15 @@ export class ProfileController implements OnModuleInit {
   @ApiOperation({ summary: 'Actualización parcial del perfil del usuario actual' })
   async updateMyProfile(@Body() dto: any, @Req() req: Request) {
     const user = (req as any).user;
-    const userId = user.id;
-    const role = user.role;
+    const metadata = createGrpcMetadata(user);
 
-    if (role === 'student') {
+    if (user.role === 'student') {
       return await firstValueFrom(
-        this.profileService.UpdateStudentProfile({ ...dto, userId })
+        this.profileService.UpdateStudentProfile({ ...dto, userId: user.id }, metadata)
       );
     } else {
       return await firstValueFrom(
-        this.profileService.UpdateEmployerProfile({ ...dto, userId })
+        this.profileService.UpdateEmployerProfile({ ...dto, userId: user.id }, metadata)
       );
     }
   }
@@ -71,46 +75,50 @@ export class ProfileController implements OnModuleInit {
   @ApiOperation({ summary: 'Soft delete del perfil del usuario actual' })
   @ApiResponse({ status: 200, description: 'Perfil desactivado' })
   async deleteProfile(@Req() req: Request) {
-    const userId = (req as any).user.id;
+    const user = (req as any).user;
+    const metadata = createGrpcMetadata(user);
     return await firstValueFrom(
-      this.profileService.DeleteProfile({ userId })
+      this.profileService.DeleteProfile({ userId: user.id }, metadata)
     );
   }
 
   @Get('search')
   @ApiOperation({ summary: 'Buscar perfiles' })
   async searchProfiles(
+    @Req() req: Request,
     @Query('q') query: string,
     @Query('role') role?: string,
     @Query('limit') limit?: number,
     @Query('offset') offset?: number
   ) {
+    const metadata = createGrpcMetadata((req as any).user);
     return await firstValueFrom(
       this.profileService.SearchProfiles({ 
         query, 
         role, 
         limit: limit || 10, 
         offset: offset || 0 
-      })
+      }, metadata)
     );
   }
 
   @Get('id/:id')
   @ApiOperation({ summary: 'Obtener perfil por ID' })
   @ApiParam({ name: 'id', description: 'UUID del perfil o usuario' })
-  async getProfileById(@Param('id', ParseUUIDPipe) id: string) {
+  async getProfileById(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
+    const metadata = createGrpcMetadata((req as any).user);
     return await firstValueFrom(
-      this.profileService.GetProfile({ id })
+      this.profileService.GetProfile({ id }, metadata)
     );
   }
 
   @Get(':username')
   @ApiOperation({ summary: 'Obtener perfil por nombre de usuario' })
   @ApiParam({ name: 'username', description: 'Username del perfil' })
-  async getProfileByUsername(@Param('username') username: string) {
-    // Nota: El contrato GetProfileRequest usa 'id', pero el servicio puede buscar por username
+  async getProfileByUsername(@Param('username') username: string, @Req() req: Request) {
+    const metadata = createGrpcMetadata((req as any).user);
     return await firstValueFrom(
-      this.profileService.GetProfile({ id: username })
+      this.profileService.GetProfile({ id: username }, metadata)
     );
   }
 }

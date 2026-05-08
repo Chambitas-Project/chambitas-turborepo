@@ -132,6 +132,12 @@ export interface CreateStudentProfileRequest {
   skills?: string[];
 }
 
+export interface SkillUpdate {
+  skillId: string;
+  proficiencyLevel: number;
+  deleted?: boolean;
+}
+
 export interface UpdateStudentProfileRequest {
   userId: string;
   fullName?: string;
@@ -139,7 +145,7 @@ export interface UpdateStudentProfileRequest {
   academicCycle?: number;
   bio?: string;
   availabilityBlocks?: string;
-  skills?: string[];
+  skillUpdates?: SkillUpdate[];
   gpa?: number;
 }
 
@@ -216,14 +222,41 @@ export interface SearchProfilesResponse {
   profiles: UnifiedProfileResponse[];
 }
 
+export enum ActivityType {
+  APPLICATION = 0,
+  PROJECT = 1,
+}
+
+export interface SkillInfo {
+  id: string;
+  name: string;
+  proficiencyLevel: number;
+  verified: boolean;
+}
+
+export interface ActivityInfo {
+  id: string;
+  title: string;
+  status: string;
+  type: ActivityType;
+  date: string;
+}
+
 export interface UnifiedProfileResponse {
   id: string;
   role: string;
   fullName: string;
   career?: string;
   universityId?: string;
+  universityName?: string;
+  universityLogo?: string;
   sector?: string;
   bio?: string;
+  academicCycle?: number;
+  gpa?: number;
+  skills: SkillInfo[];
+  activity: ActivityInfo[];
+  isOnboarded: boolean;
 }
 
 // --- Media Service Interfaces ---
