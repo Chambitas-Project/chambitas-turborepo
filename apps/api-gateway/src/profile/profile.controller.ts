@@ -16,7 +16,16 @@ import {
   HttpStatus
 } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { 
+  ApiTags, 
+  ApiOperation, 
+  ApiBody, 
+  ApiResponse, 
+  ApiBearerAuth, 
+  ApiParam, 
+  ApiExtraModels, 
+  getSchemaPath 
+} from '@nestjs/swagger';
 import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { 
@@ -32,6 +41,7 @@ import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
 
 @ApiTags('Profile')
 @ApiBearerAuth('JWT-auth')
+@ApiExtraModels(StudentOnboardingDto, EmployerOnboardingDto)
 @UseGuards(JwtAuthGuard)
 @Controller('profile')
 export class ProfileController implements OnModuleInit {
@@ -78,8 +88,8 @@ export class ProfileController implements OnModuleInit {
     description: 'Si eres estudiante, llena los campos de estudiante. Si eres empleador, los de empleador.',
     schema: {
       oneOf: [
-        { $ref: 'StudentOnboardingDto' },
-        { $ref: 'EmployerOnboardingDto' },
+        { $ref: getSchemaPath(StudentOnboardingDto) },
+        { $ref: getSchemaPath(EmployerOnboardingDto) },
       ],
     },
   })
@@ -89,11 +99,11 @@ export class ProfileController implements OnModuleInit {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
     
-    // El rol y userId se inyectan automáticamente desde el token/sesión
+    // El rol y user_id se inyectan automáticamente desde el token/sesión
     return await firstValueFrom(
       this.profileService.CompleteOnboarding({ 
         ...dto, 
-        userId: user.id,
+        user_id: user.id,
         role: user.role 
       }, metadata)
     );
@@ -106,7 +116,7 @@ export class ProfileController implements OnModuleInit {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
     return await firstValueFrom(
-      this.profileService.DeleteProfile({ userId: user.id }, metadata)
+      this.profileService.DeleteProfile({ user_id: user.id }, metadata)
     );
   }
 

@@ -1,37 +1,10 @@
-import { join } from 'path';
-import { existsSync } from 'fs';
 import { Observable } from 'rxjs';
 
-/**
- * Robustly resolves the path to a .proto file.
- * Handles running from src (dev), dist (prod), and monorepo root contexts.
- */
-const findProto = (filename: string) => {
-  // Option 1: Same directory (dev mode / ts-node)
-  const path1 = join(__dirname, filename);
-  if (existsSync(path1)) return path1;
-
-  // Option 2: One level up (compiled mode / dist)
-  const path2 = join(__dirname, '..', filename);
-  if (existsSync(path2)) return path2;
-
-  // Fallback: Absolute path from process.cwd() assuming monorepo structure
-  const path3 = join(process.cwd(), 'packages/proto', filename);
-  if (existsSync(path3)) return path3;
-
-  // Final fallback (might still fail, but provides the most likely path)
-  return path2;
-};
-
-export const PROTO_PATH = {
-  AUTH: findProto('auth.proto'),
-  PROFILE: findProto('profile.proto'),
-  MEDIA: findProto('media.proto'),
-  MARKETPLACE: findProto('marketplace.proto'),
-  MATCHING: findProto('matching.proto'),
-  NOTIFICATION: findProto('notification.proto'),
-  ANALYTICS: findProto('analytics.proto'),
-};
+export enum UserRole {
+  STUDENT = 'student',
+  EMPLOYER = 'employer',
+  ADMIN = 'admin'
+}
 
 export const PROTO_PACKAGE = {
   AUTH: 'auth',
@@ -40,24 +13,27 @@ export const PROTO_PACKAGE = {
   MARKETPLACE: 'marketplace',
   MATCHING: 'matching',
   NOTIFICATION: 'notification',
-  ANALYTICS: 'analytics',
+  ANALYTICS: 'analytics'
 };
 
-// --- Shared Types & Enums ---
+import { join } from 'path';
 
-export enum UserRole {
-  STUDENT = 'student',
-  EMPLOYER = 'employer',
-  ADMIN = 'admin',
-  SYSTEM = 'system',
-}
+export const PROTO_PATH = {
+  AUTH: join(__dirname, '..', 'auth.proto'),
+  PROFILE: join(__dirname, '..', 'profile.proto'),
+  MEDIA: join(__dirname, '..', 'media.proto'),
+  MARKETPLACE: join(__dirname, '..', 'marketplace.proto'),
+  MATCHING: join(__dirname, '..', 'matching.proto'),
+  NOTIFICATION: join(__dirname, '..', 'notification.proto'),
+  ANALYTICS: join(__dirname, '..', 'analytics.proto')
+};
 
-// --- Auth Service Interfaces ---
+// --- Auth Interfaces ---
 
 export interface RegisterRequest {
   email: string;
   password: string;
-  role: UserRole;
+  role: string;
   university_id: string;
 }
 
@@ -74,14 +50,14 @@ export interface LoginRequest {
 export interface LoginResponse {
   userId: string;
   email: string;
-  role: UserRole;
+  role: string;
   accessToken: string;
   isOnboarded: boolean;
 }
 
 export interface OnboardingRequest {
   userId: string;
-  role: UserRole;
+  role: string;
   fullName?: string;
   career?: string;
   academicCycle?: number;
@@ -93,7 +69,7 @@ export interface OnboardingResponse {
   success: boolean;
 }
 
-export interface UniversityResponse {
+export interface University {
   id: string;
   name: string;
   email_domain: string;
@@ -101,151 +77,30 @@ export interface UniversityResponse {
 }
 
 export interface UniversityListResponse {
-  universities: UniversityResponse[];
+  universities: University[];
 }
 
-export interface IAuthService {
-  Register(data: RegisterRequest, metadata?: any): Observable<RegisterResponse>;
-  Login(data: LoginRequest, metadata?: any): Observable<LoginResponse>;
-  UpdateOnboarding(data: OnboardingRequest, metadata?: any): Observable<OnboardingResponse>;
-  ListUniversities(data: any, metadata?: any): Observable<UniversityListResponse>;
-}
-
-// --- Profile Service Interfaces ---
-
-export interface GetProfileRequest {
+export interface UniversityResponse {
   id: string;
+  name: string;
+  email_domain: string;
+  slug: string;
+  is_active: boolean;
+  logo_url?: string;
 }
 
-export interface DeleteProfileRequest {
-  userId: string;
-}
-
-export interface CreateStudentProfileRequest {
-  userId: string;
-  fullName: string;
-  career: string;
-  academicCycle: number;
-  university_id: string;
-  bio?: string;
-  availabilityBlocks?: string;
-  skills?: string[];
-}
-
-export interface SkillUpdate {
-  skillId: string;
-  proficiencyLevel: number;
-  deleted?: boolean;
-}
-
-export interface UpdateStudentProfileRequest {
-  userId: string;
-  fullName?: string;
-  career?: string;
-  academicCycle?: number;
-  bio?: string;
-  availabilityBlocks?: string;
-  skillUpdates?: SkillUpdate[];
-  gpa?: number;
-}
-
-export interface CreateEmployerProfileRequest {
-  userId: string;
-  companyName: string;
-  ruc: string;
-  sector: string;
-  description?: string;
-}
-
-export interface UpdateEmployerProfileRequest {
-  userId: string;
-  companyName?: string;
-  ruc?: string;
-  sector?: string;
-  description?: string;
-}
-
-export interface CompleteOnboardingRequest {
-  userId: string;
-  role: string;
-  fullName?: string;
-  career?: string;
-  academicCycle?: number;
-  university_id?: string;
-  skills?: string[];
-  companyName?: string;
-  ruc?: string;
-  sector?: string;
-  description?: string;
-}
-
-export interface StudentProfileResponse {
-  id: string;
-  fullName: string;
-  career: string;
-  academicCycle: number;
-  university_id: string;
-  bio: string;
-  availabilityBlocks: string;
-  skills: string[];
-  gpa: number;
-  isOnboarded: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface EmployerProfileResponse {
-  id: string;
-  companyName: string;
-  ruc: string;
-  sector: string;
-  description: string;
-  verified: boolean;
-  isOnboarded: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+// --- Profile Interfaces (Snake Case) ---
 
 export interface ProfileResponse {
   success: boolean;
-  isOnboarded: boolean;
+  is_onboarded: boolean;
   message?: string;
-}
-
-export interface IProfileService {
-  CreateStudentProfile(data: CreateStudentProfileRequest, metadata?: any): Observable<ProfileResponse>;
-  GetStudentProfile(data: GetProfileRequest, metadata?: any): Observable<StudentProfileResponse>;
-  UpdateStudentProfile(data: UpdateStudentProfileRequest, metadata?: any): Observable<ProfileResponse>;
-  
-  CreateEmployerProfile(data: CreateEmployerProfileRequest, metadata?: any): Observable<ProfileResponse>;
-  GetEmployerProfile(data: GetProfileRequest, metadata?: any): Observable<EmployerProfileResponse>;
-  UpdateEmployerProfile(data: UpdateEmployerProfileRequest, metadata?: any): Observable<ProfileResponse>;
-  DeleteProfile(data: DeleteProfileRequest, metadata?: any): Observable<ProfileResponse>;
-  SearchProfiles(data: SearchProfilesRequest, metadata?: any): Observable<SearchProfilesResponse>;
-  GetProfile(data: GetProfileRequest, metadata?: any): Observable<UnifiedProfileResponse>;
-  CompleteOnboarding(data: CompleteOnboardingRequest, metadata?: any): Observable<ProfileResponse>;
-}
-
-export interface SearchProfilesRequest {
-  query: string;
-  role?: string;
-  limit?: number;
-  offset?: number;
-}
-
-export interface SearchProfilesResponse {
-  profiles: UnifiedProfileResponse[];
-}
-
-export enum ActivityType {
-  APPLICATION = 0,
-  PROJECT = 1,
 }
 
 export interface SkillInfo {
   id: string;
   name: string;
-  proficiencyLevel: number;
+  proficiency_level: number;
   verified: boolean;
 }
 
@@ -253,35 +108,113 @@ export interface ActivityInfo {
   id: string;
   title: string;
   status: string;
-  type: ActivityType;
+  type: number;
   date: string;
 }
 
 export interface UnifiedProfileResponse {
   id: string;
   role: string;
-  fullName: string;
+  full_name: string;
   career?: string;
-  universityId?: string;
-  universityName?: string;
-  universityLogo?: string;
+  university_id?: string;
+  university_name?: string;
+  university_logo?: string;
   sector?: string;
   bio?: string;
-  academicCycle?: number;
+  academic_cycle?: number;
   gpa?: number;
   skills: SkillInfo[];
   activity: ActivityInfo[];
-  isOnboarded: boolean;
+  is_onboarded: boolean;
 }
 
-// --- Media Service Interfaces ---
-
-export interface IMediaService {
-  UploadFile(data: { fileBuffer: Uint8Array, mimeType: string, folder: string }, metadata?: any): Observable<{ url: string }>;
-  DeleteFile(data: { url: string }, metadata?: any): Observable<{ success: boolean }>;
+export interface CreateStudentProfileRequest {
+  user_id: string;
+  full_name: string;
+  career: string;
+  academic_cycle: number;
+  university_id: string;
+  bio?: string;
+  availability_blocks?: string;
+  skills: string[];
 }
 
-// --- Marketplace Service Interfaces ---
+export interface SkillUpdate {
+  skill_id: string;
+  proficiency_level: number;
+  deleted: boolean;
+}
+
+export interface UpdateStudentProfileRequest {
+  user_id: string;
+  full_name?: string;
+  career?: string;
+  academic_cycle?: number;
+  bio?: string;
+  availability_blocks?: string;
+  skill_updates?: SkillUpdate[];
+  gpa?: number;
+}
+
+export interface CreateEmployerProfileRequest {
+  user_id: string;
+  company_name: string;
+  ruc: string;
+  sector: string;
+  description?: string;
+}
+
+export interface UpdateEmployerProfileRequest {
+  user_id: string;
+  company_name?: string;
+  ruc?: string;
+  sector?: string;
+  description?: string;
+}
+
+export interface CompleteOnboardingRequest {
+  user_id: string;
+  role: string;
+  full_name?: string;
+  career?: string;
+  academic_cycle?: number;
+  university_id?: string;
+  skills?: string[];
+  company_name?: string;
+  ruc?: string;
+  sector?: string;
+  description?: string;
+}
+
+export interface StudentProfileResponse {
+  id: string;
+  full_name: string;
+  career: string;
+  academic_cycle: number;
+  university_id: string;
+  bio: string;
+  availability_blocks: string;
+  skills: string[];
+  gpa: number;
+  is_onboarded: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmployerProfileResponse {
+  id: string;
+  company_name: string;
+  ruc: string;
+  sector: string;
+  description: string;
+  verified: boolean;
+  is_onboarded: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Marketplace Interfaces ---
 
 export interface Project {
   id: string;
@@ -307,20 +240,10 @@ export interface CreateProjectRequest {
   budget: number;
   requirements: string[];
   service_category: string;
-  university_ids?: string[];
-  deadline?: string;
-  max_hours_week?: number;
+  university_ids: string[];
+  deadline: string;
+  max_hours_week: number;
 }
-
-export interface University {
-  id: string;
-  name: string;
-  email_domain: string;
-  slug: string;
-  is_active: boolean;
-  logo_url?: string;
-}
-
 
 export interface GetProjectRequest {
   id: string;
@@ -330,7 +253,7 @@ export interface ListProjectsRequest {
   employer_id?: string;
   status?: string;
   service_category?: string;
-  university_id?: string; // Used for student filtering
+  university_id?: string;
   limit?: number;
   offset?: number;
 }
@@ -352,7 +275,6 @@ export interface UpdateProjectRequest {
   deadline?: string;
   max_hours_week?: number;
 }
-
 
 export interface DeleteProjectRequest {
   id: string;
@@ -409,28 +331,11 @@ export interface UpdateApplicationStatusRequest {
   status: string;
 }
 
-export interface IMarketplaceService {
-  // Projects
-  CreateProject(request: CreateProjectRequest, metadata?: any): Observable<Project>;
-  GetProject(request: GetProjectRequest, metadata?: any): Observable<Project>;
-  ListProjects(request: ListProjectsRequest, metadata?: any): Observable<ListProjectsResponse>;
-  UpdateProject(request: UpdateProjectRequest, metadata?: any): Observable<Project>;
-  DeleteProject(request: DeleteProjectRequest, metadata?: any): Observable<DeleteProjectResponse>;
-  
-  // Applications
-  CreateApplication(request: CreateApplicationRequest, metadata?: any): Observable<Application>;
-  GetApplication(request: GetApplicationRequest, metadata?: any): Observable<Application>;
-  ListStudentApplications(request: ListStudentApplicationsRequest, metadata?: any): Observable<ListApplicationsResponse>;
-  ListProjectApplications(request: ListProjectApplicationsRequest, metadata?: any): Observable<ListApplicationsResponse>;
-  UpdateApplicationStatus(request: UpdateApplicationStatusRequest, metadata?: any): Observable<Application>;
-}
-
-
-// --- Matching Service Interfaces ---
+// --- Matching Interfaces ---
 
 export interface GetRecommendationsRequest {
   userId: string;
-  limit: number;
+  limit?: number;
 }
 
 export interface Recommendation {
@@ -443,11 +348,19 @@ export interface GetRecommendationsResponse {
   recommendations: Recommendation[];
 }
 
-export interface IMatchingService {
-  GetRecommendations(data: GetRecommendationsRequest, metadata?: any): Observable<GetRecommendationsResponse>;
+// --- Media Interfaces ---
+
+export interface UploadRequest {
+  file_buffer: Buffer | Uint8Array;
+  mime_type: string;
+  folder: string;
 }
 
-// --- Notification Service Interfaces ---
+export interface UploadResponse {
+  url: string;
+}
+
+// --- Notification Interfaces ---
 
 export interface SendEmailRequest {
   to: string;
@@ -461,11 +374,7 @@ export interface SendEmailResponse {
   messageId: string;
 }
 
-export interface INotificationService {
-  SendEmail(data: SendEmailRequest, metadata?: any): Observable<SendEmailResponse>;
-}
-
-// --- Analytics Service Interfaces ---
+// --- Analytics Interfaces ---
 
 export interface TrackEventRequest {
   userId: string;
@@ -477,6 +386,54 @@ export interface TrackEventRequest {
 
 export interface TrackEventResponse {
   success: boolean;
+}
+
+// --- Service Interfaces ---
+
+export interface IAuthService {
+  Register(data: RegisterRequest, metadata?: any): Observable<RegisterResponse>;
+  Login(data: LoginRequest, metadata?: any): Observable<LoginResponse>;
+  UpdateOnboarding(data: OnboardingRequest, metadata?: any): Observable<OnboardingResponse>;
+  ListUniversities(data: {}, metadata?: any): Observable<UniversityListResponse>;
+}
+
+export interface IProfileService {
+  CreateStudentProfile(data: CreateStudentProfileRequest, metadata?: any): Observable<ProfileResponse>;
+  GetStudentProfile(data: { id: string }, metadata?: any): Observable<StudentProfileResponse>;
+  UpdateStudentProfile(data: UpdateStudentProfileRequest, metadata?: any): Observable<ProfileResponse>;
+  CreateEmployerProfile(data: CreateEmployerProfileRequest, metadata?: any): Observable<ProfileResponse>;
+  GetEmployerProfile(data: { id: string }, metadata?: any): Observable<EmployerProfileResponse>;
+  UpdateEmployerProfile(data: UpdateEmployerProfileRequest, metadata?: any): Observable<ProfileResponse>;
+  DeleteProfile(data: { user_id: string }, metadata?: any): Observable<ProfileResponse>;
+  SearchProfiles(data: { query: string, role?: string, limit?: number, offset?: number }, metadata?: any): Observable<{ profiles: UnifiedProfileResponse[] }>;
+  GetProfile(data: { id: string }, metadata?: any): Observable<UnifiedProfileResponse>;
+  CompleteOnboarding(data: CompleteOnboardingRequest, metadata?: any): Observable<ProfileResponse>;
+}
+
+export interface IMarketplaceService {
+  CreateProject(data: CreateProjectRequest, metadata?: any): Observable<Project>;
+  GetProject(data: GetProjectRequest, metadata?: any): Observable<Project>;
+  ListProjects(data: ListProjectsRequest, metadata?: any): Observable<ListProjectsResponse>;
+  UpdateProject(data: UpdateProjectRequest, metadata?: any): Observable<Project>;
+  DeleteProject(data: DeleteProjectRequest, metadata?: any): Observable<DeleteProjectResponse>;
+  CreateApplication(data: CreateApplicationRequest, metadata?: any): Observable<Application>;
+  GetApplication(data: GetApplicationRequest, metadata?: any): Observable<Application>;
+  ListStudentApplications(data: ListStudentApplicationsRequest, metadata?: any): Observable<ListApplicationsResponse>;
+  ListProjectApplications(data: ListProjectApplicationsRequest, metadata?: any): Observable<ListApplicationsResponse>;
+  UpdateApplicationStatus(data: UpdateApplicationStatusRequest, metadata?: any): Observable<Application>;
+}
+
+export interface IMatchingService {
+  GetRecommendations(data: GetRecommendationsRequest, metadata?: any): Observable<GetRecommendationsResponse>;
+}
+
+export interface IMediaService {
+  UploadFile(data: UploadRequest, metadata?: any): Observable<UploadResponse>;
+  DeleteFile(data: { url: string }, metadata?: any): Observable<{ success: boolean }>;
+}
+
+export interface INotificationService {
+  SendEmail(data: SendEmailRequest, metadata?: any): Observable<SendEmailResponse>;
 }
 
 export interface IAnalyticsService {

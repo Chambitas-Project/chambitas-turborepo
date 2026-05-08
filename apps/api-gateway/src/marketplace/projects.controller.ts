@@ -42,10 +42,10 @@ export class ProjectsController implements OnModuleInit {
         budget: dto.budget,
         requirements: dto.requirements,
         service_category: dto.service_category,
-        university_ids: dto.university_ids,
-        deadline: dto.deadline,
-        max_hours_week: dto.max_hours_week,
-        employer_id: user.id, // Mantener por compatibilidad con el proto actual
+        university_ids: dto.university_ids || [],
+        deadline: dto.deadline || '',
+        max_hours_week: dto.max_hours_week || 0,
+        employer_id: user.id,
       }, metadata)
     );
   }

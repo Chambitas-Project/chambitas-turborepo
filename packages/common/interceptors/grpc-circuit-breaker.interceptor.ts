@@ -20,7 +20,7 @@ export class GrpcCircuitBreakerInterceptor implements NestInterceptor {
 
     if (!this.breakers.has(breakerKey)) {
       const options = {
-        timeout: 10000,
+        timeout: 20000, // Aumentado a 20s para transacciones pesadas
         errorThresholdPercentage: 50,
         resetTimeout: 30000,
         // Filtramos errores: si retorna true, NO cuenta como fallo para el circuito

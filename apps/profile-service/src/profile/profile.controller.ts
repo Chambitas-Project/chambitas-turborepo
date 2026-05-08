@@ -7,8 +7,6 @@ import {
   UpdateStudentProfileRequest, 
   CreateEmployerProfileRequest, 
   UpdateEmployerProfileRequest,
-  GetProfileRequest,
-  DeleteProfileRequest,
   ProfileResponse,
   StudentProfileResponse,
   EmployerProfileResponse,
@@ -25,8 +23,8 @@ export class ProfileController {
   }
 
   @GrpcMethod('ProfileService', 'GetStudentProfile')
-  async getStudentProfile(data: GetProfileRequest): Promise<StudentProfileResponse> {
-    return await this.profileService.getStudentProfile(data.id);
+  async getStudentProfile(data: { id: string }): Promise<StudentProfileResponse> {
+    return await this.profileService.getStudentProfile(data.id) as any;
   }
 
   @UseGuards(ProfileOwnerGuard)
@@ -42,8 +40,8 @@ export class ProfileController {
   }
 
   @GrpcMethod('ProfileService', 'GetEmployerProfile')
-  async getEmployerProfile(data: GetProfileRequest): Promise<EmployerProfileResponse> {
-    return await this.profileService.getEmployerProfile(data.id);
+  async getEmployerProfile(data: { id: string }): Promise<EmployerProfileResponse> {
+    return await this.profileService.getEmployerProfile(data.id) as any;
   }
 
   @UseGuards(ProfileOwnerGuard)
@@ -54,8 +52,8 @@ export class ProfileController {
   }
 
   @GrpcMethod('ProfileService', 'DeleteProfile')
-  async deleteProfile(data: DeleteProfileRequest): Promise<ProfileResponse> {
-    return await this.profileService.deleteProfile(data.userId);
+  async deleteProfile(data: { user_id: string }): Promise<ProfileResponse> {
+    return await this.profileService.deleteProfile(data.user_id);
   }
 
   @GrpcMethod('ProfileService', 'SearchProfiles')

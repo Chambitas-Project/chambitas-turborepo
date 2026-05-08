@@ -58,7 +58,7 @@ export class StudentOnboardingDto {
   @ApiProperty({ description: 'Nombre completo', example: 'Juan Pérez' })
   @IsString()
   @IsNotEmpty()
-  fullName!: string;
+  full_name!: string;
 
   @ApiProperty({ description: 'Carrera', example: 'Ingeniería de Software' })
   @IsString()
@@ -69,7 +69,7 @@ export class StudentOnboardingDto {
   @IsInt()
   @Min(1)
   @Max(12)
-  academicCycle!: number;
+  academic_cycle!: number;
 
   @ApiProperty({ 
     description: 'Habilidades (entre 3 y 10)', 
@@ -87,7 +87,7 @@ export class EmployerOnboardingDto {
   @ApiProperty({ description: 'Nombre de la empresa', example: 'Chambitas S.A.C' })
   @IsString()
   @IsNotEmpty()
-  companyName!: string;
+  company_name!: string;
 
   @ApiProperty({ description: 'RUC (Válido para Perú)', example: '20123456789' })
   @IsString()

@@ -1,6 +1,14 @@
 import { Controller, Post, Body, Res, Inject, OnModuleInit, UseGuards, Req } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { 
+  ApiTags, 
+  ApiOperation, 
+  ApiBody, 
+  ApiResponse, 
+  ApiBearerAuth, 
+  ApiExtraModels, 
+  getSchemaPath 
+} from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { RegisterDto, LoginDto, StudentOnboardingDto, EmployerOnboardingDto } from './dto/auth.dto';
 import { firstValueFrom } from 'rxjs';
@@ -15,6 +23,7 @@ const COOKIE_OPTIONS = {
 };
 
 @ApiTags('Auth')
+@ApiExtraModels(StudentOnboardingDto, EmployerOnboardingDto)
 @Controller('auth')
 export class AuthController implements OnModuleInit {
   private authService!: IAuthService;
@@ -72,8 +81,8 @@ export class AuthController implements OnModuleInit {
     description: 'Si eres estudiante, llena los campos de estudiante. Si eres empleador, los de empleador.',
     schema: {
       oneOf: [
-        { $ref: 'StudentOnboardingDto' },
-        { $ref: 'EmployerOnboardingDto' },
+        { $ref: getSchemaPath(StudentOnboardingDto) },
+        { $ref: getSchemaPath(EmployerOnboardingDto) },
       ],
     },
   })
@@ -89,7 +98,7 @@ export class AuthController implements OnModuleInit {
 
     const requestPayload = {
       ...dto,
-      userId,
+      user_id: userId,
       role,
     };
 
