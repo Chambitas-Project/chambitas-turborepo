@@ -16,26 +16,23 @@ export class UniversityEmailValidator implements ValidatorConstraintInterface {
 
     async validate(email: string, args: ValidationArguments) {
         const dto = args.object as any;
-        // Extraction of University ID (priority: snake_case to match DTO, then camelCase)
-        const universityId = dto.university_id || dto.universityId;
 
-        // Clean email
+        // BYPASS: Los employers no tienen email institucional — cualquier email es válido para ellos
+        if (dto.role && dto.role !== 'student') {
+            return true;
+        }
+
+        // Extraer university_id del DTO
+        const universityId = dto.university_id || dto.universityId;
         const cleanEmail = email?.trim();
 
-        console.group('🔍 UniversityEmailValidator Debug');
-        console.log('1. Full DTO Keys:', Object.keys(dto));
-        console.log('2. university_id value:', dto.university_id);
-        console.log('3. universityId value:', dto.universityId);
-        console.log('4. Email value:', email);
-
+        // Si es student y no hay university_id, fallar (debería estar validado por @ValidateIf)
         if (!universityId || !cleanEmail) {
-            console.warn('❌ Validation failed: Missing University ID or Email');
-            console.groupEnd();
+            console.warn('[UniversityEmailValidator] Missing universityId or email for student role.');
             return false;
         }
 
         try {
-            // 2. Fetch University from DB (Anti-Spoofing)
             const { data: university, error } = await this.supabaseService
                 .getClient<Database>()
                 .from('universities')
@@ -44,58 +41,46 @@ export class UniversityEmailValidator implements ValidatorConstraintInterface {
                 .single();
 
             if (error || !university) {
-                console.error('❌ DB Error or University not found:', error?.message);
-                console.groupEnd();
+                console.error('[UniversityEmailValidator] University not found or DB error:', error?.message);
                 return false;
             }
 
-            console.log('4. DB University Found:', university);
-
-            // 3. Separate email into localPart and domain
             const parts = cleanEmail.split('@');
-            if (parts.length !== 2) {
-                console.warn('❌ Invalid email format');
-                console.groupEnd();
-                return false;
-            }
+            if (parts.length !== 2) return false;
+
             const [localPart, domain] = parts;
-            console.log('5. Domain from Email:', domain);
 
-            // 4. Domain Anti-Spoofing (Case-Insensitive)
+            // Validación de dominio (anti-spoofing)
             if (domain!.toLowerCase() !== university.email_domain.toLowerCase()) {
-                console.warn(`❌ Domain mismatch! Expected: ${university.email_domain}, Got: ${domain}`);
-                console.groupEnd();
+                console.warn(`[UniversityEmailValidator] Domain mismatch: expected ${university.email_domain}, got ${domain}`);
                 return false;
             }
 
-            // 5. Slug-based Patterns (Case-Insensitive lookup)
+            // Validación de patrón regex institucional (si existe)
             if (university.slug) {
                 const slugKey = university.slug.toUpperCase();
                 const pattern = UNIVERSITY_EMAIL_PATTERNS[slugKey];
-                
                 if (pattern) {
-                    console.log(`6. Testing Regex Pattern for ${slugKey}:`, pattern.toString());
                     const isValid = pattern.test(localPart!);
-                    console.log('7. Regex result for localPart:', isValid);
-                    console.groupEnd();
+                    if (!isValid) {
+                        console.warn(`[UniversityEmailValidator] Regex failed for ${slugKey}, localPart: ${localPart}`);
+                    }
                     return isValid;
                 }
             }
 
-            console.log('✅ No specific pattern defined for this slug, domain is valid.');
-            console.groupEnd();
             return true;
         } catch (err) {
-            console.error('❌ Unexpected error in UniversityEmailValidator:', err);
-            console.groupEnd();
+            console.error('[UniversityEmailValidator] Unexpected error:', err);
             return false;
         }
     }
 
     defaultMessage(args: ValidationArguments) {
-        return 'Email is invalid for the selected university or does not match institutional requirements.';
+        return 'El email no es válido para la universidad seleccionada o no cumple los requisitos institucionales.';
     }
 }
+
 
 export function IsUniversityEmail(validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {

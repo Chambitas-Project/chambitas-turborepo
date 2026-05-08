@@ -20,6 +20,16 @@ import { UniversityEmailValidator } from './validators/university-email.validato
           loader: { keepCase: true },
         },
       },
+      {
+        name: 'PROFILE_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: PROTO_PACKAGE.PROFILE,
+          protoPath: PROTO_PATH.PROFILE,
+          url: process.env.PROFILE_SERVICE_GRPC_URL || 'localhost:50052',
+          loader: { keepCase: true },
+        },
+      },
     ]),
   ],
   controllers: [AuthController, UniversitiesController],

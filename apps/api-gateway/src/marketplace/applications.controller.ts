@@ -4,11 +4,12 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 import { IMarketplaceService } from '@chambitas/proto';
 import { CreateApplicationDto, UpdateApplicationStatusDto } from './dto/applications.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OnboardingGuard } from '../auth/guards/onboarding.guard';
 import { firstValueFrom } from 'rxjs';
 
 @ApiTags('Marketplace - Applications')
 @ApiBearerAuth('JWT-auth')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, OnboardingGuard)
 @Controller('marketplace/applications')
 export class ApplicationsController implements OnModuleInit {
   private marketplaceService!: IMarketplaceService;

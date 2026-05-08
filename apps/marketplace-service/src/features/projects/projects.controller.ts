@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
+import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { 
   CreateProjectRequest, 
   Project, 
@@ -11,14 +11,24 @@ import {
   DeleteProjectResponse
 } from '@chambitas/proto';
 import { ProjectsService } from './projects.service';
+import { CurrentUser, IUserContext } from '@chambitas/common';
 
 @Controller()
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @GrpcMethod('MarketplaceService', 'CreateProject')
-  async createProject(data: CreateProjectRequest): Promise<Project> {
-    return this.projectsService.createProject(data);
+  async createProject(
+    @Payload() data: CreateProjectRequest, 
+    @CurrentUser() user: IUserContext
+  ): Promise<Project> {
+    // Podemos asegurar que el employer_id sea el del usuario autenticado
+    // si el microservicio desea delegar la identidad al body o usar el contexto.
+    console.log(`[Marketplace] Creating project for user: ${user.id} with role: ${user.role}`);
+    
+    // Inyectamos el ID del usuario autenticado para garantizar seguridad
+    const projectData = { ...data, employer_id: user.id };
+    return this.projectsService.createProject(projectData);
   }
 
   @GrpcMethod('MarketplaceService', 'GetProject')

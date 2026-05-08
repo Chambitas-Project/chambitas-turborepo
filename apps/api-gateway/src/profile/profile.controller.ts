@@ -9,13 +9,23 @@ import {
   Param, 
   Inject, 
   OnModuleInit, 
+  UseGuards,
   Req, 
   Query, 
   ParseUUIDPipe,
   HttpStatus
 } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { 
+  ApiTags, 
+  ApiOperation, 
+  ApiBody, 
+  ApiResponse, 
+  ApiBearerAuth, 
+  ApiParam, 
+  ApiExtraModels, 
+  getSchemaPath 
+} from '@nestjs/swagger';
 import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { 
@@ -24,10 +34,15 @@ import {
   CreateEmployerProfileDto, 
   UpdateEmployerProfileDto 
 } from './dto/profile.dto';
+import { StudentOnboardingDto, EmployerOnboardingDto } from './dto/onboarding.dto';
 import { IProfileService } from '@chambitas/proto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
 
 @ApiTags('Profile')
 @ApiBearerAuth('JWT-auth')
+@ApiExtraModels(StudentOnboardingDto, EmployerOnboardingDto)
+@UseGuards(JwtAuthGuard)
 @Controller('profile')
 export class ProfileController implements OnModuleInit {
   private profileService!: IProfileService;
@@ -43,9 +58,10 @@ export class ProfileController implements OnModuleInit {
   @Get('me')
   @ApiOperation({ summary: 'Obtener el perfil del usuario actual' })
   async getMyProfile(@Req() req: Request) {
-    const userId = (req as any).user.id;
+    const user = (req as any).user;
+    const metadata = createGrpcMetadata(user);
     return await firstValueFrom(
-      this.profileService.GetProfile({ id: userId })
+      this.profileService.GetProfile({ id: user.id }, metadata)
     );
   }
 
@@ -53,64 +69,116 @@ export class ProfileController implements OnModuleInit {
   @ApiOperation({ summary: 'Actualización parcial del perfil del usuario actual' })
   async updateMyProfile(@Body() dto: any, @Req() req: Request) {
     const user = (req as any).user;
-    const userId = user.id;
-    const role = user.role;
+    const metadata = createGrpcMetadata(user);
 
-    if (role === 'student') {
+    if (user.role === 'student') {
       return await firstValueFrom(
-        this.profileService.UpdateStudentProfile({ ...dto, userId })
+        this.profileService.UpdateStudentProfile({ ...dto, userId: user.id }, metadata)
       );
     } else {
       return await firstValueFrom(
-        this.profileService.UpdateEmployerProfile({ ...dto, userId })
+        this.profileService.UpdateEmployerProfile({ ...dto, userId: user.id }, metadata)
       );
     }
+  }
+
+  @Post('onboarding/student')
+  @ApiOperation({ summary: 'Completar onboarding como Estudiante' })
+  @ApiBody({ type: StudentOnboardingDto })
+  @ApiResponse({ status: 200, description: 'Onboarding completado' })
+  async completeStudentOnboarding(@Body() dto: StudentOnboardingDto, @Req() req: Request) {
+    const user = (req as any).user;
+    const metadata = createGrpcMetadata(user);
+    return await firstValueFrom(
+      this.profileService.CompleteOnboarding({
+        user_id: user.id,
+        role: 'student',
+        full_name: dto.full_name,
+        career: dto.career,
+        academic_cycle: dto.academic_cycle,
+        // Mapear skill_inputs del DTO al formato del proto
+        skill_inputs: dto.skill_inputs.map(s => ({
+          name: s.name,
+          proficiency_level: s.proficiency_level ?? 1,
+        })),
+      }, metadata)
+    );
+  }
+
+  @Post('onboarding/employer')
+  @ApiOperation({ summary: 'Completar onboarding como Empleador' })
+  @ApiBody({ type: EmployerOnboardingDto })
+  @ApiResponse({ status: 200, description: 'Onboarding completado' })
+  async completeEmployerOnboarding(@Body() dto: EmployerOnboardingDto, @Req() req: Request) {
+    const user = (req as any).user;
+    const metadata = createGrpcMetadata(user);
+    return await firstValueFrom(
+      this.profileService.CompleteOnboarding({ 
+        ...dto, 
+        user_id: user.id,
+        role: 'employer' 
+      }, metadata)
+    );
   }
 
   @Delete('me')
   @ApiOperation({ summary: 'Soft delete del perfil del usuario actual' })
   @ApiResponse({ status: 200, description: 'Perfil desactivado' })
   async deleteProfile(@Req() req: Request) {
-    const userId = (req as any).user.id;
+    const user = (req as any).user;
+    const metadata = createGrpcMetadata(user);
     return await firstValueFrom(
-      this.profileService.DeleteProfile({ userId })
+      this.profileService.DeleteProfile({ user_id: user.id }, metadata)
+    );
+  }
+
+  @Get('skills')
+  @ApiOperation({ summary: 'Obtener todas las habilidades disponibles' })
+  @ApiResponse({ status: 200, description: 'Lista completa de habilidades' })
+  async getSkills(@Req() req: Request) {
+    const metadata = createGrpcMetadata((req as any).user);
+    return await firstValueFrom(
+      this.profileService.ListSkills({}, metadata)
     );
   }
 
   @Get('search')
   @ApiOperation({ summary: 'Buscar perfiles' })
   async searchProfiles(
+    @Req() req: Request,
     @Query('q') query: string,
     @Query('role') role?: string,
     @Query('limit') limit?: number,
     @Query('offset') offset?: number
   ) {
+    const metadata = createGrpcMetadata((req as any).user);
     return await firstValueFrom(
       this.profileService.SearchProfiles({ 
         query, 
         role, 
         limit: limit || 10, 
         offset: offset || 0 
-      })
+      }, metadata)
     );
   }
 
   @Get('id/:id')
   @ApiOperation({ summary: 'Obtener perfil por ID' })
   @ApiParam({ name: 'id', description: 'UUID del perfil o usuario' })
-  async getProfileById(@Param('id', ParseUUIDPipe) id: string) {
+  async getProfileById(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
+    const metadata = createGrpcMetadata((req as any).user);
     return await firstValueFrom(
-      this.profileService.GetProfile({ id })
+      this.profileService.GetProfile({ id }, metadata)
     );
   }
 
   @Get(':username')
   @ApiOperation({ summary: 'Obtener perfil por nombre de usuario' })
   @ApiParam({ name: 'username', description: 'Username del perfil' })
-  async getProfileByUsername(@Param('username') username: string) {
-    // Nota: El contrato GetProfileRequest usa 'id', pero el servicio puede buscar por username
+  async getProfileByUsername(@Param('username') username: string, @Req() req: Request) {
+    const metadata = createGrpcMetadata((req as any).user);
     return await firstValueFrom(
-      this.profileService.GetProfile({ id: username })
+      this.profileService.GetProfile({ id: username }, metadata)
     );
   }
 }

@@ -65,8 +65,8 @@ export class MediaController implements OnModuleInit {
     try {
       const response = await lastValueFrom(
         this.mediaService.UploadFile({
-          fileBuffer: file.buffer,
-          mimeType: file.mimetype,
+          file_buffer: file.buffer,
+          mime_type: file.mimetype,
           folder,
         })
       );
