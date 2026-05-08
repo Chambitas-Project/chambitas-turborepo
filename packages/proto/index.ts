@@ -174,6 +174,11 @@ export interface UpdateEmployerProfileRequest {
   description?: string;
 }
 
+export interface SkillInput {
+  name: string;              // Nombre o UUID de la skill del catálogo
+  proficiency_level: number; // 1=Básico, 2=Elemental, 3=Intermedio, 4=Avanzado, 5=Experto
+}
+
 export interface CompleteOnboardingRequest {
   user_id: string;
   role: string;
@@ -181,7 +186,7 @@ export interface CompleteOnboardingRequest {
   career?: string;
   academic_cycle?: number;
   university_id?: string;
-  skills?: string[];
+  skill_inputs?: SkillInput[];  // Reemplaza a skills: string[]
   company_name?: string;
   ruc?: string;
   sector?: string;

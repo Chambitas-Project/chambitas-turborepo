@@ -67,7 +67,7 @@ export class ProfileService {
         }
 
         // 3. Validar skills (3-10)
-        if (!data.skills || data.skills.length < 3 || data.skills.length > 10) {
+        if (!data.skill_inputs || data.skill_inputs.length < 3 || data.skill_inputs.length > 10) {
           throw new RpcException({ 
             code: status.INVALID_ARGUMENT, 
             message: 'Debes seleccionar entre 3 y 10 habilidades para completar el onboarding' 
@@ -92,12 +92,13 @@ export class ProfileService {
           });
         }
 
-        // 5. Resolver Skill IDs (nombres → UUIDs), SIN crear skills implícitamente
-        const resolvedSkillIds = await this.resolveSkillIds(data.skills as string[]);
+        // 5. Resolver SkillInputs (nombres → UUIDs), preservando proficiency_level por skill
+        const resolvedSkills = await this.resolveSkillInputs(data.skill_inputs as any[]);
+        const resolvedSkillIds = resolvedSkills.map(s => s.id);
+        const resolvedProficiencyLevels = resolvedSkills.map(s => s.proficiency_level);
 
         // 6. Operación ATÓMICA vía Supabase RPC (PL/pgSQL con BEGIN/COMMIT)
-        //    Reemplaza el DELETE + INSERT separados que generaban race conditions.
-        //    IMPORTANTE: Requiere que la función complete_student_onboarding exista en Supabase.
+        //    Incluye: upsert student_profiles + skills[], delete+insert student_skills, update users.is_onboarded
         const { error: rpcError } = await supabase.rpc('complete_student_onboarding' as any, {
           p_user_id: data.user_id,
           p_full_name: data.full_name,
@@ -105,6 +106,7 @@ export class ProfileService {
           p_academic_cycle: data.academic_cycle ?? null,
           p_university_id: universityId,
           p_skill_ids: resolvedSkillIds,
+          p_proficiency_levels: resolvedProficiencyLevels,
         });
 
         if (rpcError) {
@@ -113,6 +115,18 @@ export class ProfileService {
             code: status.INTERNAL,
             message: `Error en la transacción de onboarding: ${rpcError.message}`,
           });
+        }
+
+        // 7. Actualizar auth.users user_metadata para sincronizar is_onboarded
+        //    Esto permite al JWT reflejar el estado sin consultar public.users en cada request.
+        try {
+          const adminClient = this.supabaseService.getAdminClient<Database>();
+          await adminClient.auth.admin.updateUserById(data.user_id, {
+            user_metadata: { is_onboarded: true },
+          });
+        } catch (metaErr: any) {
+          // No bloquear el onboarding si falla la actualización de metadata
+          this.logger.warn(`[Onboarding] Could not update auth.users metadata: ${metaErr?.message}`);
         }
 
       } else if (data.role === 'employer') {
@@ -169,58 +183,67 @@ export class ProfileService {
   }
 
   /**
-   * Resuelve nombres de skills a sus UUIDs correspondientes en la base de datos.
+   * Resuelve SkillInput[] (nombres o UUIDs + proficiency_level) a { id, proficiency_level }[]
+   * preservando el nivel de dominio definido por el usuario para cada skill.
    *
-   * POLÍTICA: Si el usuario envía un nombre de skill que NO existe en la tabla `skills`,
-   * se lanza un INVALID_ARGUMENT para que seleccione solo skills del catálogo oficial.
-   * Esto evita la creación implícita de skills duplicadas o mal escritas.
+   * POLÍTICA: Skills que no existen en el catálogo → INVALID_ARGUMENT (no se crean implícitamente).
    */
-  private async resolveSkillIds(skillNamesOrIds: string[]): Promise<string[]> {
+  private async resolveSkillInputs(
+    skillInputs: Array<{ name: string; proficiency_level?: number }>
+  ): Promise<Array<{ id: string; proficiency_level: number }>> {
     const supabase = this.supabaseService.getClient<Database>();
-    const resolvedIds: string[] = [];
-    const namesToResolve: string[] = [];
+    const result: Array<{ id: string; proficiency_level: number }> = [];
+    const namesToResolve: Array<{ name: string; proficiency_level: number }> = [];
+    const uuidItems: Array<{ name: string; proficiency_level: number }> = [];
 
-    // Separar UUIDs de nombres
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    
-    skillNamesOrIds.forEach(item => {
-      if (uuidRegex.test(item)) {
-        resolvedIds.push(item);
-      } else {
-        namesToResolve.push(item);
-      }
-    });
 
+    for (const item of skillInputs) {
+      const level = Math.min(Math.max(item.proficiency_level ?? 1, 1), 5); // clamp 1-5
+      if (uuidRegex.test(item.name)) {
+        uuidItems.push({ name: item.name, proficiency_level: level });
+      } else {
+        namesToResolve.push({ name: item.name, proficiency_level: level });
+      }
+    }
+
+    // Items que ya son UUIDs → agregar directamente
+    for (const item of uuidItems) {
+      result.push({ id: item.name, proficiency_level: item.proficiency_level });
+    }
+
+    // Items por nombre → resolver contra la DB
     if (namesToResolve.length > 0) {
-      this.logger.log(`Resolving ${namesToResolve.length} skill names: ${namesToResolve.join(', ')}`);
-      
+      const names = namesToResolve.map(i => i.name);
+      this.logger.log(`Resolving skill names: ${names.join(', ')}`);
+
       const { data: existingSkills, error: selectError } = await supabase
         .from('skills')
         .select('id, name')
-        .in('name', namesToResolve);
+        .in('name', names);
 
       if (selectError) {
-        this.logger.error(`Error searching skills: ${selectError.message}`);
         throw new RpcException({ code: status.INTERNAL, message: `Error al buscar habilidades: ${selectError.message}` });
       }
 
       const skillsFound = existingSkills || [];
-      skillsFound.forEach(s => resolvedIds.push(s.id));
-      
-      // Verificar si hay skills que el usuario envió pero no existen en el catálogo
-      const foundNamesLower = new Set(skillsFound.map(s => s.name.toLowerCase()));
-      const notFoundNames = namesToResolve.filter(n => !foundNamesLower.has(n.toLowerCase()));
+      const foundMap = new Map(skillsFound.map(s => [s.name.toLowerCase(), s.id]));
 
+      const notFoundNames = namesToResolve.filter(i => !foundMap.has(i.name.toLowerCase()));
       if (notFoundNames.length > 0) {
-        this.logger.warn(`Skills not found in catalog: ${notFoundNames.join(', ')}`);
         throw new RpcException({
           code: status.INVALID_ARGUMENT,
-          message: `Las siguientes habilidades no existen en el catálogo: ${notFoundNames.join(', ')}. Usa GET /profile/skills para ver las opciones disponibles.`,
+          message: `Las siguientes habilidades no existen en el catálogo: ${notFoundNames.map(i => i.name).join(', ')}. Usa GET /profile/skills para ver las opciones disponibles.`,
         });
+      }
+
+      for (const item of namesToResolve) {
+        const id = foundMap.get(item.name.toLowerCase())!;
+        result.push({ id, proficiency_level: item.proficiency_level });
       }
     }
 
-    return resolvedIds;
+    return result;
   }
 
 

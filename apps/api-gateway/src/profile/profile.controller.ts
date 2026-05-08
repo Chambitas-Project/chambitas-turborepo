@@ -90,10 +90,17 @@ export class ProfileController implements OnModuleInit {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
     return await firstValueFrom(
-      this.profileService.CompleteOnboarding({ 
-        ...dto, 
+      this.profileService.CompleteOnboarding({
         user_id: user.id,
-        role: 'student' 
+        role: 'student',
+        full_name: dto.full_name,
+        career: dto.career,
+        academic_cycle: dto.academic_cycle,
+        // Mapear skill_inputs del DTO al formato del proto
+        skill_inputs: dto.skill_inputs.map(s => ({
+          name: s.name,
+          proficiency_level: s.proficiency_level ?? 1,
+        })),
       }, metadata)
     );
   }

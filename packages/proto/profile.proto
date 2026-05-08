@@ -155,6 +155,11 @@ message EmployerProfileResponse {
   string updated_at = 9;
 }
 
+message SkillInput {
+  string name = 1;              // Nombre o UUID de la skill del catálogo
+  int32 proficiency_level = 2; // Nivel: 1=Básico, 2=Elemental, 3=Intermedio, 4=Avanzado, 5=Experto
+}
+
 message CompleteOnboardingRequest {
   string user_id = 1;
   string role = 2;
@@ -162,7 +167,7 @@ message CompleteOnboardingRequest {
   optional string career = 4;
   optional int32 academic_cycle = 5;
   optional string university_id = 6;
-  repeated string skills = 7;
+  repeated SkillInput skill_inputs = 7; // Reemplaza a repeated string skills
   optional string company_name = 8;
   optional string ruc = 9;
   optional string sector = 10;

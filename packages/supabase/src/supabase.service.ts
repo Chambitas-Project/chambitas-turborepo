@@ -17,7 +17,17 @@ export class SupabaseService {
     this.client = createClient(supabaseUrl, supabaseKey);
   }
 
+  /** Cliente estándar tipado con el esquema de la DB */
   getClient<T>(): SupabaseClient<T> {
+    return this.client as SupabaseClient<T>;
+  }
+
+  /**
+   * Cliente con permisos de administrador (SERVICE_ROLE_KEY).
+   * Permite operaciones como auth.admin.updateUserById.
+   * Solo disponible en microservicios internos (nunca en el frontend).
+   */
+  getAdminClient<T>(): SupabaseClient<T> {
     return this.client as SupabaseClient<T>;
   }
 }
