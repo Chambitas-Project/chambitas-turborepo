@@ -17,6 +17,7 @@ import { UniversityEmailValidator } from './validators/university-email.validato
           package: PROTO_PACKAGE.AUTH,
           protoPath: PROTO_PATH.AUTH,
           url: process.env.AUTH_SERVICE_GRPC_URL || 'localhost:50051',
+          loader: { keepCase: true },
         },
       },
     ]),

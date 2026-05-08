@@ -30,6 +30,7 @@ import { AnalyticsController } from './analytics/analytics.controller';
           package: PROTO_PACKAGE.PROFILE,
           protoPath: PROTO_PATH.PROFILE,
           url: process.env.PROFILE_SERVICE_GRPC_URL || 'localhost:50052',
+          loader: { keepCase: true },
         },
       },
       {
@@ -39,6 +40,7 @@ import { AnalyticsController } from './analytics/analytics.controller';
           package: PROTO_PACKAGE.MEDIA,
           protoPath: PROTO_PATH.MEDIA,
           url: process.env.MEDIA_SERVICE_GRPC_URL || 'localhost:50056',
+          loader: { keepCase: true },
         },
       },
       {
@@ -48,6 +50,7 @@ import { AnalyticsController } from './analytics/analytics.controller';
           package: PROTO_PACKAGE.MARKETPLACE,
           protoPath: PROTO_PATH.MARKETPLACE,
           url: process.env.MARKETPLACE_SERVICE_GRPC_URL || 'localhost:50054',
+          loader: { keepCase: true },
         },
       },
       {
@@ -57,6 +60,7 @@ import { AnalyticsController } from './analytics/analytics.controller';
           package: PROTO_PACKAGE.MATCHING,
           protoPath: PROTO_PATH.MATCHING,
           url: process.env.MATCHING_SERVICE_GRPC_URL || 'localhost:50053',
+          loader: { keepCase: true },
         },
       },
       {
@@ -66,6 +70,7 @@ import { AnalyticsController } from './analytics/analytics.controller';
           package: PROTO_PACKAGE.NOTIFICATION,
           protoPath: PROTO_PATH.NOTIFICATION,
           url: process.env.NOTIFICATION_SERVICE_GRPC_URL || 'localhost:50055',
+          loader: { keepCase: true },
         },
       },
       {
@@ -75,6 +80,7 @@ import { AnalyticsController } from './analytics/analytics.controller';
           package: PROTO_PACKAGE.ANALYTICS,
           protoPath: PROTO_PATH.ANALYTICS,
           url: process.env.ANALYTICS_AUDIT_SERVICE_GRPC_URL || 'localhost:50057',
+          loader: { keepCase: true },
         },
       },
     ]),

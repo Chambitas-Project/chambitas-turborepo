@@ -1,10 +1,8 @@
-import { Controller, UseFilters } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
-import { GlobalRpcExceptionFilter } from '@chambitas/common';
 
 @Controller()
-@UseFilters(GlobalRpcExceptionFilter)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
