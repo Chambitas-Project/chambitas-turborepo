@@ -2,7 +2,7 @@ import { Controller, Post, Body, Res, Inject, OnModuleInit, UseGuards, Req } fro
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Response, Request } from 'express';
-import { RegisterDto, LoginDto, UpdateOnboardingDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, StudentOnboardingDto, EmployerOnboardingDto } from './dto/auth.dto';
 import { firstValueFrom } from 'rxjs';
 import { Public } from './decorators/public.decorator';
 import { IAuthService, RegisterResponse, LoginResponse, OnboardingResponse } from '@chambitas/proto';
@@ -67,14 +67,20 @@ export class AuthController implements OnModuleInit {
 
   @Post('onboarding')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Actualizar perfil de onboarding' })
-  @ApiBody({ type: UpdateOnboardingDto })
+  @ApiOperation({ summary: 'Actualizar perfil de onboarding (Campos automáticos según rol)' })
+  @ApiBody({ 
+    description: 'Si eres estudiante, llena los campos de estudiante. Si eres empleador, los de empleador.',
+    schema: {
+      oneOf: [
+        { $ref: 'StudentOnboardingDto' },
+        { $ref: 'EmployerOnboardingDto' },
+      ],
+    },
+  })
   @ApiResponse({ status: 200, description: 'Perfil actualizado exitosamente' })
-  async updateOnboarding(@Body() dto: UpdateOnboardingDto, @Req() req: Request) {
-    // El Gateway debe extraer el user_id e inyectarlo
-    // Suponiendo que JwtAuthGuard inyecta el usuario en req.user
+  async updateOnboarding(@Body() dto: any, @Req() req: Request) {
     const user = (req as any).user;
-    const userId = user?.id; // Ajustar según cómo JwtAuthGuard inyecta el usuario
+    const userId = user?.id;
     const role = user?.role;
 
     if (!userId) {

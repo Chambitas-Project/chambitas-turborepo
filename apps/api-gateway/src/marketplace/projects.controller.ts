@@ -4,12 +4,13 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@ne
 import { IMarketplaceService } from '@chambitas/proto';
 import { CreateProjectDto, UpdateProjectDto } from './dto/projects.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OnboardingGuard } from '../auth/guards/onboarding.guard';
 import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
 import { firstValueFrom } from 'rxjs';
 
 @ApiTags('Marketplace - Projects')
 @ApiBearerAuth('JWT-auth')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, OnboardingGuard)
 @Controller('marketplace/projects')
 export class ProjectsController implements OnModuleInit {
   private marketplaceService!: IMarketplaceService;

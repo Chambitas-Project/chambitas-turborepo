@@ -17,6 +17,25 @@ service ProfileService {
   rpc DeleteProfile (DeleteProfileRequest) returns (ProfileResponse) {}
   rpc SearchProfiles (SearchProfilesRequest) returns (SearchProfilesResponse) {}
   rpc GetProfile (GetProfileRequest) returns (UnifiedProfileResponse) {}
+  rpc CompleteOnboarding (CompleteOnboardingRequest) returns (ProfileResponse) {}
+}
+
+message CompleteOnboardingRequest {
+  string userId = 1;
+  string role = 2; // "student" or "employer"
+  
+  // Student data (populated if role is student)
+  optional string fullName = 3;
+  optional string career = 4;
+  optional int32 academicCycle = 5;
+  optional string universityId = 6;
+  repeated string skills = 7;
+  
+  // Employer data (populated if role is employer)
+  optional string companyName = 8;
+  optional string ruc = 9;
+  optional string sector = 10;
+  optional string description = 11;
 }
 
 message SearchProfilesRequest {

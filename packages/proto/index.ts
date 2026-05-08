@@ -165,6 +165,20 @@ export interface UpdateEmployerProfileRequest {
   description?: string;
 }
 
+export interface CompleteOnboardingRequest {
+  userId: string;
+  role: string;
+  fullName?: string;
+  career?: string;
+  academicCycle?: number;
+  university_id?: string;
+  skills?: string[];
+  companyName?: string;
+  ruc?: string;
+  sector?: string;
+  description?: string;
+}
+
 export interface StudentProfileResponse {
   id: string;
   fullName: string;
@@ -209,6 +223,7 @@ export interface IProfileService {
   DeleteProfile(data: DeleteProfileRequest, metadata?: any): Observable<ProfileResponse>;
   SearchProfiles(data: SearchProfilesRequest, metadata?: any): Observable<SearchProfilesResponse>;
   GetProfile(data: GetProfileRequest, metadata?: any): Observable<UnifiedProfileResponse>;
+  CompleteOnboarding(data: CompleteOnboardingRequest, metadata?: any): Observable<ProfileResponse>;
 }
 
 export interface SearchProfilesRequest {

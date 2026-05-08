@@ -13,7 +13,8 @@ import {
   StudentProfileResponse,
   EmployerProfileResponse,
   GetProfileRequest,
-  DeleteProfileRequest
+  DeleteProfileRequest,
+  CompleteOnboardingRequest
 } from '@chambitas/proto';
 
 @Injectable()
@@ -231,6 +232,83 @@ export class ProfileService {
     }
   }
 
+  async completeOnboarding(data: CompleteOnboardingRequest): Promise<ProfileResponse> {
+    const supabase = this.supabaseService.getClient<Database>();
+
+    try {
+      if (data.role === 'student') {
+        // 1. Validar ciclo académico
+        if (data.academicCycle !== undefined && (data.academicCycle < 1 || data.academicCycle > 12)) {
+          throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'Academic cycle must be between 1 and 12' });
+        }
+
+        // 2. Validar skills (3-10)
+        if (!data.skills || data.skills.length < 3 || data.skills.length > 10) {
+          throw new RpcException({ 
+            code: status.INVALID_ARGUMENT, 
+            message: 'Students must select between 3 and 10 skills to complete onboarding' 
+          });
+        }
+
+        // 3. Upsert Profile
+        await this.studentRepo.create({
+          id: data.userId,
+          full_name: data.fullName || null,
+          career: data.career || null,
+          academic_cycle: data.academicCycle || null,
+          university_id: data.university_id || '',
+        });
+
+        // 4. Upsert Skills
+        await supabase.from('student_skills').delete().eq('student_id', data.userId);
+        await supabase.from('student_skills').insert(
+          (data.skills as string[]).map((skillId: string) => ({
+            student_id: data.userId,
+            skill_id: skillId,
+            proficiency_level: 1
+          }))
+        );
+
+      } else if (data.role === 'employer') {
+        // 1. Validar campos mandatorios
+        if (!data.companyName || !data.ruc || !data.sector || !data.description) {
+          throw new RpcException({ 
+            code: status.INVALID_ARGUMENT, 
+            message: 'Company name, RUC, sector and description are mandatory for employers' 
+          });
+        }
+
+        // 2. Upsert Profile
+        await this.employerRepo.create({
+          id: data.userId,
+          company_name: data.companyName,
+          ruc: data.ruc,
+          sector: data.sector,
+          description: data.description,
+        });
+      }
+
+      // 5. Verificar y Activar
+      const isOnboarded = await this.checkAndUpdateOnboarding(data.userId, data.role as any);
+      
+      if (!isOnboarded) {
+        throw new RpcException({
+          code: status.FAILED_PRECONDITION,
+          message: 'Profile is still incomplete. Please verify all mandatory fields.'
+        });
+      }
+
+      return { success: true, isOnboarded: true, message: 'Onboarding completed successfully' };
+    } catch (error: any) {
+      if (error instanceof RpcException) throw error;
+      this.logger.error(`Onboarding failed for user ${data.userId}: ${error.message}`);
+      throw new RpcException({
+        code: status.INTERNAL,
+        message: `Failed to complete onboarding: ${error.message}`,
+      });
+    }
+  }
+
   // --- Common ---
 
   // --- Common ---
@@ -426,17 +504,42 @@ export class ProfileService {
     let isComplete = false;
     if (role === 'student') {
       const profile = await this.studentRepo.findByUserId(userId);
-      isComplete = !!(profile?.full_name && profile?.career && profile?.university_id);
+      
+      // Consultar skills directamente para validación fresca
+      const { count } = await supabase
+        .from('student_skills')
+        .select('*', { count: 'exact', head: true })
+        .eq('student_id', userId);
+
+      const hasRequiredSkills = count !== null && count >= 3 && count <= 10;
+      
+      isComplete = !!(
+        profile?.full_name && 
+        profile?.career && 
+        profile?.university_id && 
+        profile?.academic_cycle &&
+        hasRequiredSkills
+      );
     } else {
       const profile = await this.employerRepo.findByUserId(userId);
-      isComplete = !!(profile?.company_name && profile?.ruc && profile?.sector);
+      isComplete = !!(
+        profile?.company_name && 
+        profile?.ruc && 
+        profile?.sector && 
+        profile?.description
+      );
     }
 
     if (isComplete) {
-      await supabase
+      const { error } = await supabase
         .from('users')
         .update({ is_onboarded: true })
         .eq('id', userId);
+      
+      if (error) {
+        this.logger.error(`Failed to update is_onboarded for user ${userId}: ${error.message}`);
+        return false;
+      }
     }
 
     return isComplete;

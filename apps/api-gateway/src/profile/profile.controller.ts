@@ -25,6 +25,7 @@ import {
   CreateEmployerProfileDto, 
   UpdateEmployerProfileDto 
 } from './dto/profile.dto';
+import { StudentOnboardingDto, EmployerOnboardingDto } from './dto/onboarding.dto';
 import { IProfileService } from '@chambitas/proto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
@@ -69,6 +70,33 @@ export class ProfileController implements OnModuleInit {
         this.profileService.UpdateEmployerProfile({ ...dto, userId: user.id }, metadata)
       );
     }
+  }
+
+  @Post('onboarding')
+  @ApiOperation({ summary: 'Completar el proceso de onboarding (Campos automáticos según rol)' })
+  @ApiBody({ 
+    description: 'Si eres estudiante, llena los campos de estudiante. Si eres empleador, los de empleador.',
+    schema: {
+      oneOf: [
+        { $ref: 'StudentOnboardingDto' },
+        { $ref: 'EmployerOnboardingDto' },
+      ],
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Onboarding completado exitosamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos o incompletos' })
+  async completeOnboarding(@Body() dto: any, @Req() req: Request) {
+    const user = (req as any).user;
+    const metadata = createGrpcMetadata(user);
+    
+    // El rol y userId se inyectan automáticamente desde el token/sesión
+    return await firstValueFrom(
+      this.profileService.CompleteOnboarding({ 
+        ...dto, 
+        userId: user.id,
+        role: user.role 
+      }, metadata)
+    );
   }
 
   @Delete('me')

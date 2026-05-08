@@ -11,7 +11,8 @@ import {
   DeleteProfileRequest,
   ProfileResponse,
   StudentProfileResponse,
-  EmployerProfileResponse
+  EmployerProfileResponse,
+  CompleteOnboardingRequest
 } from '@chambitas/proto';
 
 @Controller()
@@ -65,5 +66,12 @@ export class ProfileController {
   @GrpcMethod('ProfileService', 'GetProfile')
   async getProfile(data: any) {
     return await this.profileService.getProfile(data.id);
+  }
+
+  @UseGuards(ProfileOwnerGuard)
+  @CheckOwner('userId')
+  @GrpcMethod('ProfileService', 'CompleteOnboarding')
+  async completeOnboarding(data: CompleteOnboardingRequest): Promise<ProfileResponse> {
+    return await this.profileService.completeOnboarding(data);
   }
 }
