@@ -1,5 +1,6 @@
 import { Controller, UseGuards } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
+import { GrpcMethod, RpcException } from '@nestjs/microservices';
+import { status } from '@grpc/grpc-js';
 import { ProfileService } from './profile.service';
 import { ProfileOwnerGuard, CheckOwner } from '@chambitas/common';
 import { 
@@ -12,11 +13,36 @@ import {
   EmployerProfileResponse,
   CompleteOnboardingRequest
 } from '@chambitas/proto';
-import { CurrentUser, IUserContext } from '@chambitas/common';
 
 @Controller()
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
+
+  /**
+   * Extrae la identidad del usuario directamente desde los metadatos gRPC.
+   *
+   * NOTA ARQUITECTURAL: En NestJS los Guards se ejecutan ANTES que los Interceptors.
+   * Esto significa que cuando un método del controller corre, el GrpcContextInterceptor
+   * (que popula rpcContext.user) aún no ha corrido. Por eso @CurrentUser() retorna null.
+   * La solución correcta es leer user-id y role directo del objeto Metadata de gRPC,
+   * que sí está disponible desde el primer momento del request.
+   */
+  private getUserFromMetadata(metadata: any): { userId: string; role: string } {
+    const metadataMap = typeof metadata?.getMap === 'function' ? metadata.getMap() : {};
+    const userId = metadataMap['user-id'] as string;
+    const role = metadataMap['role'] as string;
+
+    if (!userId || !role) {
+      throw new RpcException({
+        code: status.UNAUTHENTICATED,
+        message: 'Missing user identity in gRPC metadata (user-id or role)',
+      });
+    }
+
+    return { userId, role };
+  }
+
+  // ─── Read operations (no auth enforcement needed beyond JWT guard in Gateway) ───
 
   @GrpcMethod('ProfileService', 'CreateStudentProfile')
   async createStudentProfile(data: CreateStudentProfileRequest): Promise<ProfileResponse> {
@@ -26,15 +52,6 @@ export class ProfileController {
   @GrpcMethod('ProfileService', 'GetStudentProfile')
   async getStudentProfile(data: { id: string }): Promise<StudentProfileResponse> {
     return await this.profileService.getStudentProfile(data.id) as any;
-  }
-
-  @UseGuards(ProfileOwnerGuard)
-  @CheckOwner('user_id')
-  @GrpcMethod('ProfileService', 'UpdateStudentProfile')
-  async updateStudentProfile(data: UpdateStudentProfileRequest, @CurrentUser() user: IUserContext): Promise<ProfileResponse> {
-    // Asegurar que el user_id sea el del usuario autenticado
-    data.user_id = user.id;
-    return await this.profileService.updateStudentProfile(data);
   }
 
   @GrpcMethod('ProfileService', 'CreateEmployerProfile')
@@ -47,22 +64,6 @@ export class ProfileController {
     return await this.profileService.getEmployerProfile(data.id) as any;
   }
 
-  @UseGuards(ProfileOwnerGuard)
-  @CheckOwner('user_id')
-  @GrpcMethod('ProfileService', 'UpdateEmployerProfile')
-  async updateEmployerProfile(data: UpdateEmployerProfileRequest, @CurrentUser() user: IUserContext): Promise<ProfileResponse> {
-    // Asegurar que el user_id sea el del usuario autenticado
-    data.user_id = user.id;
-    return await this.profileService.updateEmployerProfile(data);
-  }
-
-  @UseGuards(ProfileOwnerGuard)
-  @CheckOwner('user_id')
-  @GrpcMethod('ProfileService', 'DeleteProfile')
-  async deleteProfile(data: { user_id: string }): Promise<ProfileResponse> {
-    return await this.profileService.deleteProfile(data.user_id);
-  }
-
   @GrpcMethod('ProfileService', 'SearchProfiles')
   async searchProfiles(data: any) {
     return await this.profileService.searchProfiles(data.query, data.role, data.limit, data.offset);
@@ -72,19 +73,48 @@ export class ProfileController {
   async getProfile(data: any) {
     return await this.profileService.getProfile(data.id);
   }
+
   @GrpcMethod('ProfileService', 'ListSkills')
   async listSkills(data: any) {
     return await this.profileService.listSkills(data.category);
   }
 
+  // ─── Write operations (identity enforced from gRPC metadata) ───
+
+  @UseGuards(ProfileOwnerGuard)
+  @CheckOwner('user_id')
+  @GrpcMethod('ProfileService', 'UpdateStudentProfile')
+  async updateStudentProfile(data: UpdateStudentProfileRequest, metadata: any): Promise<ProfileResponse> {
+    const { userId } = this.getUserFromMetadata(metadata);
+    data.user_id = userId;
+    return await this.profileService.updateStudentProfile(data);
+  }
+
+  @UseGuards(ProfileOwnerGuard)
+  @CheckOwner('user_id')
+  @GrpcMethod('ProfileService', 'UpdateEmployerProfile')
+  async updateEmployerProfile(data: UpdateEmployerProfileRequest, metadata: any): Promise<ProfileResponse> {
+    const { userId } = this.getUserFromMetadata(metadata);
+    data.user_id = userId;
+    return await this.profileService.updateEmployerProfile(data);
+  }
+
+  @UseGuards(ProfileOwnerGuard)
+  @CheckOwner('user_id')
+  @GrpcMethod('ProfileService', 'DeleteProfile')
+  async deleteProfile(data: { user_id: string }, metadata: any): Promise<ProfileResponse> {
+    const { userId } = this.getUserFromMetadata(metadata);
+    return await this.profileService.deleteProfile(userId);
+  }
+
   @UseGuards(ProfileOwnerGuard)
   @CheckOwner('user_id')
   @GrpcMethod('ProfileService', 'CompleteOnboarding')
-  async completeOnboarding(data: CompleteOnboardingRequest, @CurrentUser() user: IUserContext): Promise<ProfileResponse> {
-    // Forzar identidad desde el contexto de seguridad (JWT -> gRPC Metadata)
-    data.user_id = user.id;
-    data.role = user.role;
-    
+  async completeOnboarding(data: CompleteOnboardingRequest, metadata: any): Promise<ProfileResponse> {
+    const { userId, role } = this.getUserFromMetadata(metadata);
+    // Sobreescribir con identidad real del JWT — previene spoofing del payload
+    data.user_id = userId;
+    data.role = role;
     return await this.profileService.completeOnboarding(data);
   }
 }

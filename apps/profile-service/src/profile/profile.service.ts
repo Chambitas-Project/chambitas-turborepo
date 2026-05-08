@@ -55,61 +55,76 @@ export class ProfileService {
       if (data.role === 'student') {
         // 1. Validar ciclo académico
         if (data.academic_cycle !== undefined && (data.academic_cycle < 1 || data.academic_cycle > 12)) {
-          throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'Academic cycle must be between 1 and 12' });
+          throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'El ciclo académico debe estar entre 1 y 12' });
         }
 
-        // 2. Validar skills (3-10)
+        // 2. Validar campos obligatorios
+        if (!data.full_name) {
+          throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'El nombre completo es requerido' });
+        }
+        if (!data.career) {
+          throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'La carrera es requerida' });
+        }
+
+        // 3. Validar skills (3-10)
         if (!data.skills || data.skills.length < 3 || data.skills.length > 10) {
           throw new RpcException({ 
             code: status.INVALID_ARGUMENT, 
-            message: 'Students must select between 3 and 10 skills to complete onboarding' 
+            message: 'Debes seleccionar entre 3 y 10 habilidades para completar el onboarding' 
           });
         }
 
-        // 3. Resolver university_id si no viene en el payload
+        // 4. Resolver university_id si no viene en el payload
         let universityId = data.university_id;
         if (!universityId) {
-          const { data: userData } = await supabase.from('users').select('university_id').eq('id', data.user_id).single();
-          universityId = userData?.university_id || '';
+          const { data: userData } = await supabase
+            .from('users')
+            .select('university_id')
+            .eq('id', data.user_id)
+            .single();
+          universityId = userData?.university_id ?? undefined;
         }
 
-        // 4. Operación Atómica - Perfil (Evitar sobreescribir con nulls si los campos son opcionales)
-        const profileUpdate: any = { id: data.user_id, university_id: universityId };
-        if (data.full_name !== undefined) profileUpdate.full_name = data.full_name;
-        if (data.career !== undefined) profileUpdate.career = data.career;
-        if (data.academic_cycle !== undefined) profileUpdate.academic_cycle = data.academic_cycle;
+        if (!universityId) {
+          throw new RpcException({ 
+            code: status.FAILED_PRECONDITION, 
+            message: 'No se encontró university_id para el estudiante' 
+          });
+        }
 
-        const { error: profileError } = await supabase.from('student_profiles').upsert(profileUpdate);
-
-        if (profileError) throw profileError;
-
-        // 5. Resolver Skill IDs (nombres a UUIDs)
+        // 5. Resolver Skill IDs (nombres → UUIDs), SIN crear skills implícitamente
         const resolvedSkillIds = await this.resolveSkillIds(data.skills as string[]);
 
-        // 6. Operación Atómica - Skills
-        const { error: deleteError } = await supabase.from('student_skills').delete().eq('student_id', data.user_id);
-        if (deleteError) throw deleteError;
+        // 6. Operación ATÓMICA vía Supabase RPC (PL/pgSQL con BEGIN/COMMIT)
+        //    Reemplaza el DELETE + INSERT separados que generaban race conditions.
+        //    IMPORTANTE: Requiere que la función complete_student_onboarding exista en Supabase.
+        const { error: rpcError } = await supabase.rpc('complete_student_onboarding' as any, {
+          p_user_id: data.user_id,
+          p_full_name: data.full_name,
+          p_career: data.career,
+          p_academic_cycle: data.academic_cycle ?? null,
+          p_university_id: universityId,
+          p_skill_ids: resolvedSkillIds,
+        });
 
-        const { error: insertError } = await supabase.from('student_skills').insert(
-          resolvedSkillIds.map((skillId: string) => ({
-            student_id: data.user_id,
-            skill_id: skillId,
-            proficiency_level: 1
-          }))
-        );
-        if (insertError) throw insertError;
+        if (rpcError) {
+          this.logger.error(`[Onboarding] RPC complete_student_onboarding failed: ${rpcError.message}`);
+          throw new RpcException({
+            code: status.INTERNAL,
+            message: `Error en la transacción de onboarding: ${rpcError.message}`,
+          });
+        }
 
       } else if (data.role === 'employer') {
-        // 1. Validar campos mandatorios (Solo si es la primera vez o si se envían)
-        // Pero para onboarding, usualmente requerimos todo.
+        // 1. Validar campos mandatorios
         if (!data.company_name || !data.ruc || !data.sector || !data.description) {
           throw new RpcException({ 
             code: status.INVALID_ARGUMENT, 
-            message: 'Company name, RUC, sector and description are mandatory for employers' 
+            message: 'company_name, ruc, sector y description son obligatorios para empleadores' 
           });
         }
 
-        // 2. Upsert Profile (Evitar sobreescribir con nulls)
+        // 2. Upsert del perfil de empleador
         const employerUpdate: any = { id: data.user_id };
         if (data.company_name !== undefined) employerUpdate.company_name = data.company_name;
         if (data.ruc !== undefined) employerUpdate.ruc = data.ruc;
@@ -117,30 +132,30 @@ export class ProfileService {
         if (data.description !== undefined) employerUpdate.description = data.description;
 
         const { error: employerError } = await supabase.from('employer_profiles').upsert(employerUpdate);
-
         if (employerError) throw employerError;
+
+        // 3. Marcar onboarding completo en public.users
+        const isOnboarded = await this.checkAndUpdateOnboarding(data.user_id, 'employer');
+        if (!isOnboarded) {
+          throw new RpcException({
+            code: status.FAILED_PRECONDITION,
+            message: 'El perfil fue actualizado pero los requisitos de onboarding no están completos.'
+          });
+        }
+
       } else {
-        throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'Invalid role for onboarding' });
+        throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'Rol inválido para onboarding' });
       }
 
-      // 5. Verificar y Activar Estado Onboarded
-      const isOnboarded = await this.checkAndUpdateOnboarding(data.user_id, data.role as any);
-      
-      if (!isOnboarded) {
-        throw new RpcException({
-          code: status.FAILED_PRECONDITION,
-          message: 'Profile update successful but onboarding requirements not fully met.'
-        });
-      }
-
-      return { success: true, is_onboarded: true, message: 'Onboarding completed successfully' };
+      return { success: true, is_onboarded: true, message: 'Onboarding completado exitosamente' };
 
     } catch (error: any) {
       this.logger.error(`Error in completeOnboarding: ${error.message}`, error.stack);
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ code: status.INTERNAL, message: `Onboarding failed: ${error.message}` });
+      throw new RpcException({ code: status.INTERNAL, message: `Onboarding fallido: ${error.message}` });
     }
   }
+
 
   async listSkills(category?: string): Promise<{ skills: any[] }> {
     const supabase = this.supabaseService.getClient<Database>();
@@ -153,6 +168,13 @@ export class ProfileService {
     return { skills: data || [] };
   }
 
+  /**
+   * Resuelve nombres de skills a sus UUIDs correspondientes en la base de datos.
+   *
+   * POLÍTICA: Si el usuario envía un nombre de skill que NO existe en la tabla `skills`,
+   * se lanza un INVALID_ARGUMENT para que seleccione solo skills del catálogo oficial.
+   * Esto evita la creación implícita de skills duplicadas o mal escritas.
+   */
   private async resolveSkillIds(skillNamesOrIds: string[]): Promise<string[]> {
     const supabase = this.supabaseService.getClient<Database>();
     const resolvedIds: string[] = [];
@@ -172,7 +194,6 @@ export class ProfileService {
     if (namesToResolve.length > 0) {
       this.logger.log(`Resolving ${namesToResolve.length} skill names: ${namesToResolve.join(', ')}`);
       
-      // Buscar habilidades existentes por nombre
       const { data: existingSkills, error: selectError } = await supabase
         .from('skills')
         .select('id, name')
@@ -180,36 +201,28 @@ export class ProfileService {
 
       if (selectError) {
         this.logger.error(`Error searching skills: ${selectError.message}`);
-        throw new RpcException({ code: status.INTERNAL, message: `Error resolving skills: ${selectError.message}` });
+        throw new RpcException({ code: status.INTERNAL, message: `Error al buscar habilidades: ${selectError.message}` });
       }
 
       const skillsFound = existingSkills || [];
       skillsFound.forEach(s => resolvedIds.push(s.id));
       
-      // Habilidades que no existen y deben ser creadas
-      const existingNames = skillsFound.map(s => s.name.toLowerCase());
-      const missingNames = namesToResolve.filter(n => !existingNames.includes(n.toLowerCase()));
+      // Verificar si hay skills que el usuario envió pero no existen en el catálogo
+      const foundNamesLower = new Set(skillsFound.map(s => s.name.toLowerCase()));
+      const notFoundNames = namesToResolve.filter(n => !foundNamesLower.has(n.toLowerCase()));
 
-      if (missingNames.length > 0) {
-        this.logger.log(`Creating ${missingNames.length} new skills: ${missingNames.join(', ')}`);
-        const { data: newSkills, error: insertError } = await supabase
-          .from('skills')
-          .insert(missingNames.map(name => ({ name })))
-          .select('id');
-
-        if (insertError) {
-          this.logger.error(`Error creating skills: ${insertError.message}`);
-          throw new RpcException({ code: status.INTERNAL, message: `Error creating skills: ${insertError.message}` });
-        }
-
-        if (newSkills) {
-          newSkills.forEach(s => resolvedIds.push(s.id));
-        }
+      if (notFoundNames.length > 0) {
+        this.logger.warn(`Skills not found in catalog: ${notFoundNames.join(', ')}`);
+        throw new RpcException({
+          code: status.INVALID_ARGUMENT,
+          message: `Las siguientes habilidades no existen en el catálogo: ${notFoundNames.join(', ')}. Usa GET /profile/skills para ver las opciones disponibles.`,
+        });
       }
     }
 
     return resolvedIds;
   }
+
 
   // --- Helpers ---
 

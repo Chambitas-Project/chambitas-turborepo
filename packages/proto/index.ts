@@ -34,7 +34,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   role: string;
-  university_id: string;
+  university_id?: string; // Opcional: solo requerido para students
 }
 
 export interface RegisterResponse {

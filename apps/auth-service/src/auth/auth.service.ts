@@ -130,7 +130,8 @@ export class AuthService {
     try {
       const universityId = data.university_id || data.universityId;
       
-      // 3.1 Insert into public.users
+      // 3.1 Insert into public.users — CRÍTICO: si falla, el usuario no tiene perfil en la app.
+      // En ese caso relanzamos para evitar un usuario zombie en auth.users sin datos de aplicación.
       const { error: userError } = await supabase
         .from('users')
         .insert({
@@ -143,9 +144,20 @@ export class AuthService {
         });
 
       if (userError) {
-        console.error('[AuthService] Error inserting into public.users:', userError.message);
-        // We don't throw here to avoid failing registration if only the public table fails,
-        // but in a production environment we might want more consistency.
+        console.error('[AuthService] CRITICAL: Error inserting into public.users:', userError.message);
+        // Detectar si el usuario ya existe (idempotencia en re-registros)
+        const isAlreadyExists = 
+          userError.code === '23505' || // PostgreSQL unique_violation
+          userError.message?.toLowerCase().includes('already exists') ||
+          userError.message?.toLowerCase().includes('duplicate');
+        
+        if (!isAlreadyExists) {
+          throw new RpcException({
+            code: 13, // INTERNAL
+            message: `Failed to create user application record: ${userError.message}`,
+          });
+        }
+        console.warn('[AuthService] public.users record already exists for this user — skipping insert.');
       }
 
       // 3.2 Insert into specific profile table
@@ -160,11 +172,28 @@ export class AuthService {
         .insert(profileData);
 
       if (profileError) {
-        console.error(`[AuthService] Error inserting into ${profileTable}:`, profileError.message);
+        // Si el perfil ya existe, es idempotente — no fallar
+        const isAlreadyExists = 
+          profileError.code === '23505' ||
+          profileError.message?.toLowerCase().includes('already exists') ||
+          profileError.message?.toLowerCase().includes('duplicate');
+          
+        if (!isAlreadyExists) {
+          console.error(`[AuthService] Error inserting into ${profileTable}:`, profileError.message);
+          // No lanzamos aquí: el perfil se puede completar en el onboarding
+        } else {
+          console.warn(`[AuthService] ${profileTable} record already exists — skipping insert.`);
+        }
       }
 
-    } catch (err) {
+    } catch (err: any) {
+      // Re-lanzar RpcExceptions directamente
+      if (err instanceof RpcException) throw err;
       console.error('[AuthService] Unexpected error during manual population:', err);
+      throw new RpcException({
+        code: 13,
+        message: `Unexpected error during user initialization: ${err?.message || 'Unknown error'}`,
+      });
     }
 
     // 4. Fetch the created profile to return it

@@ -26,7 +26,7 @@ message RegisterRequest {
   string email = 1;
   string password = 2;
   string role = 3;
-  string university_id = 4;
+  optional string university_id = 4; // Solo requerido para students
 }
 
 message RegisterResponse {

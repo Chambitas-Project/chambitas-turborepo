@@ -76,8 +76,8 @@ export class AuthController implements OnModuleInit {
     };
   }
 
+  @Public()
   @Post('logout')
-  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Cerrar sesión' })
   @ApiResponse({ status: 200, description: 'Sesión cerrada exitosamente' })
   async logout(@Res({ passthrough: true }) res: Response) {

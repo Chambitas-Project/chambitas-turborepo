@@ -4,10 +4,22 @@ import {
   ExecutionContext,
   CallHandler,
   ServiceUnavailableException,
-  GatewayTimeoutException,
 } from '@nestjs/common';
 import { Observable, from, throwError, catchError, firstValueFrom } from 'rxjs';
 import CircuitBreaker from 'opossum';
+
+/**
+ * Códigos gRPC que corresponden a errores de NEGOCIO (no de infraestructura).
+ * Estos errores NO deben abrir el Circuit Breaker.
+ *
+ * 3  = INVALID_ARGUMENT    → Validación fallida, payload incorrecto
+ * 5  = NOT_FOUND           → Recurso no encontrado
+ * 6  = ALREADY_EXISTS      → Conflicto (usuario duplicado, etc.)
+ * 7  = PERMISSION_DENIED   → Sin permisos sobre el recurso
+ * 9  = FAILED_PRECONDITION → Precondición de negocio no cumplida
+ * 16 = UNAUTHENTICATED     → Token inválido/ausente
+ */
+const BUSINESS_ERROR_CODES = new Set([3, 5, 6, 7, 9, 16]);
 
 @Injectable()
 export class GrpcCircuitBreakerInterceptor implements NestInterceptor {
@@ -20,19 +32,31 @@ export class GrpcCircuitBreakerInterceptor implements NestInterceptor {
 
     if (!this.breakers.has(breakerKey)) {
       const options = {
-        timeout: 20000, // Aumentado a 20s para transacciones pesadas
+        // Timeout incrementado para onboarding (múltiples queries + potencial RPC de Supabase).
+        // Las guidelines recomiendan 3s, pero el onboarding es una transacción pesada.
+        // Reducir a 3-5s una vez implementada la función PL/pgSQL atómica en Supabase.
+        timeout: 15000,
         errorThresholdPercentage: 50,
         resetTimeout: 30000,
-        // Filtramos errores: si retorna true, NO cuenta como fallo para el circuito
+        /**
+         * errorFilter: retorna true → el error es ignorado (NO cuenta como fallo de infraestructura).
+         *
+         * LÓGICA CORRECTA:
+         * - Errores de NEGOCIO (business codes): se ignoran → el circuito NO se abre.
+         * - Errores de INFRAESTRUCTURA (INTERNAL=13, UNAVAILABLE=14, DEADLINE_EXCEEDED=4):
+         *   cuentan como fallos reales → el circuito SÍ puede abrirse.
+         */
         errorFilter: (err: any) => {
-          const infraCodes = [4, 13, 14]; // DEADLINE_EXCEEDED, INTERNAL, UNAVAILABLE
-          if (err?.code && !infraCodes.includes(err.code)) {
-            return true; 
-          }
-          // Si es un error de validación (400) o similar lanzado por Nest, también lo ignoramos
-          if (err?.status && err.status < 500) {
+          // Error gRPC con código de negocio → ignorar para el breaker
+          if (err?.code !== undefined && BUSINESS_ERROR_CODES.has(err.code)) {
             return true;
           }
+          // HTTP 4xx desde NestJS (ej: ValidationPipe, JwtAuthGuard) → ignorar
+          if (err?.status !== undefined && err.status >= 400 && err.status < 500) {
+            return true;
+          }
+          // Cualquier otro error (INTERNAL=13, UNAVAILABLE=14, DEADLINE_EXCEEDED=4)
+          // → cuenta como fallo de infraestructura y puede abrir el circuito
           return false;
         },
       };
@@ -43,26 +67,23 @@ export class GrpcCircuitBreakerInterceptor implements NestInterceptor {
       );
 
       breaker.fallback((error) => {
-        // El fallback solo se ejecuta cuando el circuito está abierto o falló el fire.
-        // Si el circuito está abierto, lanzamos ServiceUnavailableException.
         if (breaker.opened) {
           throw new ServiceUnavailableException(
-            `Service currently unavailable (Circuit Open for ${breakerKey})`,
+            `Service temporarily unavailable (Circuit Open: ${breakerKey}). Please retry in a moment.`,
           );
         }
-        // Si no está abierto pero falló, relanzamos el error original para que llegue al filtro global
+        // Circuito cerrado pero la llamada falló → relanzar para que llegue al GlobalRpcExceptionFilter
         throw error;
       });
 
       this.breakers.set(breakerKey, breaker);
     }
 
-    const breaker = this.breakers.get(breakerKey);
+    const breaker = this.breakers.get(breakerKey)!;
 
-    return from(breaker!.fire(next)).pipe(
-      catchError((err) => {
-        return throwError(() => err);
-      }),
+    return from(breaker.fire(next)).pipe(
+      catchError((err) => throwError(() => err)),
     );
   }
 }
+

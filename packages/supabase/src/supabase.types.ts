@@ -1076,6 +1076,17 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       auth_student_id: { Args: never; Returns: string }
+      complete_student_onboarding: {
+        Args: {
+          p_academic_cycle: number
+          p_career: string
+          p_full_name: string
+          p_skill_ids: string[]
+          p_university_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       application_status:
