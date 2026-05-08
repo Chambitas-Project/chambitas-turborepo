@@ -4,6 +4,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@ne
 import { IMarketplaceService } from '@chambitas/proto';
 import { CreateProjectDto, UpdateProjectDto } from './dto/projects.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
 import { firstValueFrom } from 'rxjs';
 
 @ApiTags('Marketplace - Projects')
@@ -13,7 +14,7 @@ import { firstValueFrom } from 'rxjs';
 export class ProjectsController implements OnModuleInit {
   private marketplaceService!: IMarketplaceService;
 
-  constructor(@Inject('MARKETPLACE_PACKAGE') private client: ClientGrpc) {}
+  constructor(@Inject('MARKETPLACE_PACKAGE') private client: ClientGrpc) { }
 
   onModuleInit() {
     this.marketplaceService = this.client.getService<IMarketplaceService>('MarketplaceService');
@@ -25,10 +26,13 @@ export class ProjectsController implements OnModuleInit {
   @ApiResponse({ status: 403, description: 'Solo los empleadores pueden crear proyectos' })
   async createProject(@Body() dto: CreateProjectDto, @Req() req: any) {
     const user = req.user;
-    
+
     if (user.role !== 'employer') {
       throw new ForbiddenException('Solo los empleadores pueden publicar proyectos');
     }
+
+    // Propagamos la identidad vía Metadata
+    const metadata = createGrpcMetadata(user);
 
     return firstValueFrom(
       this.marketplaceService.CreateProject({
@@ -40,21 +44,23 @@ export class ProjectsController implements OnModuleInit {
         university_ids: dto.university_ids,
         deadline: dto.deadline,
         max_hours_week: dto.max_hours_week,
-        employer_id: user.id,
-      })
+        employer_id: user.id, // Mantener por compatibilidad con el proto actual
+      }, metadata)
     );
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener detalles de un proyecto específico' })
   @ApiParam({ name: 'id', description: 'ID único del proyecto (UUID)' })
-  async getProject(@Param('id') id: string) {
-    return firstValueFrom(this.marketplaceService.GetProject({ id }));
+  async getProject(@Param('id') id: string, @Req() req: any) {
+    const metadata = createGrpcMetadata(req.user);
+    return firstValueFrom(this.marketplaceService.GetProject({ id }, metadata));
   }
 
   @Get()
   @ApiOperation({ summary: 'Listar proyectos disponibles con filtros opcionales' })
   async listProjects(
+    @Req() req: any,
     @Query('employerId') employerId?: string,
     @Query('status') status?: string,
     @Query('serviceCategory') serviceCategory?: string,
@@ -62,6 +68,7 @@ export class ProjectsController implements OnModuleInit {
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
   ) {
+    const metadata = createGrpcMetadata(req.user);
     return firstValueFrom(
       this.marketplaceService.ListProjects({
         employer_id: employerId,
@@ -70,13 +77,14 @@ export class ProjectsController implements OnModuleInit {
         university_id: universityId,
         limit: limit ? Number(limit) : undefined,
         offset: offset ? Number(offset) : undefined,
-      })
+      }, metadata)
     );
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar la información de un proyecto' })
-  async updateProject(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
+  async updateProject(@Param('id') id: string, @Body() dto: UpdateProjectDto, @Req() req: any) {
+    const metadata = createGrpcMetadata(req.user);
     return firstValueFrom(
       this.marketplaceService.UpdateProject({
         id,
@@ -89,13 +97,14 @@ export class ProjectsController implements OnModuleInit {
         university_ids: dto.university_ids,
         deadline: dto.deadline,
         max_hours_week: dto.max_hours_week,
-      })
+      }, metadata)
     );
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar un proyecto (Soft Delete)' })
-  async deleteProject(@Param('id') id: string) {
-    return firstValueFrom(this.marketplaceService.DeleteProject({ id }));
+  async deleteProject(@Param('id') id: string, @Req() req: any) {
+    const metadata = createGrpcMetadata(req.user);
+    return firstValueFrom(this.marketplaceService.DeleteProject({ id }, metadata));
   }
 }

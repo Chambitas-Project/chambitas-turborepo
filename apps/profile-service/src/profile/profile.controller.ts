@@ -1,6 +1,7 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { ProfileService } from './profile.service';
+import { ProfileOwnerGuard, CheckOwner } from '@chambitas/common';
 import { 
   CreateStudentProfileRequest, 
   UpdateStudentProfileRequest, 
@@ -27,6 +28,8 @@ export class ProfileController {
     return await this.profileService.getStudentProfile(data.id);
   }
 
+  @UseGuards(ProfileOwnerGuard)
+  @CheckOwner('userId')
   @GrpcMethod('ProfileService', 'UpdateStudentProfile')
   async updateStudentProfile(data: UpdateStudentProfileRequest): Promise<ProfileResponse> {
     return await this.profileService.updateStudentProfile(data);
@@ -42,6 +45,8 @@ export class ProfileController {
     return await this.profileService.getEmployerProfile(data.id);
   }
 
+  @UseGuards(ProfileOwnerGuard)
+  @CheckOwner('userId')
   @GrpcMethod('ProfileService', 'UpdateEmployerProfile')
   async updateEmployerProfile(data: UpdateEmployerProfileRequest): Promise<ProfileResponse> {
     return await this.profileService.updateEmployerProfile(data);

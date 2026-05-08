@@ -49,6 +49,7 @@ export enum UserRole {
   STUDENT = 'student',
   EMPLOYER = 'employer',
   ADMIN = 'admin',
+  SYSTEM = 'system',
 }
 
 // --- Auth Service Interfaces ---
@@ -104,10 +105,10 @@ export interface UniversityListResponse {
 }
 
 export interface IAuthService {
-  Register(data: RegisterRequest): Observable<RegisterResponse>;
-  Login(data: LoginRequest): Observable<LoginResponse>;
-  UpdateOnboarding(data: OnboardingRequest): Observable<OnboardingResponse>;
-  ListUniversities(data: any): Observable<UniversityListResponse>;
+  Register(data: RegisterRequest, metadata?: any): Observable<RegisterResponse>;
+  Login(data: LoginRequest, metadata?: any): Observable<LoginResponse>;
+  UpdateOnboarding(data: OnboardingRequest, metadata?: any): Observable<OnboardingResponse>;
+  ListUniversities(data: any, metadata?: any): Observable<UniversityListResponse>;
 }
 
 // --- Profile Service Interfaces ---
@@ -192,16 +193,16 @@ export interface ProfileResponse {
 }
 
 export interface IProfileService {
-  CreateStudentProfile(data: CreateStudentProfileRequest): Observable<ProfileResponse>;
-  GetStudentProfile(data: GetProfileRequest): Observable<StudentProfileResponse>;
-  UpdateStudentProfile(data: UpdateStudentProfileRequest): Observable<ProfileResponse>;
+  CreateStudentProfile(data: CreateStudentProfileRequest, metadata?: any): Observable<ProfileResponse>;
+  GetStudentProfile(data: GetProfileRequest, metadata?: any): Observable<StudentProfileResponse>;
+  UpdateStudentProfile(data: UpdateStudentProfileRequest, metadata?: any): Observable<ProfileResponse>;
   
-  CreateEmployerProfile(data: CreateEmployerProfileRequest): Observable<ProfileResponse>;
-  GetEmployerProfile(data: GetProfileRequest): Observable<EmployerProfileResponse>;
-  UpdateEmployerProfile(data: UpdateEmployerProfileRequest): Observable<ProfileResponse>;
-  DeleteProfile(data: DeleteProfileRequest): Observable<ProfileResponse>;
-  SearchProfiles(data: SearchProfilesRequest): Observable<SearchProfilesResponse>;
-  GetProfile(data: GetProfileRequest): Observable<UnifiedProfileResponse>;
+  CreateEmployerProfile(data: CreateEmployerProfileRequest, metadata?: any): Observable<ProfileResponse>;
+  GetEmployerProfile(data: GetProfileRequest, metadata?: any): Observable<EmployerProfileResponse>;
+  UpdateEmployerProfile(data: UpdateEmployerProfileRequest, metadata?: any): Observable<ProfileResponse>;
+  DeleteProfile(data: DeleteProfileRequest, metadata?: any): Observable<ProfileResponse>;
+  SearchProfiles(data: SearchProfilesRequest, metadata?: any): Observable<SearchProfilesResponse>;
+  GetProfile(data: GetProfileRequest, metadata?: any): Observable<UnifiedProfileResponse>;
 }
 
 export interface SearchProfilesRequest {
@@ -228,8 +229,8 @@ export interface UnifiedProfileResponse {
 // --- Media Service Interfaces ---
 
 export interface IMediaService {
-  UploadFile(data: { fileBuffer: Uint8Array, mimeType: string, folder: string }): Observable<{ url: string }>;
-  DeleteFile(data: { url: string }): Observable<{ success: boolean }>;
+  UploadFile(data: { fileBuffer: Uint8Array, mimeType: string, folder: string }, metadata?: any): Observable<{ url: string }>;
+  DeleteFile(data: { url: string }, metadata?: any): Observable<{ success: boolean }>;
 }
 
 // --- Marketplace Service Interfaces ---
@@ -362,18 +363,18 @@ export interface UpdateApplicationStatusRequest {
 
 export interface IMarketplaceService {
   // Projects
-  CreateProject(request: CreateProjectRequest): Observable<Project>;
-  GetProject(request: GetProjectRequest): Observable<Project>;
-  ListProjects(request: ListProjectsRequest): Observable<ListProjectsResponse>;
-  UpdateProject(request: UpdateProjectRequest): Observable<Project>;
-  DeleteProject(request: DeleteProjectRequest): Observable<DeleteProjectResponse>;
+  CreateProject(request: CreateProjectRequest, metadata?: any): Observable<Project>;
+  GetProject(request: GetProjectRequest, metadata?: any): Observable<Project>;
+  ListProjects(request: ListProjectsRequest, metadata?: any): Observable<ListProjectsResponse>;
+  UpdateProject(request: UpdateProjectRequest, metadata?: any): Observable<Project>;
+  DeleteProject(request: DeleteProjectRequest, metadata?: any): Observable<DeleteProjectResponse>;
   
   // Applications
-  CreateApplication(request: CreateApplicationRequest): Observable<Application>;
-  GetApplication(request: GetApplicationRequest): Observable<Application>;
-  ListStudentApplications(request: ListStudentApplicationsRequest): Observable<ListApplicationsResponse>;
-  ListProjectApplications(request: ListProjectApplicationsRequest): Observable<ListApplicationsResponse>;
-  UpdateApplicationStatus(request: UpdateApplicationStatusRequest): Observable<Application>;
+  CreateApplication(request: CreateApplicationRequest, metadata?: any): Observable<Application>;
+  GetApplication(request: GetApplicationRequest, metadata?: any): Observable<Application>;
+  ListStudentApplications(request: ListStudentApplicationsRequest, metadata?: any): Observable<ListApplicationsResponse>;
+  ListProjectApplications(request: ListProjectApplicationsRequest, metadata?: any): Observable<ListApplicationsResponse>;
+  UpdateApplicationStatus(request: UpdateApplicationStatusRequest, metadata?: any): Observable<Application>;
 }
 
 
@@ -395,7 +396,7 @@ export interface GetRecommendationsResponse {
 }
 
 export interface IMatchingService {
-  GetRecommendations(data: GetRecommendationsRequest): Observable<GetRecommendationsResponse>;
+  GetRecommendations(data: GetRecommendationsRequest, metadata?: any): Observable<GetRecommendationsResponse>;
 }
 
 // --- Notification Service Interfaces ---
@@ -413,7 +414,7 @@ export interface SendEmailResponse {
 }
 
 export interface INotificationService {
-  SendEmail(data: SendEmailRequest): Observable<SendEmailResponse>;
+  SendEmail(data: SendEmailRequest, metadata?: any): Observable<SendEmailResponse>;
 }
 
 // --- Analytics Service Interfaces ---
@@ -431,5 +432,5 @@ export interface TrackEventResponse {
 }
 
 export interface IAnalyticsService {
-  TrackEvent(data: TrackEventRequest): Observable<TrackEventResponse>;
+  TrackEvent(data: TrackEventRequest, metadata?: any): Observable<TrackEventResponse>;
 }

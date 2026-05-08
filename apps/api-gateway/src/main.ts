@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { setupSwagger, GlobalRpcExceptionFilter } from '@chambitas/common';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Habilitar Middleware de Cookies
+  app.use(cookieParser());
 
   // Habilitar Prefijo Global
   app.setGlobalPrefix('api/v1');
