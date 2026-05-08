@@ -123,33 +123,63 @@ export class AuthService {
       });
     }
 
-    // 3. Retry Pattern for Profile (Wait for DB Triggers to execute)
-    let userProfile = null;
-    const maxRetries = 3;
-    const delay = 500;
+    // 3. Manual Population of public.users and Profile
+    // We do this because DB triggers might be missing or slow in this environment.
+    console.log(`[AuthService] Manually populating public.users and profile for user ${userId}`);
+    
+    try {
+      const universityId = data.university_id || data.universityId;
+      
+      // 3.1 Insert into public.users
+      const { error: userError } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          email: data.email,
+          role: data.role as any,
+          university_id: data.role === 'student' ? universityId : null,
+          created_at: new Date().toISOString(),
+          is_onboarded: false,
+        });
 
-    for (let i = 0; i < maxRetries; i++) {
-      const profileTable = data.role === 'student' ? 'student_profiles' : 'employer_profiles';
-      const { data: profile } = await supabase
-        .from(profileTable as any)
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (profile) {
-        userProfile = profile;
-        break;
+      if (userError) {
+        console.error('[AuthService] Error inserting into public.users:', userError.message);
+        // We don't throw here to avoid failing registration if only the public table fails,
+        // but in a production environment we might want more consistency.
       }
 
-      console.log(`[AuthService] Retry ${i + 1}/${maxRetries} to fetch profile for user ${userId}...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      // 3.2 Insert into specific profile table
+      const profileTable = data.role === 'student' ? 'student_profiles' : 'employer_profiles';
+      const profileData: any = { id: userId };
+      if (data.role === 'student') {
+        profileData.university_id = universityId;
+      }
+
+      const { error: profileError } = await supabase
+        .from(profileTable as any)
+        .insert(profileData);
+
+      if (profileError) {
+        console.error(`[AuthService] Error inserting into ${profileTable}:`, profileError.message);
+      }
+
+    } catch (err) {
+      console.error('[AuthService] Unexpected error during manual population:', err);
     }
+
+    // 4. Fetch the created profile to return it
+    const profileTable = data.role === 'student' ? 'student_profiles' : 'employer_profiles';
+    const { data: userProfile } = await supabase
+      .from(profileTable as any)
+      .select('*')
+      .eq('id', userId)
+      .single();
 
     if (!userProfile) {
-      console.warn(`[AuthService] Profile not found after ${maxRetries} retries for user ${userId}. Triggers might be slow.`);
+      console.warn(`[AuthService] Profile still not found for user ${userId} after manual insert.`);
     }
 
-    // 4. Return secure data (no password hashes)
+    // 5. Return secure data (no password hashes)
     return {
       userId,
       email: data.email,
