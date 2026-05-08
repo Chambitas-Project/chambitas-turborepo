@@ -38,101 +38,79 @@ export class ProfileController implements OnModuleInit {
     this.profileService = this.client.getService<IProfileService>('ProfileService');
   }
 
-  // --- Student Profiles ---
+  // --- Unified Profiles ---
 
-  @Post('student')
-  @ApiOperation({ summary: 'Crear perfil de Estudiante' })
-  @ApiBody({ type: CreateStudentProfileDto })
-  @ApiResponse({ status: 201, description: 'Perfil creado exitosamente' })
-  async createStudentProfile(@Body() dto: CreateStudentProfileDto, @Req() req: Request) {
+  @Get('me')
+  @ApiOperation({ summary: 'Obtener el perfil del usuario actual' })
+  async getMyProfile(@Req() req: Request) {
     const userId = (req as any).user.id;
     return await firstValueFrom(
-      this.profileService.CreateStudentProfile({ ...dto, userId })
+      this.profileService.GetProfile({ id: userId })
     );
   }
 
-  @Get(['student', 'student/:id'])
-  @ApiOperation({ summary: 'Obtener perfil de Estudiante (por ID o el actual)' })
-  @ApiParam({ name: 'id', required: false, description: 'ID de perfil o userId' })
-  async getStudentProfile(@Req() req: Request, @Param('id') id?: string) {
-    const targetId = id || (req as any).user.id;
-    return await firstValueFrom(
-      this.profileService.GetStudentProfile({ id: targetId })
-    );
+  @Patch('me')
+  @ApiOperation({ summary: 'Actualización parcial del perfil del usuario actual' })
+  async updateMyProfile(@Body() dto: any, @Req() req: Request) {
+    const user = (req as any).user;
+    const userId = user.id;
+    const role = user.role;
+
+    if (role === 'student') {
+      return await firstValueFrom(
+        this.profileService.UpdateStudentProfile({ ...dto, userId })
+      );
+    } else {
+      return await firstValueFrom(
+        this.profileService.UpdateEmployerProfile({ ...dto, userId })
+      );
+    }
   }
 
-  @Put('student')
-  @ApiOperation({ summary: 'Actualización total de perfil de Estudiante' })
-  @ApiBody({ type: UpdateStudentProfileDto })
-  async updateStudentProfileFull(@Body() dto: UpdateStudentProfileDto, @Req() req: Request) {
-    const userId = (req as any).user.id;
-    return await firstValueFrom(
-      this.profileService.UpdateStudentProfile({ ...dto, userId })
-    );
-  }
-
-  @Patch('student')
-  @ApiOperation({ summary: 'Actualización parcial de perfil de Estudiante' })
-  @ApiBody({ type: UpdateStudentProfileDto })
-  async updateStudentProfilePartial(@Body() dto: UpdateStudentProfileDto, @Req() req: Request) {
-    const userId = (req as any).user.id;
-    return await firstValueFrom(
-      this.profileService.UpdateStudentProfile({ ...dto, userId })
-    );
-  }
-
-  // --- Employer Profiles ---
-
-  @Post('employer')
-  @ApiOperation({ summary: 'Crear perfil de Empleador' })
-  @ApiBody({ type: CreateEmployerProfileDto })
-  @ApiResponse({ status: 201, description: 'Perfil creado exitosamente' })
-  async createEmployerProfile(@Body() dto: CreateEmployerProfileDto, @Req() req: Request) {
-    const userId = (req as any).user.id;
-    return await firstValueFrom(
-      this.profileService.CreateEmployerProfile({ ...dto, userId })
-    );
-  }
-
-  @Get(['employer', 'employer/:id'])
-  @ApiOperation({ summary: 'Obtener perfil de Empleador (por ID o el actual)' })
-  @ApiParam({ name: 'id', required: false, description: 'ID de perfil o userId' })
-  async getEmployerProfile(@Req() req: Request, @Param('id') id?: string) {
-    const targetId = id || (req as any).user.id;
-    return await firstValueFrom(
-      this.profileService.GetEmployerProfile({ id: targetId })
-    );
-  }
-
-  @Put('employer')
-  @ApiOperation({ summary: 'Actualización total de perfil de Empleador' })
-  @ApiBody({ type: UpdateEmployerProfileDto })
-  async updateEmployerProfileFull(@Body() dto: UpdateEmployerProfileDto, @Req() req: Request) {
-    const userId = (req as any).user.id;
-    return await firstValueFrom(
-      this.profileService.UpdateEmployerProfile({ ...dto, userId })
-    );
-  }
-
-  @Patch('employer')
-  @ApiOperation({ summary: 'Actualización parcial de perfil de Empleador' })
-  @ApiBody({ type: UpdateEmployerProfileDto })
-  async updateEmployerProfilePartial(@Body() dto: UpdateEmployerProfileDto, @Req() req: Request) {
-    const userId = (req as any).user.id;
-    return await firstValueFrom(
-      this.profileService.UpdateEmployerProfile({ ...dto, userId })
-    );
-  }
-
-  // --- Common ---
-
-  @Delete()
+  @Delete('me')
   @ApiOperation({ summary: 'Soft delete del perfil del usuario actual' })
   @ApiResponse({ status: 200, description: 'Perfil desactivado' })
   async deleteProfile(@Req() req: Request) {
     const userId = (req as any).user.id;
     return await firstValueFrom(
       this.profileService.DeleteProfile({ userId })
+    );
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Buscar perfiles' })
+  async searchProfiles(
+    @Query('q') query: string,
+    @Query('role') role?: string,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number
+  ) {
+    return await firstValueFrom(
+      this.profileService.SearchProfiles({ 
+        query, 
+        role, 
+        limit: limit || 10, 
+        offset: offset || 0 
+      })
+    );
+  }
+
+  @Get('id/:id')
+  @ApiOperation({ summary: 'Obtener perfil por ID' })
+  @ApiParam({ name: 'id', description: 'UUID del perfil o usuario' })
+  async getProfileById(@Param('id', ParseUUIDPipe) id: string) {
+    return await firstValueFrom(
+      this.profileService.GetProfile({ id })
+    );
+  }
+
+  @Get(':username')
+  @ApiOperation({ summary: 'Obtener perfil por nombre de usuario' })
+  @ApiParam({ name: 'username', description: 'Username del perfil' })
+  async getProfileByUsername(@Param('username') username: string) {
+    // Nota: El contrato GetProfileRequest usa 'id', pero el servicio puede buscar por username
+    return await firstValueFrom(
+      this.profileService.GetProfile({ id: username })
     );
   }
 }

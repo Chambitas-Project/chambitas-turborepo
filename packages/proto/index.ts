@@ -57,7 +57,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   role: UserRole;
-  universityId: string;
+  university_id: string;
 }
 
 export interface RegisterResponse {
@@ -92,10 +92,22 @@ export interface OnboardingResponse {
   success: boolean;
 }
 
+export interface UniversityResponse {
+  id: string;
+  name: string;
+  email_domain: string;
+  slug: string;
+}
+
+export interface UniversityListResponse {
+  universities: UniversityResponse[];
+}
+
 export interface IAuthService {
   Register(data: RegisterRequest): Observable<RegisterResponse>;
   Login(data: LoginRequest): Observable<LoginResponse>;
   UpdateOnboarding(data: OnboardingRequest): Observable<OnboardingResponse>;
+  ListUniversities(data: any): Observable<UniversityListResponse>;
 }
 
 // --- Profile Service Interfaces ---
@@ -113,7 +125,7 @@ export interface CreateStudentProfileRequest {
   fullName: string;
   career: string;
   academicCycle: number;
-  universityId: string;
+  university_id: string;
   bio?: string;
   availabilityBlocks?: string;
   skills?: string[];
@@ -151,7 +163,7 @@ export interface StudentProfileResponse {
   fullName: string;
   career: string;
   academicCycle: number;
-  universityId: string;
+  university_id: string;
   bio: string;
   availabilityBlocks: string;
   skills: string[];
@@ -187,8 +199,30 @@ export interface IProfileService {
   CreateEmployerProfile(data: CreateEmployerProfileRequest): Observable<ProfileResponse>;
   GetEmployerProfile(data: GetProfileRequest): Observable<EmployerProfileResponse>;
   UpdateEmployerProfile(data: UpdateEmployerProfileRequest): Observable<ProfileResponse>;
-
   DeleteProfile(data: DeleteProfileRequest): Observable<ProfileResponse>;
+  SearchProfiles(data: SearchProfilesRequest): Observable<SearchProfilesResponse>;
+  GetProfile(data: GetProfileRequest): Observable<UnifiedProfileResponse>;
+}
+
+export interface SearchProfilesRequest {
+  query: string;
+  role?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface SearchProfilesResponse {
+  profiles: UnifiedProfileResponse[];
+}
+
+export interface UnifiedProfileResponse {
+  id: string;
+  role: string;
+  fullName: string;
+  career?: string;
+  universityId?: string;
+  sector?: string;
+  bio?: string;
 }
 
 // --- Media Service Interfaces ---
@@ -204,29 +238,38 @@ export interface Project {
   id: string;
   title: string;
   description: string;
-  employerId: string;
+  employer_id: string;
   budget: number;
   requirements: string[];
   status: string;
-  serviceCategory: string;
-  universityIds: string[];
+  service_category: string;
+  university_ids: string[];
   deadline: string;
-  maxHoursWeek: number;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string;
+  max_hours_week: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
 }
 
 export interface CreateProjectRequest {
   title: string;
   description: string;
-  employerId: string;
+  employer_id: string;
   budget: number;
   requirements: string[];
-  serviceCategory: string;
-  universityIds?: string[];
+  service_category: string;
+  university_ids?: string[];
   deadline?: string;
-  maxHoursWeek?: number;
+  max_hours_week?: number;
+}
+
+export interface University {
+  id: string;
+  name: string;
+  email_domain: string;
+  slug: string;
+  is_active: boolean;
+  logo_url?: string;
 }
 
 
@@ -235,10 +278,10 @@ export interface GetProjectRequest {
 }
 
 export interface ListProjectsRequest {
-  employerId?: string;
+  employer_id?: string;
   status?: string;
-  serviceCategory?: string;
-  universityId?: string; // Used for student filtering
+  service_category?: string;
+  university_id?: string; // Used for student filtering
   limit?: number;
   offset?: number;
 }
@@ -255,10 +298,10 @@ export interface UpdateProjectRequest {
   budget?: number;
   requirements?: string[];
   status?: string;
-  serviceCategory?: string;
-  universityIds?: string[];
+  service_category?: string;
+  university_ids?: string[];
   deadline?: string;
-  maxHoursWeek?: number;
+  max_hours_week?: number;
 }
 
 
@@ -273,22 +316,22 @@ export interface DeleteProjectResponse {
 
 export interface Application {
   id: string;
-  projectId: string;
-  studentId: string;
+  project_id: string;
+  student_id: string;
   status: string;
-  coverNote: string;
-  matchId?: string;
-  appliedAt: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string;
+  cover_note: string;
+  match_id?: string;
+  applied_at: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string;
 }
 
 export interface CreateApplicationRequest {
-  projectId: string;
-  studentId: string;
-  coverNote: string;
-  matchId?: string;
+  project_id: string;
+  student_id: string;
+  cover_note: string;
+  match_id?: string;
 }
 
 export interface GetApplicationRequest {
@@ -296,13 +339,13 @@ export interface GetApplicationRequest {
 }
 
 export interface ListStudentApplicationsRequest {
-  studentId: string;
+  student_id: string;
   limit?: number;
   offset?: number;
 }
 
 export interface ListProjectApplicationsRequest {
-  projectId: string;
+  project_id: string;
   limit?: number;
   offset?: number;
 }

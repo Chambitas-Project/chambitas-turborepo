@@ -1,13 +1,19 @@
 import { Catch, RpcExceptionFilter, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { Response } from 'express';
+import { throwError } from 'rxjs';
 
 @Catch(RpcException)
 export class GlobalRpcExceptionFilter implements RpcExceptionFilter<RpcException> {
   catch(exception: RpcException, host: ArgumentsHost): any {
+    const error = exception.getError() as any;
+
+    if (host.getType() !== 'http') {
+      return throwError(() => error);
+    }
+
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const error = exception.getError() as any;
 
     const grpcCode = error.code;
     const message = error.details || error.message || 'Internal Server Error';

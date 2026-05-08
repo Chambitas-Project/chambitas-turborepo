@@ -6,12 +6,19 @@ import { setupSwagger, GlobalRpcExceptionFilter } from '@chambitas/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Habilitar Prefijo Global
+  app.setGlobalPrefix('api/v1');
+
   // Habilitar Validación Global (class-validator)
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
     transform: true,
   }));
+
+  // Permitir que class-validator use el contenedor de NestJS para inyección de dependencias
+  const { useContainer } = require('class-validator');
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   // Habilitar Filtro de Excepciones Global (gRPC -> HTTP)
   app.useGlobalFilters(new GlobalRpcExceptionFilter());

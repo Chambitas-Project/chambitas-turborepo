@@ -14,6 +14,7 @@ async function bootstrap() {
       package: PROTO_PACKAGE.NOTIFICATION,
       protoPath: PROTO_PATH.NOTIFICATION,
       url: grpcUrl,
+      loader: { keepCase: true },
     },
   });
 

@@ -134,3 +134,12 @@ message UpdateApplicationStatusRequest {
   string id = 1;
   string status = 2;
 }
+
+message University {
+  string id = 1;
+  string name = 2;
+  string email_domain = 3;
+  string slug = 4;
+  bool is_active = 5;
+  optional string logo_url = 6;
+}

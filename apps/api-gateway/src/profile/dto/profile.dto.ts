@@ -18,7 +18,7 @@ export class CreateStudentProfileDto {
 
   @ApiProperty({ description: 'ID de la universidad (UUID)' })
   @IsUUID()
-  universityId!: string;
+  university_id!: string;
 
   @ApiPropertyOptional({ description: 'Biografía' })
   @IsOptional()

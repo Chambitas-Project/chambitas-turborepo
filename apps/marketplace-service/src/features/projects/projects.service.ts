@@ -26,17 +26,17 @@ export class ProjectsService {
   }
 
   async createProject(request: CreateProjectRequest): Promise<Project> {
-    this.logger.log(`Creating project: ${request.title} for employer: ${request.employerId}`);
+    this.logger.log(`Creating project: ${request.title} for employer: ${request.employer_id}`);
     
     // 1. Validación de existencia del empleador
     const { data: employer, error } = await this.supabase
       .from('employer_profiles')
       .select('id')
-      .eq('id', request.employerId)
+      .eq('id', request.employer_id)
       .single();
 
     if (error || !employer) {
-      throw new NotFoundException(`El empleador con ID ${request.employerId} no existe.`);
+      throw new NotFoundException(`El empleador con ID ${request.employer_id} no existe.`);
     }
 
     // 2. Formateo de requisitos para ML
@@ -48,13 +48,13 @@ export class ProjectsService {
     const project = await this.projectsRepository.create({
       title: request.title,
       description: request.description,
-      employer_id: request.employerId,
+      employer_id: request.employer_id,
       budget: request.budget,
       requirements: formattedRequirements,
-      service_category: request.serviceCategory,
+      service_category: request.service_category,
       deadline: request.deadline,
-      max_hours_week: request.maxHoursWeek,
-    }, request.universityIds);
+      max_hours_week: request.max_hours_week,
+    }, request.university_ids);
 
     return this.mapToProto(project);
   }
@@ -69,10 +69,10 @@ export class ProjectsService {
 
   async listProjects(request: ListProjectsRequest): Promise<ListProjectsResponse> {
     const { data, total } = await this.projectsRepository.findAll({
-      employer_id: request.employerId,
+      employer_id: request.employer_id,
       status: request.status as any,
-      service_category: request.serviceCategory,
-      university_id: request.universityId,
+      service_category: request.service_category,
+      university_id: request.university_id,
       limit: request.limit,
       offset: request.offset,
     });
@@ -97,10 +97,10 @@ export class ProjectsService {
         ? request.requirements.map(r => r.trim()).filter(r => r.length > 0).map(r => r.toLowerCase()) 
         : undefined,
       status: (request.status as any) ?? undefined,
-      service_category: request.serviceCategory ?? undefined,
+      service_category: request.service_category ?? undefined,
       deadline: request.deadline ?? undefined,
-      max_hours_week: request.maxHoursWeek ?? undefined,
-    }, request.universityIds);
+      max_hours_week: request.max_hours_week ?? undefined,
+    }, request.university_ids);
 
     return this.mapToProto(project);
   }
@@ -118,17 +118,17 @@ export class ProjectsService {
       id: project.id,
       title: project.title,
       description: project.description || '',
-      employerId: project.employer_id,
+      employer_id: project.employer_id,
       budget: project.budget || 0,
       requirements: project.requirements || [],
       status: project.status || 'open',
-      serviceCategory: project.service_category,
-      universityIds: project.university_ids || [],
+      service_category: project.service_category,
+      university_ids: project.university_ids || [],
       deadline: project.deadline || '',
-      maxHoursWeek: project.max_hours_week || 0,
-      createdAt: project.created_at || '',
-      updatedAt: project.updated_at || '',
-      deletedAt: project.deleted_at || '',
+      max_hours_week: project.max_hours_week || 0,
+      created_at: project.created_at || '',
+      updated_at: project.updated_at || '',
+      deleted_at: project.deleted_at || '',
     };
   }
 }

@@ -7,10 +7,11 @@ export class SupabaseService {
 
   constructor() {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_ANON_KEY;
+    // Use SERVICE_ROLE_KEY if available to bypass RLS in backend services
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY must be defined');
+      throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY/SERVICE_ROLE_KEY must be defined');
     }
 
     this.client = createClient(supabaseUrl, supabaseKey);

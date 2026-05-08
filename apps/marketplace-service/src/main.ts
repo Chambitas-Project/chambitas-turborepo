@@ -14,6 +14,7 @@ async function bootstrap() {
       package: PROTO_PACKAGE.MARKETPLACE,
       protoPath: PROTO_PATH.MARKETPLACE,
       url: grpcUrl,
+      loader: { keepCase: true },
     },
   });
 

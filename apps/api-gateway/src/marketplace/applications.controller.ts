@@ -31,10 +31,10 @@ export class ApplicationsController implements OnModuleInit {
 
     return firstValueFrom(
       this.marketplaceService.CreateApplication({
-        projectId: dto.project_id,
-        studentId: user.id,
-        coverNote: dto.cover_note,
-        matchId: dto.match_id,
+        project_id: dto.project_id,
+        student_id: user.id,
+        cover_note: dto.cover_note,
+        match_id: dto.match_id,
       })
     );
   }
@@ -44,7 +44,7 @@ export class ApplicationsController implements OnModuleInit {
   async listMyApplications(@Req() req: any) {
     return firstValueFrom(
       this.marketplaceService.ListStudentApplications({
-        studentId: req.user.id,
+        student_id: req.user.id,
       })
     );
   }
@@ -54,7 +54,7 @@ export class ApplicationsController implements OnModuleInit {
   async listProjectApplications(@Param('projectId') projectId: string) {
     return firstValueFrom(
       this.marketplaceService.ListProjectApplications({
-        projectId,
+        project_id: projectId,
       })
     );
   }
@@ -72,10 +72,10 @@ export class ApplicationsController implements OnModuleInit {
     const application = await firstValueFrom(this.marketplaceService.GetApplication({ id }));
     
     // 2. Obtener el proyecto para ver quién es el dueño
-    const project = await firstValueFrom(this.marketplaceService.GetProject({ id: application.projectId }));
+    const project = await firstValueFrom(this.marketplaceService.GetProject({ id: application.project_id }));
     
     // 3. Validar que el usuario sea el dueño del proyecto
-    if (project.employerId !== user.id) {
+    if (project.employer_id !== user.id) {
       throw new ForbiddenException('No tienes permiso para gestionar las postulaciones de este proyecto');
     }
 

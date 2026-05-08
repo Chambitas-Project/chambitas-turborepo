@@ -96,7 +96,7 @@ export class ProjectsRepository {
     };
   }
 
-  async create(data: TablesInsert<'projects'>, universityIds: string[] = []): Promise<Tables<'projects'> & { university_ids: string[] }> {
+  async create(data: TablesInsert<'projects'>, university_ids: string[] = []): Promise<Tables<'projects'> & { university_ids: string[] }> {
     // 1. Insert Project
     const { data: project, error: projectError } = await this.client
       .from('projects')
@@ -110,8 +110,8 @@ export class ProjectsRepository {
     if (projectError) throw new Error(`Error creating project: ${projectError.message}`);
 
     // 2. Insert Universities relationships if any
-    if (universityIds.length > 0) {
-      const universityEntries = universityIds.map(uId => ({
+    if (university_ids.length > 0) {
+      const universityEntries = university_ids.map(uId => ({
         project_id: project.id,
         university_id: uId,
       }));
@@ -129,14 +129,14 @@ export class ProjectsRepository {
 
     return {
       ...project,
-      university_ids: universityIds,
+      university_ids: university_ids,
     };
   }
 
   async update(
     id: string,
     data: TablesUpdate<'projects'>,
-    universityIds?: string[]
+    university_ids?: string[]
   ): Promise<Tables<'projects'> & { university_ids: string[] }> {
     // 1. Update project fields
     const { data: project, error: projectError } = await this.client
@@ -152,15 +152,15 @@ export class ProjectsRepository {
     if (projectError) throw new Error(`Error updating project: ${projectError.message}`);
 
     // 2. Update universities if provided
-    if (universityIds !== undefined) {
+    if (university_ids !== undefined) {
       // Soft delete existing and insert new ones (Standard approach)
       await this.client
         .from('project_universities')
         .update({ deleted_at: new Date().toISOString() })
         .eq('project_id', id);
 
-      if (universityIds.length > 0) {
-        const universityEntries = universityIds.map(uId => ({
+      if (university_ids.length > 0) {
+        const universityEntries = university_ids.map(uId => ({
           project_id: id,
           university_id: uId,
         }));
