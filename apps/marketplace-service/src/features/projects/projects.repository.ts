@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { SupabaseService, Database, Tables, TablesInsert, TablesUpdate, Enums } from '@chambitas/supabase';
 
 
-type ProjectWithUniversities = Omit<Tables<'projects'>, 'project_universities'> & {
+type ProjectWithRelations = Tables<'projects'> & {
   project_universities: { university_id: string }[];
+  project_required_skills: (Tables<'project_required_skills'> & { skills: { name: string } })[];
 };
 
 @Injectable()
@@ -14,10 +15,10 @@ export class ProjectsRepository {
     return this.supabaseService.getClient<Database>();
   }
 
-  async findById(id: string): Promise<(Tables<'projects'> & { university_ids: string[] }) | null> {
+  async findById(id: string): Promise<(Tables<'projects'> & { university_ids: string[]; skills: any[] }) | null> {
     const { data, error } = await this.client
       .from('projects')
-      .select('*, project_universities(university_id)')
+      .select('*, project_universities(university_id), project_required_skills(*, skills(name))')
       .eq('id', id)
       .is('deleted_at', null)
       .is('project_universities.deleted_at', null)
@@ -25,11 +26,17 @@ export class ProjectsRepository {
 
     if (error || !data) return null;
 
-    const projectData = data as unknown as ProjectWithUniversities;
+    const projectData = data as unknown as ProjectWithRelations;
 
     return {
       ...projectData,
-      university_ids: (projectData.project_universities || []).map((pu: { university_id: string }) => pu.university_id),
+      university_ids: (projectData.project_universities || []).map(pu => pu.university_id),
+      skills: (projectData.project_required_skills || []).map(ps => ({
+        skill_id: ps.skill_id,
+        skill_name: ps.skills?.name,
+        min_proficiency: ps.min_proficiency,
+        mandatory: ps.mandatory
+      }))
     };
   }
 
@@ -40,40 +47,18 @@ export class ProjectsRepository {
     university_id?: string; // Student's university
     limit?: number;
     offset?: number;
-  }): Promise<{ data: (Tables<'projects'> & { university_ids: string[] })[]; total: number }> {
-    // Para el filtrado complejo de universidades (estudiante), usamos un enfoque de select con join
+  }): Promise<{ data: (Tables<'projects'> & { university_ids: string[]; skills: any[] })[]; total: number }> {
     let query = this.client
       .from('projects')
-      .select('*, project_universities!left(university_id)', { count: 'exact' })
+      .select('*, project_universities!left(university_id), project_required_skills(*, skills(name))', { count: 'exact' })
       .is('deleted_at', null);
-
-    if (filters.employer_id) {
-      query = query.eq('employer_id', filters.employer_id);
-    }
-
+    
+    // ... filtros existentes ...
+    if (filters.employer_id) query = query.eq('employer_id', filters.employer_id);
     const statusFilter = filters.status || (!filters.employer_id ? 'open' : undefined);
-    if (statusFilter) {
-      query = query.eq('status', statusFilter);
-    }
-
-    if (filters.service_category) {
-      query = query.eq('service_category', filters.service_category);
-    }
-
-    // Filtrado para estudiantes
-    if (filters.university_id) {
-      // Proyectos vinculados a la universidad del estudiante O globales (sin entradas en project_universities)
-      // Nota: PostgREST no maneja fácilmente OR entre tablas. 
-      // Una alternativa común es usar rpc o filtros manuales si el dataset es pequeño, 
-      // pero aquí seguiremos la lógica de la política RLS si está activa.
-      // Si el microservicio actúa como admin (service_role), debemos replicar la lógica.
-
-      // Filtramos proyectos que:
-      // 1. Tengan la universidad del estudiante en project_universities
-      // 2. O no tengan ninguna universidad vinculada (proyectos globales)
-      // Esto se puede hacer con una query anidada o filter string.
-      query = query.or(`project_universities.university_id.eq.${filters.university_id},project_universities.is.null`);
-    }
+    if (statusFilter) query = query.eq('status', statusFilter);
+    if (filters.service_category) query = query.eq('service_category', filters.service_category);
+    if (filters.university_id) query = query.or(`project_universities.university_id.eq.${filters.university_id},project_universities.is.null`);
 
     if (filters.limit) {
       const from = filters.offset || 0;
@@ -85,9 +70,15 @@ export class ProjectsRepository {
 
     if (error) throw new Error(`Error listing projects: ${error.message}`);
 
-    const formattedData = ((data as unknown as ProjectWithUniversities[]) || []).map(project => ({
+    const formattedData = ((data as unknown as ProjectWithRelations[]) || []).map(project => ({
       ...project,
-      university_ids: (project.project_universities || []).map((pu: { university_id: string }) => pu.university_id),
+      university_ids: (project.project_universities || []).map(pu => pu.university_id),
+      skills: (project.project_required_skills || []).map(ps => ({
+        skill_id: ps.skill_id,
+        skill_name: ps.skills?.name,
+        min_proficiency: ps.min_proficiency,
+        mandatory: ps.mandatory
+      }))
     }));
 
     return {
@@ -96,7 +87,11 @@ export class ProjectsRepository {
     };
   }
 
-  async create(data: TablesInsert<'projects'>, university_ids: string[] = []): Promise<Tables<'projects'> & { university_ids: string[] }> {
+  async create(
+    data: TablesInsert<'projects'>, 
+    university_ids: string[] = [], 
+    skills: any[] = []
+  ): Promise<Tables<'projects'> & { university_ids: string[]; skills: any[] }> {
     // 1. Insert Project
     const { data: project, error: projectError } = await this.client
       .from('projects')
@@ -121,23 +116,40 @@ export class ProjectsRepository {
         .insert(universityEntries);
 
       if (uniError) {
-        // Soft delete the project if university link fails to maintain consistency
         await this.softDelete(project.id);
         throw new Error(`Error linking project to universities: ${uniError.message}`);
       }
     }
 
-    return {
-      ...project,
-      university_ids: university_ids,
-    };
+    // 3. Insert Required Skills if any
+    if (skills.length > 0) {
+      const skillEntries = skills.map(s => ({
+        project_id: project.id,
+        skill_id: s.skill_id,
+        min_proficiency: s.min_proficiency || 1,
+        mandatory: s.mandatory !== undefined ? s.mandatory : true,
+      }));
+
+      const { error: skillError } = await this.client
+        .from('project_required_skills')
+        .insert(skillEntries);
+
+      if (skillError) {
+        await this.softDelete(project.id);
+        throw new Error(`Error linking project to skills: ${skillError.message}`);
+      }
+    }
+
+    const finalProject = await this.findById(project.id);
+    return finalProject!;
   }
 
   async update(
     id: string,
     data: TablesUpdate<'projects'>,
-    university_ids?: string[]
-  ): Promise<Tables<'projects'> & { university_ids: string[] }> {
+    university_ids?: string[],
+    skills?: any[]
+  ): Promise<Tables<'projects'> & { university_ids: string[]; skills: any[] }> {
     // 1. Update project fields
     const { data: project, error: projectError } = await this.client
       .from('projects')
@@ -153,10 +165,9 @@ export class ProjectsRepository {
 
     // 2. Update universities if provided
     if (university_ids !== undefined) {
-      // Soft delete existing and insert new ones (Standard approach)
       await this.client
         .from('project_universities')
-        .update({ deleted_at: new Date().toISOString() })
+        .delete() // Hard delete for relations table is cleaner if it's just a mapping
         .eq('project_id', id);
 
       if (university_ids.length > 0) {
@@ -170,6 +181,29 @@ export class ProjectsRepository {
           .insert(universityEntries);
 
         if (uniError) throw new Error(`Error updating project universities: ${uniError.message}`);
+      }
+    }
+
+    // 3. Update skills if provided
+    if (skills !== undefined) {
+      await this.client
+        .from('project_required_skills')
+        .delete()
+        .eq('project_id', id);
+
+      if (skills.length > 0) {
+        const skillEntries = skills.map(s => ({
+          project_id: id,
+          skill_id: s.skill_id,
+          min_proficiency: s.min_proficiency || 1,
+          mandatory: s.mandatory !== undefined ? s.mandatory : true,
+        }));
+
+        const { error: skillError } = await this.client
+          .from('project_required_skills')
+          .insert(skillEntries);
+
+        if (skillError) throw new Error(`Error updating project skills: ${skillError.message}`);
       }
     }
 

@@ -255,6 +255,14 @@ export interface Project {
   created_at: string;
   updated_at: string;
   deleted_at: string;
+  skills: SkillRequirement[];
+}
+
+export interface SkillRequirement {
+  skill_id: string;
+  skill_name?: string;
+  min_proficiency: number;
+  mandatory: boolean;
 }
 
 export interface CreateProjectRequest {
@@ -267,6 +275,7 @@ export interface CreateProjectRequest {
   university_ids: string[];
   deadline: string;
   max_hours_week: number;
+  skills: SkillRequirement[];
 }
 
 export interface GetProjectRequest {
@@ -298,6 +307,7 @@ export interface UpdateProjectRequest {
   university_ids?: string[];
   deadline?: string;
   max_hours_week?: number;
+  skills?: SkillRequirement[];
 }
 
 export interface DeleteProjectRequest {
