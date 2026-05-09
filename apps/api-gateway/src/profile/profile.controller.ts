@@ -77,6 +77,8 @@ export class ProfileController implements OnModuleInit {
     return {
       ...rest,
       fullName: full_name,
+      companyName: profile.company_name,
+      commercialName: profile.commercial_name,
       universityName: university_name,
       universityLogo: university_logo,
       academicCycle: academic_cycle,

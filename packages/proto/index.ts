@@ -121,7 +121,6 @@ export interface UnifiedProfileResponse {
   university_id?: string;
   university_name?: string;
   university_logo?: string;
-  sector?: string;
   bio?: string;
   academic_cycle?: number;
   gpa?: number;
@@ -129,6 +128,8 @@ export interface UnifiedProfileResponse {
   activity: ActivityInfo[];
   is_onboarded: boolean;
   availability_blocks?: string;
+  company_name?: string;
+  commercial_name?: string;
 }
 
 export interface CreateStudentProfileRequest {

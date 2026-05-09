@@ -67,7 +67,6 @@ message UnifiedProfileResponse {
   optional string university_id = 5;
   optional string university_name = 6;
   optional string university_logo = 7;
-  optional string sector = 8;
   optional string bio = 9;
   optional int32 academic_cycle = 10;
   optional float gpa = 11;
@@ -75,6 +74,8 @@ message UnifiedProfileResponse {
   repeated ActivityInfo activity = 13;
   bool is_onboarded = 14;
   optional string availability_blocks = 15;
+  optional string company_name = 16;
+  optional string commercial_name = 17;
 }
 
 message GetProfileRequest {
