@@ -51,6 +51,7 @@ export class ProjectsController implements OnModuleInit {
           min_proficiency: s.min_proficiency || 1,
           mandatory: s.mandatory ?? true,
         })),
+        schedule_constraints: dto.schedule_constraints ? JSON.stringify(dto.schedule_constraints) : undefined,
       }, metadata)
     );
   }
@@ -108,6 +109,7 @@ export class ProjectsController implements OnModuleInit {
           min_proficiency: s.min_proficiency || 1,
           mandatory: s.mandatory ?? true,
         })),
+        schedule_constraints: dto.schedule_constraints ? JSON.stringify(dto.schedule_constraints) : undefined,
       }, metadata)
     );
   }

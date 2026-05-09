@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString, Min, IsUUID, ValidateNested, IsBoolean, Max, IsInt } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString, Min, IsUUID, ValidateNested, IsBoolean, Max, IsInt, IsObject } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class SkillRequirementDto {
@@ -66,6 +66,11 @@ export class CreateProjectDto {
   @ValidateNested({ each: true })
   @Type(() => SkillRequirementDto)
   skills?: SkillRequirementDto[];
+
+  @ApiPropertyOptional({ description: 'Restricciones de horario (Mapa de bits JSON)', example: { "mon": "11110000..." } })
+  @IsOptional()
+  @IsObject()
+  schedule_constraints?: Record<string, string>;
 }
 
 export class UpdateProjectDto {
@@ -123,4 +128,9 @@ export class UpdateProjectDto {
   @ValidateNested({ each: true })
   @Type(() => SkillRequirementDto)
   skills?: SkillRequirementDto[];
+
+  @ApiPropertyOptional({ description: 'Restricciones de horario (Mapa de bits JSON)', example: { "mon": "11110000..." } })
+  @IsOptional()
+  @IsObject()
+  schedule_constraints?: Record<string, string>;
 }

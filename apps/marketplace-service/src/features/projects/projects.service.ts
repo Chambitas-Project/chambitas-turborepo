@@ -58,6 +58,7 @@ export class ProjectsService {
       service_category: request.service_category,
       deadline: request.deadline,
       max_hours_week: request.max_hours_week,
+      schedule_constraints: request.schedule_constraints ? JSON.parse(request.schedule_constraints) : undefined,
     }, request.university_ids, request.skills);
 
     return this.mapToProto(project);
@@ -104,6 +105,7 @@ export class ProjectsService {
       service_category: request.service_category ?? undefined,
       deadline: request.deadline ?? undefined,
       max_hours_week: request.max_hours_week ?? undefined,
+      schedule_constraints: request.schedule_constraints ? JSON.parse(request.schedule_constraints) : undefined,
     }, request.university_ids, request.skills);
 
     return this.mapToProto(project);
@@ -131,6 +133,7 @@ export class ProjectsService {
       deadline: project.deadline || '',
       max_hours_week: project.max_hours_week || 0,
       skills: project.skills || [],
+      schedule_constraints: project.schedule_constraints ? JSON.stringify(project.schedule_constraints) : '',
       created_at: project.created_at || '',
       updated_at: project.updated_at || '',
       deleted_at: project.deleted_at || '',

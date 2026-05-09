@@ -256,6 +256,7 @@ export interface Project {
   updated_at: string;
   deleted_at: string;
   skills: SkillRequirement[];
+  schedule_constraints?: string;
 }
 
 export interface SkillRequirement {
@@ -276,6 +277,7 @@ export interface CreateProjectRequest {
   deadline: string;
   max_hours_week: number;
   skills: SkillRequirement[];
+  schedule_constraints?: string;
 }
 
 export interface GetProjectRequest {
@@ -308,6 +310,7 @@ export interface UpdateProjectRequest {
   deadline?: string;
   max_hours_week?: number;
   skills?: SkillRequirement[];
+  schedule_constraints?: string;
 }
 
 export interface DeleteProjectRequest {
