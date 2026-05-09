@@ -35,7 +35,6 @@ export class ApplicationsController implements OnModuleInit {
         project_id: dto.project_id,
         student_id: user.id,
         cover_note: dto.cover_note,
-        match_id: dto.match_id,
       })
     );
   }
