@@ -64,33 +64,50 @@ export class ProfileController implements OnModuleInit {
       this.profileService.GetProfile({ id: user.id }, metadata)
     );
 
-    // Map snake_case from gRPC to camelCase for Frontend
+    // Desestructuramos todo lo que NO queremos que se repita en ...rest
     const { 
       full_name, 
       university_name, 
       university_logo,
       academic_cycle, 
       is_onboarded, 
+      bio,
+      company_name,
+      commercial_name,
+      availability_blocks,
+      skills,
       ...rest 
     } = profile;
 
-    return {
+    const response: any = {
       ...rest,
       fullName: full_name,
-      companyName: profile.company_name,
-      commercialName: profile.commercial_name,
-      universityName: university_name,
-      universityLogo: university_logo,
-      academicCycle: academic_cycle,
       isOnboarded: is_onboarded,
-      availabilityBlocks: profile.availability_blocks 
-        ? (typeof profile.availability_blocks === 'string' ? JSON.parse(profile.availability_blocks) : profile.availability_blocks)
-        : null,
-      skills: profile.skills?.map(({ proficiency_level, ...s }) => ({
+    };
+
+    // Campos exclusivos de Estudiantes
+    if (profile.role === 'student') {
+      response.bio = bio;
+      response.universityName = university_name;
+      response.universityLogo = university_logo;
+      response.academicCycle = academic_cycle;
+      response.availabilityBlocks = availability_blocks 
+        ? (typeof availability_blocks === 'string' ? JSON.parse(availability_blocks) : availability_blocks)
+        : null;
+      response.skills = skills?.map(({ proficiency_level, ...s }) => ({
         ...s,
         level: proficiency_level
-      })) || []
-    };
+      })) || [];
+    } 
+    
+    // Campos exclusivos de Empleadores
+    else if (profile.role === 'employer') {
+      response.companyName = company_name;
+      response.commercialName = commercial_name;
+      response.description = bio; // Usamos el bio que viene de gRPC como description
+    }
+
+    return response;
   }
 
   @Patch('me')
