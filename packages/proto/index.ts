@@ -186,11 +186,13 @@ export interface CompleteOnboardingRequest {
   career?: string;
   academic_cycle?: number;
   university_id?: string;
-  skill_inputs?: SkillInput[];  // Reemplaza a skills: string[]
+  skill_inputs?: SkillInput[];
   company_name?: string;
-  ruc?: string;
-  sector?: string;
+  name?: string;
   description?: string;
+  bio?: string;
+  gpa?: number;
+  availability_blocks?: string;
 }
 
 export interface Skill {

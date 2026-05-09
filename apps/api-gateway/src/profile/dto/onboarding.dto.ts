@@ -108,15 +108,10 @@ export class EmployerOnboardingDto {
   @IsNotEmpty()
   company_name!: string;
 
-  @ApiProperty({ description: 'RUC', example: '20123456789' })
+  @ApiProperty({ description: 'Nombre comercial / Marca', example: 'Chambitas' })
   @IsString()
   @IsNotEmpty()
-  ruc!: string;
-
-  @ApiProperty({ description: 'Sector de la empresa', example: 'Tecnología' })
-  @IsString()
-  @IsNotEmpty()
-  sector!: string;
+  name!: string;
 
   @ApiProperty({ 
     description: 'Descripción de la empresa', 

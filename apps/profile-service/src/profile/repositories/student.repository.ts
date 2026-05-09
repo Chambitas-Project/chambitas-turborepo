@@ -26,10 +26,12 @@ export class StudentRepository {
       .from('student_profiles')
       .select(`
         *,
-        universities(*),
-        skills:student_skills(
+        user:users(is_onboarded),
+        university:universities(name, logo_url),
+        student_skills(
           proficiency_level,
-          skill:skills(name)
+          verified,
+          skill:skills(id, name)
         )
       `)
       .eq('id', userId)
@@ -37,15 +39,7 @@ export class StudentRepository {
       .single();
 
     if (error || !data) return null;
-    
-    // Formatear skills para que sea más fácil de usar
-    return {
-      ...data,
-      skills: data.skills?.map((s: any) => ({
-        name: s.skill?.name,
-        level: s.proficiency_level
-      })) || []
-    };
+    return data;
   }
 
   async create(data: TablesInsert<'student_profiles'>): Promise<Tables<'student_profiles'>> {

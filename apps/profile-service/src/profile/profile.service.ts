@@ -112,6 +112,7 @@ export class ProfileService {
           p_academic_cycle: data.academic_cycle || 1,
           p_skill_ids: resolvedSkillIds,
           p_proficiency_levels: resolvedProficiencyLevels,
+          p_bio: data.bio ?? null,
         });
 
         if (rpcError) {
@@ -166,18 +167,17 @@ export class ProfileService {
 
       } else if (data.role === 'employer') {
         // 1. Validar campos mandatorios
-        if (!data.company_name || !data.ruc || !data.sector || !data.description) {
+        if (!data.company_name || !data.name || !data.description) {
           throw new RpcException({ 
             code: status.INVALID_ARGUMENT, 
-            message: 'company_name, ruc, sector y description son obligatorios para empleadores' 
+            message: 'company_name, name y description son obligatorios para empleadores' 
           });
         }
 
         // 2. Upsert del perfil de empleador
         const employerUpdate: any = { id: data.user_id };
         if (data.company_name !== undefined) employerUpdate.company_name = data.company_name;
-        if (data.ruc !== undefined) employerUpdate.ruc = data.ruc;
-        if (data.sector !== undefined) employerUpdate.sector = data.sector;
+        if (data.name !== undefined) employerUpdate.name = data.name;
         if (data.description !== undefined) employerUpdate.description = data.description;
 
         const { error: employerError } = await supabase.from('employer_profiles').upsert(employerUpdate);
@@ -304,8 +304,7 @@ export class ProfileService {
       const { data: profile } = await supabase.from('employer_profiles').select('*').eq('id', userId).single();
       isComplete = !!(
         profile?.company_name && 
-        profile?.ruc && 
-        profile?.sector && 
+        profile?.name && 
         profile?.description
       );
     }
@@ -350,8 +349,7 @@ export class ProfileService {
       } else {
         const updateData: any = {};
         if (data.company_name) updateData.company_name = data.company_name;
-        if (data.ruc) updateData.ruc = data.ruc;
-        if (data.sector) updateData.sector = data.sector;
+        if (data.name) updateData.name = data.name;
         if (data.description !== undefined) updateData.description = data.description;
 
         const { error } = await supabase
@@ -386,42 +384,37 @@ export class ProfileService {
   }
 
   private mapStudentToUnified(student: any): UnifiedProfileResponse {
-    const university = Array.isArray(student.universities) ? student.universities[0] : student.universities;
-    const universityName = university?.name || student.university_name || "";
-    
-    const is_onboarded = !!(student.full_name && student.career);
-
     return {
       id: student.id,
       role: 'student',
       full_name: student.full_name,
       career: student.career,
       university_id: student.university_id,
-      university_name: universityName,
+      university_name: student.university?.name,
+      university_logo: student.university?.logo_url,
       academic_cycle: student.academic_cycle,
       bio: student.bio,
-      gpa: student.gpa,
-      is_onboarded: is_onboarded,
-      skills: student.skills?.map((s: any) => ({
-        id: s.id || "",
-        name: s.name || "",
-        proficiency_level: s.level || 1,
-        verified: !!s.verified
-      })) || [],
-      activity: [],
-    } as any;
+      is_onboarded: student.user?.is_onboarded || false,
+      skills: (student.student_skills || []).map((ss: any) => ({
+        id: ss.skill?.id,
+        name: ss.skill?.name,
+        proficiency_level: ss.proficiency_level || 1,
+        verified: ss.verified || false,
+      })),
+      activity: [], // Por implementar
+    };
   }
 
   private mapEmployerToUnified(employer: any): UnifiedProfileResponse {
-    const is_onboarded = !!(employer.company_name && employer.sector);
     return {
       id: employer.id,
       role: 'employer',
-      full_name: employer.company_name,
+      full_name: employer.company_name, // Mapping company name as full name for display
       sector: employer.sector,
-      is_onboarded: is_onboarded,
+      bio: employer.description, // Mapeamos descripción a bio para unificar
+      is_onboarded: employer.user?.is_onboarded || false,
       skills: [],
       activity: [],
-    } as any;
+    };
   }
 }

@@ -65,16 +65,26 @@ export class ProfileController implements OnModuleInit {
     );
 
     // Map snake_case from gRPC to camelCase for Frontend
+    const { 
+      full_name, 
+      university_name, 
+      university_logo,
+      academic_cycle, 
+      is_onboarded, 
+      ...rest 
+    } = profile;
+
     return {
-      ...profile,
-      fullName: profile.full_name,
-      universityName: profile.university_name,
-      academicCycle: profile.academic_cycle,
-      isOnboarded: profile.is_onboarded,
-      skills: profile.skills?.map(s => ({
+      ...rest,
+      fullName: full_name,
+      universityName: university_name,
+      universityLogo: university_logo,
+      academicCycle: academic_cycle,
+      isOnboarded: is_onboarded,
+      skills: profile.skills?.map(({ proficiency_level, ...s }) => ({
         ...s,
-        level: s.proficiency_level
-      }))
+        level: proficiency_level
+      })) || []
     };
   }
 
@@ -122,8 +132,9 @@ export class ProfileController implements OnModuleInit {
     );
 
     return {
-      ...result,
-      isOnboarded: (result as any).is_onboarded
+      success: result.success,
+      message: result.message,
+      isOnboarded: result.is_onboarded
     };
   }
 
@@ -143,8 +154,9 @@ export class ProfileController implements OnModuleInit {
     );
 
     return {
-      ...result,
-      isOnboarded: (result as any).is_onboarded
+      success: result.success,
+      message: result.message,
+      isOnboarded: result.is_onboarded
     };
   }
 
