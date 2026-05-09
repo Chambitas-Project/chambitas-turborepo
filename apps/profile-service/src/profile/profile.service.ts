@@ -79,16 +79,13 @@ export class ProfileService {
           });
         }
 
-        // 4. Resolver university_id si no viene en el payload
-        let universityId = data.university_id;
-        if (!universityId) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('university_id')
-            .eq('id', data.user_id)
-            .single();
-          universityId = userData?.university_id ?? undefined;
-        }
+        // 4. Resolver university_id desde la base de datos (ya no viene en el payload)
+        const { data: userData } = await supabase
+          .from('users')
+          .select('university_id')
+          .eq('id', data.user_id)
+          .single();
+        const universityId = userData?.university_id ?? undefined;
 
         if (!universityId) {
           throw new RpcException({

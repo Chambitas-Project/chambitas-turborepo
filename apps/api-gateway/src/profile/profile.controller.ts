@@ -116,7 +116,6 @@ export class ProfileController implements OnModuleInit {
       this.profileService.CompleteOnboarding({
         user_id: user.id,
         role: 'student',
-        university_id: dto.university_id,
         full_name: dto.full_name,
         career_id: dto.career_id,
         academic_cycle: dto.academic_cycle,

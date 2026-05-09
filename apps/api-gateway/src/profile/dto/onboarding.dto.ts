@@ -43,12 +43,7 @@ export class SkillInputDto {
 }
 
 export class StudentOnboardingDto {
-  @ApiProperty({ description: 'ID de la universidad', example: 'uuid-de-la-universidad' })
-  @IsUUID()
-  @IsNotEmpty()
-  university_id!: string;
-
-  @ApiProperty({ description: 'Nombre completo', example: 'Juan Pérez' })
+  @ApiProperty({ description: 'Nombre completo', example: 'Rodrigo López' })
   @IsString()
   @IsNotEmpty()
   full_name!: string;

@@ -185,7 +185,6 @@ export interface CompleteOnboardingRequest {
   full_name?: string;
   career_id?: string;
   academic_cycle?: number;
-  university_id?: string;
   skill_inputs?: SkillInput[];
   company_name?: string;
   name?: string;
