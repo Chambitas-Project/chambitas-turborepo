@@ -39,12 +39,16 @@ export class ApplicationsController implements OnModuleInit {
     );
   }
 
-  @Get('student')
-  @ApiOperation({ summary: 'Listar postulaciones del estudiante actual' })
+  @Get('my-applications')
+  @ApiOperation({ summary: 'Listar mis postulaciones enviadas (Solo Estudiantes)' })
   async listMyApplications(@Req() req: any) {
+    const user = req.user;
+    if (user.role !== 'student') {
+      throw new ForbiddenException('Solo los estudiantes pueden ver sus postulaciones');
+    }
     return firstValueFrom(
       this.marketplaceService.ListStudentApplications({
-        student_id: req.user.id,
+        student_id: user.id,
       })
     );
   }

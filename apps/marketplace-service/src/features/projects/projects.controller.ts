@@ -8,7 +8,9 @@ import {
   ListProjectsResponse, 
   UpdateProjectRequest, 
   DeleteProjectRequest, 
-  DeleteProjectResponse
+  DeleteProjectResponse,
+  CompleteProjectRequest,
+  CompleteProjectResponse
 } from '@chambitas/proto';
 import { ProjectsService } from './projects.service';
 import { CurrentUser, IUserContext } from '@chambitas/common';
@@ -49,5 +51,10 @@ export class ProjectsController {
   @GrpcMethod('MarketplaceService', 'DeleteProject')
   async deleteProject(data: DeleteProjectRequest): Promise<DeleteProjectResponse> {
     return this.projectsService.deleteProject(data);
+  }
+
+  @GrpcMethod('MarketplaceService', 'CompleteProject')
+  async completeProject(data: CompleteProjectRequest): Promise<CompleteProjectResponse> {
+    return this.projectsService.completeProject(data);
   }
 }

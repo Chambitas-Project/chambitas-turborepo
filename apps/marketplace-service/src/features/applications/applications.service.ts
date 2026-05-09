@@ -113,7 +113,19 @@ export class ApplicationsService {
   }
 
   async updateApplicationStatus(request: UpdateApplicationStatusRequest): Promise<Application> {
-    const application = await this.applicationsRepository.updateStatus(request.id, request.status as any);
+    const status = request.status as any;
+    
+    // 1. Actualizar el estado de la postulación
+    const application = await this.applicationsRepository.updateStatus(request.id, status);
+    
+    // 2. Si se acepta la postulación, cambiar el estado del proyecto a 'in_progress'
+    if (status === 'accepted') {
+      await this.projectsRepository.updateStatus(application.project_id, 'in_progress');
+      
+      // Opcional: Rechazar automáticamente otras postulaciones para este proyecto
+      // await this.applicationsRepository.rejectOthers(application.project_id, application.id);
+    }
+
     return this.mapToProto(application);
   }
 

@@ -390,6 +390,15 @@ export interface DeleteApplicationRequest {
 
 export interface DeleteApplicationResponse {
   success: boolean;
+  message?: string;
+}
+
+export interface CompleteProjectRequest {
+  id: string;
+}
+
+export interface CompleteProjectResponse {
+  success: boolean;
   message: string;
 }
 
@@ -479,7 +488,8 @@ export interface IMarketplaceService {
   GetProject(data: GetProjectRequest, metadata?: any): Observable<Project>;
   ListProjects(data: ListProjectsRequest, metadata?: any): Observable<ListProjectsResponse>;
   UpdateProject(data: UpdateProjectRequest, metadata?: any): Observable<Project>;
-  DeleteProject(data: DeleteProjectRequest, metadata?: any): Observable<DeleteProjectResponse>;
+  DeleteProject(request: DeleteProjectRequest, metadata?: any): Observable<DeleteProjectResponse>;
+  CompleteProject(request: CompleteProjectRequest, metadata?: any): Observable<CompleteProjectResponse>;
   CreateApplication(data: CreateApplicationRequest, metadata?: any): Observable<Application>;
   GetApplication(data: GetApplicationRequest, metadata?: any): Observable<Application>;
   ListStudentApplications(data: ListStudentApplicationsRequest, metadata?: any): Observable<ListApplicationsResponse>;

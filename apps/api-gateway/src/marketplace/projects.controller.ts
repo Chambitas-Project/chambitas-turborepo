@@ -2,7 +2,7 @@ import { Controller, Post, Get, Patch, Delete, Body, Param, Query, Inject, OnMod
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { IMarketplaceService } from '@chambitas/proto';
-import { CreateProjectDto, UpdateProjectDto } from './dto/projects.dto';
+import { CreateProjectDto, UpdateProjectDto, ListProjectsDto } from './dto/projects.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OnboardingGuard } from '../auth/guards/onboarding.guard';
 import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
@@ -56,6 +56,26 @@ export class ProjectsController implements OnModuleInit {
     );
   }
 
+  @Get('my-projects')
+  @ApiOperation({ summary: 'Listar mis proyectos publicados (Solo Empleadores)' })
+  async listMyProjects(@Req() req: any, @Query() query: ListProjectsDto) {
+    const user = req.user;
+    if (user.role !== 'employer') {
+      throw new ForbiddenException('Solo los empleadores pueden ver sus propios proyectos');
+    }
+
+    const metadata = createGrpcMetadata(user);
+    return firstValueFrom(
+      this.marketplaceService.ListProjects({
+        employer_id: user.id,
+        status: query.status,
+        service_category: query.serviceCategory,
+        limit: query.limit ? Number(query.limit) : undefined,
+        offset: query.offset ? Number(query.offset) : undefined,
+      }, metadata)
+    );
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener detalles de un proyecto específico' })
   @ApiParam({ name: 'id', description: 'ID único del proyecto (UUID)' })
@@ -68,22 +88,17 @@ export class ProjectsController implements OnModuleInit {
   @ApiOperation({ summary: 'Listar proyectos disponibles con filtros opcionales' })
   async listProjects(
     @Req() req: any,
-    @Query('employerId') employerId?: string,
-    @Query('status') status?: string,
-    @Query('serviceCategory') serviceCategory?: string,
-    @Query('universityId') universityId?: string,
-    @Query('limit') limit?: number,
-    @Query('offset') offset?: number,
+    @Query() query: ListProjectsDto,
   ) {
     const metadata = createGrpcMetadata(req.user);
     return firstValueFrom(
       this.marketplaceService.ListProjects({
-        employer_id: employerId,
-        status,
-        service_category: serviceCategory,
-        university_id: universityId,
-        limit: limit ? Number(limit) : undefined,
-        offset: offset ? Number(offset) : undefined,
+        employer_id: query.employerId,
+        status: query.status,
+        service_category: query.serviceCategory,
+        university_id: query.universityId,
+        limit: query.limit ? Number(query.limit) : undefined,
+        offset: query.offset ? Number(query.offset) : undefined,
       }, metadata)
     );
   }
@@ -119,5 +134,21 @@ export class ProjectsController implements OnModuleInit {
   async deleteProject(@Param('id') id: string, @Req() req: any) {
     const metadata = createGrpcMetadata(req.user);
     return firstValueFrom(this.marketplaceService.DeleteProject({ id }, metadata));
+  }
+
+  @Post(':id/complete')
+  @ApiOperation({ summary: 'Marcar un proyecto como completado (Empleador)' })
+  async completeProject(@Param('id') id: string, @Req() req: any) {
+    const user = req.user;
+    const metadata = createGrpcMetadata(user);
+
+    // 1. Obtener proyecto para validar dueño
+    const project = await firstValueFrom(this.marketplaceService.GetProject({ id }, metadata));
+    
+    if (project.employer_id !== user.id) {
+      throw new ForbiddenException('No tienes permiso para completar este proyecto');
+    }
+
+    return firstValueFrom(this.marketplaceService.CompleteProject({ id }, metadata));
   }
 }

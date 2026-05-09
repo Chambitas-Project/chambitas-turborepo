@@ -7,9 +7,12 @@ import {
   ListProjectsResponse, 
   UpdateProjectRequest, 
   DeleteProjectRequest, 
-  DeleteProjectResponse 
+  DeleteProjectResponse,
+  CompleteProjectRequest,
+  CompleteProjectResponse
 } from '@chambitas/proto';
 import { ProjectsRepository } from './projects.repository';
+import { ApplicationsRepository } from '../applications/applications.repository';
 import { Tables, SupabaseService, Database } from '@chambitas/supabase';
 
 @Injectable()
@@ -18,6 +21,7 @@ export class ProjectsService {
 
   constructor(
     private readonly projectsRepository: ProjectsRepository,
+    private readonly applicationsRepository: ApplicationsRepository,
     private readonly supabaseService: SupabaseService,
   ) {}
 
@@ -116,6 +120,31 @@ export class ProjectsService {
     return {
       success: true,
       message: 'Proyecto eliminado correctamente.',
+    };
+  }
+
+  async completeProject(request: CompleteProjectRequest): Promise<CompleteProjectResponse> {
+    this.logger.log(`Completing project ${request.id}`);
+
+    // 1. Verificar que el proyecto exista y esté en progreso
+    const project = await this.projectsRepository.findById(request.id);
+    if (!project) throw new NotFoundException('Proyecto no encontrado');
+    if (project.status !== 'in_progress') {
+      throw new BadRequestException('Solo se pueden completar proyectos que están "en progreso"');
+    }
+
+    // 2. Marcar proyecto como cerrado
+    await this.projectsRepository.updateStatus(request.id, 'closed');
+
+    // 3. Marcar la aplicación aceptada como completada
+    const { data: apps } = await this.applicationsRepository.findAll({ project_id: request.id, status: 'accepted' });
+    for (const app of apps) {
+      await this.applicationsRepository.updateStatus(app.id, 'completed');
+    }
+
+    return {
+      success: true,
+      message: 'Proyecto y postulaciones marcados como completados exitosamente',
     };
   }
 

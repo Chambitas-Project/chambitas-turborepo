@@ -9,6 +9,7 @@ service MarketplaceService {
   rpc ListProjects (ListProjectsRequest) returns (ListProjectsResponse) {}
   rpc UpdateProject (UpdateProjectRequest) returns (Project) {}
   rpc DeleteProject (DeleteProjectRequest) returns (DeleteProjectResponse) {}
+  rpc CompleteProject (CompleteProjectRequest) returns (CompleteProjectResponse) {}
 
   // Applications
   rpc CreateApplication (CreateApplicationRequest) returns (Application) {}
@@ -169,6 +170,15 @@ message DeleteApplicationRequest {
 }
 
 message DeleteApplicationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CompleteProjectRequest {
+  string id = 1;
+}
+
+message CompleteProjectResponse {
   bool success = 1;
   string message = 2;
 }

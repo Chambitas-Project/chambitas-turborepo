@@ -134,3 +134,39 @@ export class UpdateProjectDto {
   @IsObject()
   schedule_constraints?: Record<string, string>;
 }
+
+export class ListProjectsDto {
+  @ApiPropertyOptional({ description: 'Filtrar por empleador' })
+  @IsOptional()
+  @IsUUID()
+  employerId?: string;
+
+  @ApiPropertyOptional({ description: 'Filtrar por estado', enum: ['open', 'in_progress', 'closed', 'draft'] })
+  @IsOptional()
+  @IsString()
+  status?: string;
+
+  @ApiPropertyOptional({ description: 'Filtrar por categoría de servicio' })
+  @IsOptional()
+  @IsString()
+  serviceCategory?: string;
+
+  @ApiPropertyOptional({ description: 'Filtrar por universidad' })
+  @IsOptional()
+  @IsUUID()
+  universityId?: string;
+
+  @ApiPropertyOptional({ description: 'Límite de resultados' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  limit?: number;
+
+  @ApiPropertyOptional({ description: 'Desplazamiento (offset)' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  offset?: number;
+}

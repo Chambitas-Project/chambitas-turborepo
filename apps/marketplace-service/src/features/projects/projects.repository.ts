@@ -211,6 +211,21 @@ export class ProjectsRepository {
     return finalProject!;
   }
 
+  async updateStatus(id: string, status: Enums<'project_status'>): Promise<Tables<'projects'>> {
+    const { data, error } = await this.client
+      .from('projects')
+      .update({ 
+        status,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Error updating project status: ${error.message}`);
+    return data;
+  }
+
   async softDelete(id: string): Promise<void> {
     const now = new Date().toISOString();
 
