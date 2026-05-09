@@ -30,11 +30,9 @@ import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { 
   CreateStudentProfileDto, 
-  UpdateStudentProfileDto, 
-  CreateEmployerProfileDto, 
-  UpdateEmployerProfileDto 
+  CreateEmployerProfileDto 
 } from './dto/profile.dto';
-import { StudentOnboardingDto, EmployerOnboardingDto } from './dto/onboarding.dto';
+import { StudentOnboardingDto, EmployerOnboardingDto, UpdateStudentProfileDto, UpdateEmployerProfileDto } from './dto/onboarding.dto';
 import { IProfileService } from '@chambitas/proto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';

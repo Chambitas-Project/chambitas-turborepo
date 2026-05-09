@@ -187,6 +187,9 @@ export class ProfileService {
     }
   }
 
+  async updateProfile(data: CompleteOnboardingRequest): Promise<ProfileResponse> {
+    return this.updateProfileInternal(data, data.role as 'student' | 'employer');
+  }
 
   async listSkills(category?: string): Promise<{ skills: any[] }> {
     const supabase = this.supabaseService.getClient<Database>();

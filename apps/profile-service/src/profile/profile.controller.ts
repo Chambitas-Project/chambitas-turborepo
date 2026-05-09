@@ -117,4 +117,15 @@ export class ProfileController {
     (data as any).role = role;
     return await this.profileService.completeOnboarding(data);
   }
+
+  @UseGuards(ProfileOwnerGuard)
+  @CheckOwner('user_id')
+  @GrpcMethod('ProfileService', 'UpdateProfile')
+  async updateProfile(data: CompleteOnboardingRequest, metadata: any): Promise<ProfileResponse> {
+    const { userId, role } = this.getUserFromMetadata(metadata);
+    // Sobreescribir con identidad real del JWT
+    (data as any).user_id = userId;
+    (data as any).role = role;
+    return await this.profileService.updateProfile(data);
+  }
 }
