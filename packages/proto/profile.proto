@@ -174,7 +174,7 @@ message CompleteOnboardingRequest {
   string user_id = 1;
   string role = 2;
   optional string full_name = 3;
-  optional string career = 4;
+  optional string career_id = 4;
   optional int32 academic_cycle = 5;
   optional string university_id = 6;
   repeated SkillInput skill_inputs = 7;

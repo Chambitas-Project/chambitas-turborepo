@@ -183,7 +183,7 @@ export interface CompleteOnboardingRequest {
   user_id: string;
   role: string;
   full_name?: string;
-  career?: string;
+  career_id?: string;
   academic_cycle?: number;
   university_id?: string;
   skill_inputs?: SkillInput[];

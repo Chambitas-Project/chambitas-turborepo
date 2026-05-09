@@ -53,10 +53,10 @@ export class StudentOnboardingDto {
   @IsNotEmpty()
   full_name!: string;
 
-  @ApiProperty({ description: 'Carrera', example: 'Ingeniería de Software' })
+  @ApiProperty({ description: 'ID de la carrera', example: 'uuid-de-la-carrera' })
   @IsString()
   @IsNotEmpty()
-  career!: string;
+  career_id!: string;
 
   @ApiProperty({ description: 'Ciclo académico (1-12)', minimum: 1, maximum: 12, example: 6 })
   @IsInt()

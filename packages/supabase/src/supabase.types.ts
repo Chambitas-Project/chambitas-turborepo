@@ -854,7 +854,7 @@ export type Database = {
           academic_cycle: number | null
           availability_blocks: Json | null
           bio: string | null
-          career: string | null
+          career_id: string | null
           created_at: string | null
           deleted_at: string | null
           embedding: string | null
@@ -869,7 +869,7 @@ export type Database = {
           academic_cycle?: number | null
           availability_blocks?: Json | null
           bio?: string | null
-          career?: string | null
+          career_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
           embedding?: string | null
@@ -884,7 +884,7 @@ export type Database = {
           academic_cycle?: number | null
           availability_blocks?: Json | null
           bio?: string | null
-          career?: string | null
+          career_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
           embedding?: string | null
@@ -896,6 +896,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "student_profiles_career_id_fkey"
+            columns: ["career_id"]
+            isOneToOne: false
+            referencedRelation: "careers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "student_profiles_id_fkey"
             columns: ["id"]
@@ -1137,6 +1144,19 @@ export type Database = {
           p_academic_cycle: number
           p_bio?: string
           p_career: string
+          p_full_name: string
+          p_proficiency_levels: number[]
+          p_skill_ids: string[]
+          p_university_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      | {
+        Args: {
+          p_academic_cycle: number
+          p_bio?: string
+          p_career_id: string
           p_full_name: string
           p_proficiency_levels: number[]
           p_skill_ids: string[]

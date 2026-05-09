@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { status } from '@grpc/grpc-js';
 import { SupabaseService } from '@chambitas/supabase';
-import { 
-  CompleteOnboardingRequest, 
-  ProfileResponse, 
-  UnifiedProfileResponse 
+import {
+  CompleteOnboardingRequest,
+  ProfileResponse,
+  UnifiedProfileResponse
 } from '@chambitas/proto';
 import { StudentRepository } from './repositories/student.repository';
 import { EmployerRepository } from './repositories/employer.repository';
@@ -19,7 +19,7 @@ export class ProfileService {
     private readonly supabaseService: SupabaseService,
     private readonly studentRepo: StudentRepository,
     private readonly employerRepo: EmployerRepository,
-  ) {}
+  ) { }
 
   // --- Legacy Compatibility Methods (CamelCase) ---
   async createStudentProfile(data: any) { return this.completeOnboarding({ ...data, role: 'student', user_id: data.userId }); }
@@ -33,7 +33,7 @@ export class ProfileService {
 
   async getProfile(id: string): Promise<UnifiedProfileResponse> {
     this.logger.log(`[GetProfile] Fetching profile for user ${id}`);
-    
+
     // Buscar primero si es un estudiante
     const student = await this.studentRepo.findByUserId(id);
     if (student) {
@@ -67,15 +67,15 @@ export class ProfileService {
         if (!data.full_name) {
           throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'El nombre completo es requerido' });
         }
-        if (!data.career) {
+        if (!data.career_id) {
           throw new RpcException({ code: status.INVALID_ARGUMENT, message: 'La carrera es requerida' });
         }
 
         // 3. Validar skills (3-10)
         if (!data.skill_inputs || data.skill_inputs.length < 3 || data.skill_inputs.length > 10) {
-          throw new RpcException({ 
-            code: status.INVALID_ARGUMENT, 
-            message: 'Debes seleccionar entre 3 y 10 habilidades para completar el onboarding' 
+          throw new RpcException({
+            code: status.INVALID_ARGUMENT,
+            message: 'Debes seleccionar entre 3 y 10 habilidades para completar el onboarding'
           });
         }
 
@@ -91,9 +91,9 @@ export class ProfileService {
         }
 
         if (!universityId) {
-          throw new RpcException({ 
-            code: status.FAILED_PRECONDITION, 
-            message: 'No se encontró university_id para el estudiante' 
+          throw new RpcException({
+            code: status.FAILED_PRECONDITION,
+            message: 'No se encontró university_id para el estudiante'
           });
         }
 
@@ -108,7 +108,7 @@ export class ProfileService {
           p_user_id: data.user_id,
           p_full_name: data.full_name,
           p_university_id: universityId,
-          p_career: data.career,
+          p_career_id: data.career_id,
           p_academic_cycle: data.academic_cycle || 1,
           p_skill_ids: resolvedSkillIds,
           p_proficiency_levels: resolvedProficiencyLevels,
@@ -130,12 +130,12 @@ export class ProfileService {
           .update({
             full_name: data.full_name,
             university_id: universityId,
-            career: data.career,
+            career_id: data.career_id,
             academic_cycle: data.academic_cycle || 1,
-            bio: (data as any).bio || null,
-            gpa: (data as any).gpa || null,
-            availability_blocks: (data as any).weekly_availability 
-              ? { total_hours: (data as any).weekly_availability } 
+            bio: data.bio || null,
+            gpa: data.gpa || null,
+            availability_blocks: data.availability_blocks
+              ? (typeof data.availability_blocks === 'string' ? JSON.parse(data.availability_blocks) : data.availability_blocks)
               : null,
           } as any)
           .eq('id', data.user_id);
@@ -168,9 +168,9 @@ export class ProfileService {
       } else if (data.role === 'employer') {
         // 1. Validar campos mandatorios
         if (!data.company_name || !data.name || !data.description) {
-          throw new RpcException({ 
-            code: status.INVALID_ARGUMENT, 
-            message: 'company_name, name y description son obligatorios para empleadores' 
+          throw new RpcException({
+            code: status.INVALID_ARGUMENT,
+            message: 'company_name, name y description son obligatorios para empleadores'
           });
         }
 
@@ -286,7 +286,7 @@ export class ProfileService {
 
   private async checkAndUpdateOnboarding(userId: string, role: 'student' | 'employer'): Promise<boolean> {
     const supabase = this.supabaseService.getClient<Database>();
-    
+
     // Verificación final del estado
     let isComplete = false;
     if (role === 'student') {
@@ -294,17 +294,17 @@ export class ProfileService {
       const { count } = await supabase.from('student_skills').select('*', { count: 'exact', head: true }).eq('student_id', userId);
 
       isComplete = !!(
-        profile?.full_name && 
-        profile?.career && 
-        profile?.university_id && 
+        profile?.full_name &&
+        profile?.career_id &&
+        profile?.university_id &&
         profile?.academic_cycle &&
         count !== null && count >= 3
       );
     } else {
       const { data: profile } = await supabase.from('employer_profiles').select('*').eq('id', userId).single();
       isComplete = !!(
-        profile?.company_name && 
-        profile?.name && 
+        profile?.company_name &&
+        profile?.name &&
         profile?.description
       );
     }
@@ -325,14 +325,14 @@ export class ProfileService {
       if (role === 'student') {
         const updateData: any = {};
         if (data.full_name) updateData.full_name = data.full_name;
-        if (data.career) updateData.career = data.career;
+        if (data.career_id) updateData.career_id = data.career_id;
         if (data.academic_cycle !== undefined) updateData.academic_cycle = data.academic_cycle;
         if (data.bio !== undefined) updateData.bio = data.bio;
         if (data.gpa !== undefined) updateData.gpa = data.gpa;
         if (data.availability_blocks) {
           try {
-            updateData.availability_blocks = typeof data.availability_blocks === 'string' 
-              ? JSON.parse(data.availability_blocks) 
+            updateData.availability_blocks = typeof data.availability_blocks === 'string'
+              ? JSON.parse(data.availability_blocks)
               : data.availability_blocks;
           } catch (e) {
             this.logger.warn(`Failed to parse availability_blocks, sending as is: ${data.availability_blocks}`);
@@ -363,9 +363,9 @@ export class ProfileService {
       return { success: true, is_onboarded: true, message: 'Perfil actualizado con éxito' };
     } catch (error: any) {
       this.logger.error(`[UpdateProfile] Error updating profile: ${error.message}`);
-      throw error instanceof RpcException ? error : new RpcException({ 
-        code: status.INTERNAL, 
-        message: error.message 
+      throw error instanceof RpcException ? error : new RpcException({
+        code: status.INTERNAL,
+        message: error.message
       });
     }
   }
@@ -380,7 +380,7 @@ export class ProfileService {
   private async searchProfilesInternal(query: string, role?: string, limit = 10, offset = 0) {
     const supabase = this.supabaseService.getClient<Database>();
     // ... simplificado para recuperación rápida ...
-    return { profiles: [] }; 
+    return { profiles: [] };
   }
 
   private mapStudentToUnified(student: any): UnifiedProfileResponse {
@@ -388,7 +388,7 @@ export class ProfileService {
       id: student.id,
       role: 'student',
       full_name: student.full_name,
-      career: student.career,
+      career: student.career?.name || student.career_id, // Map career name for display
       university_id: student.university_id,
       university_name: student.university?.name,
       university_logo: student.university?.logo_url,
