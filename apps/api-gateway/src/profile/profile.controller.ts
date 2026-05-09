@@ -34,7 +34,7 @@ import {
   CreateEmployerProfileDto, 
   UpdateEmployerProfileDto 
 } from './dto/profile.dto';
-import { StudentOnboardingDto, EmployerOnboardingDto } from './dto/onboarding.dto';
+import { StudentOnboardingDto, EmployerOnboardingDto, UpdateProfileDto } from './dto/onboarding.dto';
 import { IProfileService } from '@chambitas/proto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
@@ -65,34 +65,53 @@ export class ProfileController implements OnModuleInit {
     );
 
     // Map snake_case from gRPC to camelCase for Frontend
+    const { 
+      full_name, 
+      university_name, 
+      university_logo,
+      academic_cycle, 
+      is_onboarded, 
+      ...rest 
+    } = profile;
+
     return {
-      ...profile,
-      fullName: profile.full_name,
-      universityName: profile.university_name,
-      academicCycle: profile.academic_cycle,
-      isOnboarded: profile.is_onboarded,
-      skills: profile.skills?.map(s => ({
+      ...rest,
+      fullName: full_name,
+      universityName: university_name,
+      universityLogo: university_logo,
+      academicCycle: academic_cycle,
+      isOnboarded: is_onboarded,
+      availabilityBlocks: profile.availability_blocks 
+        ? (typeof profile.availability_blocks === 'string' ? JSON.parse(profile.availability_blocks) : profile.availability_blocks)
+        : null,
+      skills: profile.skills?.map(({ proficiency_level, ...s }) => ({
         ...s,
-        level: s.proficiency_level
-      }))
+        level: proficiency_level
+      })) || []
     };
   }
 
   @Patch('me')
   @ApiOperation({ summary: 'Actualización parcial del perfil del usuario actual' })
-  async updateMyProfile(@Body() dto: any, @Req() req: Request) {
+  @ApiBody({ type: UpdateProfileDto })
+  async updateMyProfile(@Body() dto: UpdateProfileDto, @Req() req: Request) {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
+    
+    // Preparamos el payload para gRPC
+    const payload: any = { 
+      ...dto,
+      user_id: user.id,
+      role: user.role
+    };
 
-    if (user.role === 'student') {
-      return await firstValueFrom(
-        this.profileService.UpdateStudentProfile({ ...dto, userId: user.id }, metadata)
-      );
-    } else {
-      return await firstValueFrom(
-        this.profileService.UpdateEmployerProfile({ ...dto, userId: user.id }, metadata)
-      );
+    if (dto.availability_blocks) {
+      payload.availability_blocks = JSON.stringify(dto.availability_blocks);
     }
+
+    return firstValueFrom(
+      this.profileService.UpdateProfile(payload, metadata)
+    );
   }
 
   @Post('onboarding/student')
@@ -106,13 +125,12 @@ export class ProfileController implements OnModuleInit {
       this.profileService.CompleteOnboarding({
         user_id: user.id,
         role: 'student',
-        university_id: dto.university_id,
         full_name: dto.full_name,
-        career: dto.career,
+        career_id: dto.career_id,
         academic_cycle: dto.academic_cycle,
         bio: dto.bio,
         gpa: dto.gpa,
-        availability_blocks: JSON.stringify({ total_hours: dto.weekly_availability }),
+        availability_blocks: dto.availability_blocks ? JSON.stringify(dto.availability_blocks) : undefined,
         // Mapear skill_inputs del DTO al formato del proto
         skill_inputs: dto.skill_inputs.map(s => ({
           name: s.name,
@@ -122,8 +140,9 @@ export class ProfileController implements OnModuleInit {
     );
 
     return {
-      ...result,
-      isOnboarded: (result as any).is_onboarded
+      success: result.success,
+      message: result.message,
+      isOnboarded: result.is_onboarded
     };
   }
 
@@ -143,8 +162,9 @@ export class ProfileController implements OnModuleInit {
     );
 
     return {
-      ...result,
-      isOnboarded: (result as any).is_onboarded
+      success: result.success,
+      message: result.message,
+      isOnboarded: result.is_onboarded
     };
   }
 

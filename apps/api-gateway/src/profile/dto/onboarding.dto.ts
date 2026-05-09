@@ -13,6 +13,7 @@ import {
   IsOptional,
   IsNumber,
   IsUUID,
+  IsObject,
 } from 'class-validator';
 
 /**
@@ -43,20 +44,15 @@ export class SkillInputDto {
 }
 
 export class StudentOnboardingDto {
-  @ApiProperty({ description: 'ID de la universidad', example: 'uuid-de-la-universidad' })
-  @IsUUID()
-  @IsNotEmpty()
-  university_id!: string;
-
-  @ApiProperty({ description: 'Nombre completo', example: 'Juan Pérez' })
+  @ApiProperty({ description: 'Nombre completo', example: 'Rodrigo López' })
   @IsString()
   @IsNotEmpty()
   full_name!: string;
 
-  @ApiProperty({ description: 'Carrera', example: 'Ingeniería de Software' })
+  @ApiProperty({ description: 'ID de la carrera', example: 'uuid-de-la-carrera' })
   @IsString()
   @IsNotEmpty()
-  career!: string;
+  career_id!: string;
 
   @ApiProperty({ description: 'Ciclo académico (1-12)', minimum: 1, maximum: 12, example: 6 })
   @IsInt()
@@ -100,6 +96,14 @@ export class StudentOnboardingDto {
   @ArrayMinSize(3, { message: 'Debes seleccionar al menos 3 habilidades' })
   @ArrayMaxSize(10, { message: 'Puedes seleccionar máximo 10 habilidades' })
   skill_inputs!: SkillInputDto[];
+
+  @ApiProperty({ 
+    description: 'Bloques de disponibilidad semanal (32 bits por día)', 
+    example: { mon: '11110000...', tue: '00001111...', } 
+  })
+  @IsObject()
+  @IsOptional()
+  availability_blocks?: Record<string, string>;
 }
 
 export class EmployerOnboardingDto {
@@ -108,15 +112,10 @@ export class EmployerOnboardingDto {
   @IsNotEmpty()
   company_name!: string;
 
-  @ApiProperty({ description: 'RUC', example: '20123456789' })
+  @ApiProperty({ description: 'Nombre comercial / Marca', example: 'Chambitas' })
   @IsString()
   @IsNotEmpty()
-  ruc!: string;
-
-  @ApiProperty({ description: 'Sector de la empresa', example: 'Tecnología' })
-  @IsString()
-  @IsNotEmpty()
-  sector!: string;
+  name!: string;
 
   @ApiProperty({ 
     description: 'Descripción de la empresa', 
@@ -125,4 +124,34 @@ export class EmployerOnboardingDto {
   @IsString()
   @IsNotEmpty()
   description!: string;
+}
+
+export class UpdateStudentProfileDto {
+  @ApiPropertyOptional() @IsString() @IsOptional() full_name?: string;
+  @ApiPropertyOptional() @IsString() @IsOptional() career_id?: string;
+  @ApiPropertyOptional() @IsInt() @Min(1) @Max(12) @IsOptional() academic_cycle?: number;
+  @ApiPropertyOptional() @IsString() @IsOptional() bio?: string;
+  @ApiPropertyOptional() @IsNumber() @IsOptional() gpa?: number;
+  @ApiPropertyOptional() @IsObject() @IsOptional() availability_blocks?: Record<string, string>;
+  @ApiPropertyOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => SkillInputDto) @IsOptional() skill_inputs?: SkillInputDto[];
+}
+
+export class UpdateEmployerProfileDto {
+  @ApiPropertyOptional() @IsString() @IsOptional() company_name?: string;
+  @ApiPropertyOptional() @IsString() @IsOptional() name?: string;
+  @ApiPropertyOptional() @IsString() @IsOptional() description?: string;
+}
+
+export class UpdateProfileDto {
+  @ApiPropertyOptional() @IsString() @IsOptional() full_name?: string;
+  @ApiPropertyOptional() @IsString() @IsOptional() career_id?: string;
+  @ApiPropertyOptional() @IsInt() @Min(1) @Max(12) @IsOptional() academic_cycle?: number;
+  @ApiPropertyOptional() @IsString() @IsOptional() bio?: string;
+  @ApiPropertyOptional() @IsNumber() @IsOptional() gpa?: number;
+  @ApiPropertyOptional() @IsObject() @IsOptional() availability_blocks?: Record<string, string>;
+  @ApiPropertyOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => SkillInputDto) @IsOptional() skill_inputs?: SkillInputDto[];
+  
+  @ApiPropertyOptional() @IsString() @IsOptional() company_name?: string;
+  @ApiPropertyOptional() @IsString() @IsOptional() name?: string;
+  @ApiPropertyOptional() @IsString() @IsOptional() description?: string;
 }

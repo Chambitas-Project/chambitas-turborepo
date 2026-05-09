@@ -100,6 +100,41 @@ export type Database = {
           },
         ]
       }
+      careers: {
+        Row: {
+          area: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          university_id: string | null
+        }
+        Insert: {
+          area?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          university_id?: string | null
+        }
+        Update: {
+          area?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          university_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "careers_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employer_profiles: {
         Row: {
           company_name: string | null
@@ -107,8 +142,7 @@ export type Database = {
           deleted_at: string | null
           description: string | null
           id: string
-          ruc: string | null
-          sector: string | null
+          name: string
           updated_at: string | null
           verified: boolean | null
         }
@@ -118,8 +152,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           id: string
-          ruc?: string | null
-          sector?: string | null
+          name: string
           updated_at?: string | null
           verified?: boolean | null
         }
@@ -129,8 +162,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           id?: string
-          ruc?: string | null
-          sector?: string | null
+          name?: string
           updated_at?: string | null
           verified?: boolean | null
         }
@@ -822,7 +854,7 @@ export type Database = {
           academic_cycle: number | null
           availability_blocks: Json | null
           bio: string | null
-          career: string | null
+          career_id: string | null
           created_at: string | null
           deleted_at: string | null
           embedding: string | null
@@ -837,7 +869,7 @@ export type Database = {
           academic_cycle?: number | null
           availability_blocks?: Json | null
           bio?: string | null
-          career?: string | null
+          career_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
           embedding?: string | null
@@ -852,7 +884,7 @@ export type Database = {
           academic_cycle?: number | null
           availability_blocks?: Json | null
           bio?: string | null
-          career?: string | null
+          career_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
           embedding?: string | null
@@ -864,6 +896,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "student_profiles_career_id_fkey"
+            columns: ["career_id"]
+            isOneToOne: false
+            referencedRelation: "careers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "student_profiles_id_fkey"
             columns: ["id"]
@@ -1092,6 +1131,32 @@ export type Database = {
         Args: {
           p_academic_cycle: number
           p_career: string
+          p_full_name: string
+          p_proficiency_levels: number[]
+          p_skill_ids: string[]
+          p_university_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      | {
+        Args: {
+          p_academic_cycle: number
+          p_bio?: string
+          p_career: string
+          p_full_name: string
+          p_proficiency_levels: number[]
+          p_skill_ids: string[]
+          p_university_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      | {
+        Args: {
+          p_academic_cycle: number
+          p_bio?: string
+          p_career_id: string
           p_full_name: string
           p_proficiency_levels: number[]
           p_skill_ids: string[]

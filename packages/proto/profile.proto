@@ -74,6 +74,7 @@ message UnifiedProfileResponse {
   repeated SkillInfo skills = 12;
   repeated ActivityInfo activity = 13;
   bool is_onboarded = 14;
+  optional string availability_blocks = 15;
 }
 
 message GetProfileRequest {
@@ -174,17 +175,15 @@ message CompleteOnboardingRequest {
   string user_id = 1;
   string role = 2;
   optional string full_name = 3;
-  optional string career = 4;
+  optional string career_id = 4;
   optional int32 academic_cycle = 5;
-  optional string university_id = 6;
   repeated SkillInput skill_inputs = 7;
   optional string company_name = 8;
-  optional string ruc = 9;
-  optional string sector = 10;
-  optional string description = 11;
-  optional string bio = 12;
-  optional float gpa = 13;
-  optional string availability_blocks = 14;
+  optional string name = 9;
+  optional string description = 10;
+  optional string bio = 11;
+  optional float gpa = 12;
+  optional string availability_blocks = 13;
 }
 
 message ProfileResponse {

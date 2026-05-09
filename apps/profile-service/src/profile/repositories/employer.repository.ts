@@ -12,7 +12,7 @@ export class EmployerRepository {
   async findByUserId(userId: string): Promise<Tables<'employer_profiles'> | null> {
     const { data, error } = await this.client
       .from('employer_profiles')
-      .select('*')
+      .select('*, user:users(is_onboarded)')
       .eq('id', userId)
       .is('deleted_at', null)
       .single();
