@@ -6,7 +6,7 @@ import { IAuthService, UniversityListResponse, UniversityResponse } from '@chamb
 import { Public } from './decorators/public.decorator';
 
 @ApiTags('Universities')
-@Controller('universities')
+@Controller('auth/universities')
 export class UniversitiesController implements OnModuleInit {
   private authService!: IAuthService;
 

@@ -11,6 +11,8 @@ import {
   ArrayMaxSize,
   ValidateNested,
   IsOptional,
+  IsNumber,
+  IsUUID,
 } from 'class-validator';
 
 /**
@@ -41,6 +43,11 @@ export class SkillInputDto {
 }
 
 export class StudentOnboardingDto {
+  @ApiProperty({ description: 'ID de la universidad', example: 'uuid-de-la-universidad' })
+  @IsUUID()
+  @IsNotEmpty()
+  university_id!: string;
+
   @ApiProperty({ description: 'Nombre completo', example: 'Juan Pérez' })
   @IsString()
   @IsNotEmpty()
@@ -56,6 +63,27 @@ export class StudentOnboardingDto {
   @Min(1)
   @Max(12)
   academic_cycle!: number;
+
+  @ApiPropertyOptional({ description: 'Breve biografía del estudiante', example: 'Apasionado por el desarrollo web y la IA.' })
+  @IsOptional()
+  @IsString()
+  bio?: string;
+
+  @ApiPropertyOptional({ description: 'Promedio Ponderado (GPA)', minimum: 0, maximum: 20, example: 15.5 })
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  @Min(0)
+  @Max(20)
+  gpa?: number;
+
+  @ApiPropertyOptional({ description: 'Horas disponibles por semana', minimum: 1, maximum: 40, example: 10 })
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  @Min(1)
+  @Max(40)
+  weekly_availability?: number;
 
   @ApiProperty({ 
     description: 'Entre 3 y 10 habilidades con nivel de dominio. Usa GET /profile/skills para ver el catálogo.',

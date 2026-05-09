@@ -1,22 +1,22 @@
 import { Controller, Post, Body, Res, Inject, OnModuleInit, UseGuards, Req } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { 
-  ApiTags, 
-  ApiOperation, 
-  ApiBody, 
-  ApiResponse, 
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBody,
+  ApiResponse,
   ApiBearerAuth
 } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { firstValueFrom } from 'rxjs';
 import { Public } from './decorators/public.decorator';
-import { 
-  IAuthService, 
-  RegisterResponse, 
-  LoginResponse, 
+import {
+  IAuthService,
+  RegisterResponse,
+  LoginResponse,
   OnboardingResponse,
-  IProfileService 
+  IProfileService
 } from '@chambitas/proto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GrpcMetadataForwarder } from '@chambitas/common';
@@ -38,7 +38,7 @@ export class AuthController implements OnModuleInit {
   constructor(
     @Inject('AUTH_PACKAGE') private client: ClientGrpc,
     @Inject('PROFILE_PACKAGE') private profileClient: ClientGrpc,
-  ) {}
+  ) { }
 
   onModuleInit() {
     this.authService = this.client.getService<IAuthService>('AuthService');
@@ -62,7 +62,7 @@ export class AuthController implements OnModuleInit {
   @ApiResponse({ status: 200, description: 'Sesión iniciada exitosamente' })
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const response = await firstValueFrom(this.authService.Login(loginDto));
-    
+
     // Extraer access_token y configurar cookie
     if (response.accessToken) {
       res.cookie('access_token', response.accessToken, COOKIE_OPTIONS);

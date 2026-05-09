@@ -22,7 +22,13 @@ export function RoleCard({
   className,
 }: RoleCardProps) {
   return (
-    <Card className={cn("group overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border/50", className)}>
+    <Card 
+      className={cn(
+        "group overflow-hidden transition-all duration-300 border-border/50 cursor-pointer active:scale-[0.99] shadow-none", 
+        className
+      )}
+      onClick={onClick}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 pt-6">
         {/* Icono Principal - Contenedor h-12 */}
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-105">
@@ -46,8 +52,7 @@ export function RoleCard({
         </CardDescription>
         <Button 
           variant="secondary" 
-          className="w-full font-bold bg-slate-50 text-slate-800 border border-slate-100 hover:bg-slate-100 cursor-pointer active:scale-[0.98] transition-all py-6 rounded-xl"
-          onClick={onClick}
+          className="w-full font-bold bg-slate-50 text-slate-800 border border-slate-100 hover:bg-slate-100 pointer-events-none transition-all py-6 rounded-xl"
         >
           {buttonText}
         </Button>

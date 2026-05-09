@@ -24,26 +24,31 @@ export class ProfileService {
   // --- Legacy Compatibility Methods (CamelCase) ---
   async createStudentProfile(data: any) { return this.completeOnboarding({ ...data, role: 'student', user_id: data.userId }); }
   async getStudentProfile(id: string) { return this.getProfile(id); }
-  async updateStudentProfile(data: any) { return this.completeOnboarding({ ...data, role: 'student', user_id: data.userId }); }
+  async updateStudentProfile(data: any) { return this.updateProfileInternal(data, 'student'); }
   async createEmployerProfile(data: any) { return this.completeOnboarding({ ...data, role: 'employer', user_id: data.userId }); }
   async getEmployerProfile(id: string) { return this.getProfile(id); }
-  async updateEmployerProfile(data: any) { return this.completeOnboarding({ ...data, role: 'employer', user_id: data.userId }); }
+  async updateEmployerProfile(data: any) { return this.updateProfileInternal(data, 'employer'); }
   async deleteProfile(userId: string) { return this.deleteProfileInternal(userId); }
   async searchProfiles(query: string, role?: string, limit?: number, offset?: number) { return this.searchProfilesInternal(query, role, limit, offset); }
 
   async getProfile(id: string): Promise<UnifiedProfileResponse> {
+    this.logger.log(`[GetProfile] Fetching profile for user ${id}`);
+    
     // Buscar primero si es un estudiante
     const student = await this.studentRepo.findByUserId(id);
     if (student) {
+      this.logger.debug(`[GetProfile] Student data found: ${JSON.stringify(student)}`);
       return this.mapStudentToUnified(student);
     }
 
     // Si no, buscar si es un empleador
     const employer = await this.employerRepo.findByUserId(id);
     if (employer) {
+      this.logger.debug(`[GetProfile] Employer data found: ${JSON.stringify(employer)}`);
       return this.mapEmployerToUnified(employer);
     }
 
+    this.logger.error(`[GetProfile] Profile not found for user ${id}`);
     throw new RpcException({ code: status.NOT_FOUND, message: 'Profile not found' });
   }
 
@@ -102,9 +107,9 @@ export class ProfileService {
         const { error: rpcError } = await supabase.rpc('complete_student_onboarding' as any, {
           p_user_id: data.user_id,
           p_full_name: data.full_name,
-          p_career: data.career,
-          p_academic_cycle: data.academic_cycle ?? null,
           p_university_id: universityId,
+          p_career: data.career,
+          p_academic_cycle: data.academic_cycle || 1,
           p_skill_ids: resolvedSkillIds,
           p_proficiency_levels: resolvedProficiencyLevels,
         });
@@ -117,16 +122,46 @@ export class ProfileService {
           });
         }
 
-        // 7. Actualizar auth.users user_metadata para sincronizar is_onboarded
-        //    Esto permite al JWT reflejar el estado sin consultar public.users en cada request.
+        // 6.5 Actualización manual de campos nuevos (Workaround para RPC antiguo)
+        this.logger.log(`[Onboarding] Syncing student profile for ${data.user_id}`);
+        const { error: updateError } = await supabase
+          .from('student_profiles')
+          .update({
+            full_name: data.full_name,
+            university_id: universityId,
+            career: data.career,
+            academic_cycle: data.academic_cycle || 1,
+            bio: (data as any).bio || null,
+            gpa: (data as any).gpa || null,
+            availability_blocks: (data as any).weekly_availability 
+              ? { total_hours: (data as any).weekly_availability } 
+              : null,
+          } as any)
+          .eq('id', data.user_id);
+
+        if (updateError) {
+          this.logger.error(`[Onboarding] Student profile update failed: ${updateError.message}`);
+        } else {
+          this.logger.log(`[Onboarding] Student profile updated successfully`);
+        }
+
+        // 7. Sincronizar estado de onboarding en tabla users pública
+        const { error: userError } = await supabase.from('users').update({ is_onboarded: true }).eq('id', data.user_id);
+        if (userError) {
+          this.logger.error(`[Onboarding] User table update failed: ${userError.message}`);
+        } else {
+          this.logger.log(`[Onboarding] User table marked as onboarded`);
+        }
+
+        // 8. Actualizar auth.users user_metadata
         try {
           const adminClient = this.supabaseService.getAdminClient<Database>();
           await adminClient.auth.admin.updateUserById(data.user_id, {
             user_metadata: { is_onboarded: true },
           });
+          this.logger.log(`[Onboarding] Auth metadata updated`);
         } catch (metaErr: any) {
-          // No bloquear el onboarding si falla la actualización de metadata
-          this.logger.warn(`[Onboarding] Could not update auth.users metadata: ${metaErr?.message}`);
+          this.logger.warn(`[Onboarding] Auth metadata update failed: ${metaErr?.message}`);
         }
 
       } else if (data.role === 'employer') {
@@ -282,6 +317,61 @@ export class ProfileService {
     return isComplete;
   }
 
+  private async updateProfileInternal(data: any, role: 'student' | 'employer'): Promise<ProfileResponse> {
+    const supabase = this.supabaseService.getClient<Database>();
+    const userId = data.user_id || data.userId;
+    this.logger.log(`[UpdateProfile] Updating profile for user ${userId} with role ${role}`);
+
+    try {
+      if (role === 'student') {
+        const updateData: any = {};
+        if (data.full_name) updateData.full_name = data.full_name;
+        if (data.career) updateData.career = data.career;
+        if (data.academic_cycle !== undefined) updateData.academic_cycle = data.academic_cycle;
+        if (data.bio !== undefined) updateData.bio = data.bio;
+        if (data.gpa !== undefined) updateData.gpa = data.gpa;
+        if (data.availability_blocks) {
+          try {
+            updateData.availability_blocks = typeof data.availability_blocks === 'string' 
+              ? JSON.parse(data.availability_blocks) 
+              : data.availability_blocks;
+          } catch (e) {
+            this.logger.warn(`Failed to parse availability_blocks, sending as is: ${data.availability_blocks}`);
+            updateData.availability_blocks = data.availability_blocks;
+          }
+        }
+
+        const { error } = await supabase
+          .from('student_profiles')
+          .update(updateData)
+          .eq('id', userId);
+
+        if (error) throw new RpcException({ code: status.INTERNAL, message: error.message });
+      } else {
+        const updateData: any = {};
+        if (data.company_name) updateData.company_name = data.company_name;
+        if (data.ruc) updateData.ruc = data.ruc;
+        if (data.sector) updateData.sector = data.sector;
+        if (data.description !== undefined) updateData.description = data.description;
+
+        const { error } = await supabase
+          .from('employer_profiles')
+          .update(updateData)
+          .eq('id', userId);
+
+        if (error) throw new RpcException({ code: status.INTERNAL, message: error.message });
+      }
+
+      return { success: true, is_onboarded: true, message: 'Perfil actualizado con éxito' };
+    } catch (error: any) {
+      this.logger.error(`[UpdateProfile] Error updating profile: ${error.message}`);
+      throw error instanceof RpcException ? error : new RpcException({ 
+        code: status.INTERNAL, 
+        message: error.message 
+      });
+    }
+  }
+
   private async deleteProfileInternal(user_id: string): Promise<ProfileResponse> {
     const supabase = this.supabaseService.getClient<Database>();
     const { error } = await supabase.from('users').delete().eq('id', user_id); // Cambiado a delete real o desactivar
@@ -296,28 +386,42 @@ export class ProfileService {
   }
 
   private mapStudentToUnified(student: any): UnifiedProfileResponse {
+    const university = Array.isArray(student.universities) ? student.universities[0] : student.universities;
+    const universityName = university?.name || student.university_name || "";
+    
+    const is_onboarded = !!(student.full_name && student.career);
+
     return {
       id: student.id,
       role: 'student',
       full_name: student.full_name,
       career: student.career,
       university_id: student.university_id,
+      university_name: universityName,
       academic_cycle: student.academic_cycle,
-      is_onboarded: student.is_onboarded || false,
-      skills: student.skills || [],
-      activity: [], // Por implementar
-    };
+      bio: student.bio,
+      gpa: student.gpa,
+      is_onboarded: is_onboarded,
+      skills: student.skills?.map((s: any) => ({
+        id: s.id || "",
+        name: s.name || "",
+        proficiency_level: s.level || 1,
+        verified: !!s.verified
+      })) || [],
+      activity: [],
+    } as any;
   }
 
   private mapEmployerToUnified(employer: any): UnifiedProfileResponse {
+    const is_onboarded = !!(employer.company_name && employer.sector);
     return {
       id: employer.id,
       role: 'employer',
-      full_name: employer.company_name, // Mapping company name as full name for display
+      full_name: employer.company_name,
       sector: employer.sector,
-      is_onboarded: employer.is_onboarded || false,
+      is_onboarded: is_onboarded,
       skills: [],
       activity: [],
-    };
+    } as any;
   }
 }

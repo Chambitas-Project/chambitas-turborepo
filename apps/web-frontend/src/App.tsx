@@ -1,22 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { MainLayout } from './layouts/MainLayout'
-import { LandingPage } from './pages/LandingPage'
-import { LoginPage } from './pages/LoginPage'
-import { RegisterPage } from './pages/RegisterPage'
-import './index.css'
+import { RouterProvider } from "react-router-dom";
+import { router } from "./routes";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
-    <Router>
-      <MainLayout>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-        </Routes>
-      </MainLayout>
-    </Router>
-  )
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

@@ -60,9 +60,22 @@ export class ProfileController implements OnModuleInit {
   async getMyProfile(@Req() req: Request) {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
-    return await firstValueFrom(
+    const profile = await firstValueFrom(
       this.profileService.GetProfile({ id: user.id }, metadata)
     );
+
+    // Map snake_case from gRPC to camelCase for Frontend
+    return {
+      ...profile,
+      fullName: profile.full_name,
+      universityName: profile.university_name,
+      academicCycle: profile.academic_cycle,
+      isOnboarded: profile.is_onboarded,
+      skills: profile.skills?.map(s => ({
+        ...s,
+        level: s.proficiency_level
+      }))
+    };
   }
 
   @Patch('me')
@@ -89,20 +102,29 @@ export class ProfileController implements OnModuleInit {
   async completeStudentOnboarding(@Body() dto: StudentOnboardingDto, @Req() req: Request) {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
-    return await firstValueFrom(
+    const result = await firstValueFrom(
       this.profileService.CompleteOnboarding({
         user_id: user.id,
         role: 'student',
+        university_id: dto.university_id,
         full_name: dto.full_name,
         career: dto.career,
         academic_cycle: dto.academic_cycle,
+        bio: dto.bio,
+        gpa: dto.gpa,
+        availability_blocks: JSON.stringify({ total_hours: dto.weekly_availability }),
         // Mapear skill_inputs del DTO al formato del proto
         skill_inputs: dto.skill_inputs.map(s => ({
           name: s.name,
           proficiency_level: s.proficiency_level ?? 1,
         })),
-      }, metadata)
+      } as any, metadata)
     );
+
+    return {
+      ...result,
+      isOnboarded: (result as any).is_onboarded
+    };
   }
 
   @Post('onboarding/employer')
@@ -112,13 +134,18 @@ export class ProfileController implements OnModuleInit {
   async completeEmployerOnboarding(@Body() dto: EmployerOnboardingDto, @Req() req: Request) {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
-    return await firstValueFrom(
+    const result = await firstValueFrom(
       this.profileService.CompleteOnboarding({ 
         ...dto, 
         user_id: user.id,
         role: 'employer' 
       }, metadata)
     );
+
+    return {
+      ...result,
+      isOnboarded: (result as any).is_onboarded
+    };
   }
 
   @Delete('me')
@@ -137,9 +164,11 @@ export class ProfileController implements OnModuleInit {
   @ApiResponse({ status: 200, description: 'Lista completa de habilidades' })
   async getSkills(@Req() req: Request) {
     const metadata = createGrpcMetadata((req as any).user);
-    return await firstValueFrom(
+    const response = await firstValueFrom(
       this.profileService.ListSkills({}, metadata)
     );
+    // En gRPC, las listas suelen venir dentro de una propiedad (ej: response.skills)
+    return response.skills || [];
   }
 
   @Get('search')

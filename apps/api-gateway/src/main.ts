@@ -13,7 +13,7 @@ async function bootstrap() {
   // Habilitar Prefijo Global
   app.setGlobalPrefix('api/v1');
 
-  // Habilitar Validación Global (class-validator)
+  // Habilitar Validación Global (class-validator) - Refreshed for Onboarding
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,

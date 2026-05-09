@@ -101,6 +101,16 @@ message SkillUpdate {
   bool deleted = 3;
 }
 
+message UpdateProfileRequest {
+  string user_id = 1;
+  optional string full_name = 2;
+  optional string career = 3;
+  optional string bio = 4;
+  optional float gpa = 5;
+  optional string availability_blocks = 6;
+  optional int32 academic_cycle = 7;
+}
+
 message UpdateStudentProfileRequest {
   string user_id = 1;
   optional string full_name = 2;
@@ -167,11 +177,14 @@ message CompleteOnboardingRequest {
   optional string career = 4;
   optional int32 academic_cycle = 5;
   optional string university_id = 6;
-  repeated SkillInput skill_inputs = 7; // Reemplaza a repeated string skills
+  repeated SkillInput skill_inputs = 7;
   optional string company_name = 8;
   optional string ruc = 9;
   optional string sector = 10;
   optional string description = 11;
+  optional string bio = 12;
+  optional float gpa = 13;
+  optional string availability_blocks = 14;
 }
 
 message ProfileResponse {

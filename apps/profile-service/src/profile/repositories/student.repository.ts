@@ -21,16 +21,31 @@ export class StudentRepository {
     return data;
   }
 
-  async findByUserId(userId: string): Promise<Tables<'student_profiles'> | null> {
+  async findByUserId(userId: string): Promise<any> {
     const { data, error } = await this.client
       .from('student_profiles')
-      .select('*')
+      .select(`
+        *,
+        universities(*),
+        skills:student_skills(
+          proficiency_level,
+          skill:skills(name)
+        )
+      `)
       .eq('id', userId)
       .is('deleted_at', null)
       .single();
 
     if (error || !data) return null;
-    return data;
+    
+    // Formatear skills para que sea más fácil de usar
+    return {
+      ...data,
+      skills: data.skills?.map((s: any) => ({
+        name: s.skill?.name,
+        level: s.proficiency_level
+      })) || []
+    };
   }
 
   async create(data: TablesInsert<'student_profiles'>): Promise<Tables<'student_profiles'>> {

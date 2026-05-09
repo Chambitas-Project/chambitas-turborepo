@@ -1,22 +1,23 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Briefcase, Globe, User, School } from "lucide-react";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Briefcase, School } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button, Input, Checkbox, RoleSelector, Alert, cn } from "@chambitas/ui";
+import { useAuth } from "../context/AuthContext";
+import { apiClient } from "../api/api-client";
 
-const UNIVERSITIES = [
-  { id: "uni-upc", name: "UPC - Univ. Peruana de Ciencias Aplicadas" },
-  { id: "uni-pucp", name: "PUCP - Pontificia Univ. Católica del Perú" },
-  { id: "uni-unmsm", name: "UNMSM - Univ. Nacional Mayor de San Marcos" },
-  { id: "uni-ulima", name: "Univ. de Lima" },
-];
+interface University {
+  id: string;
+  name: string;
+  email_domain: string;
+}
 
+// Esquema simplificado: Solo credenciales
 const registerSchema = z.object({
-  fullName: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
   email: z.string().email("Ingresa un correo electrónico válido"),
-  universityId: z.string().min(1, "Debes seleccionar tu universidad"),
+  universityId: z.string().optional(),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   terms: z.boolean().refine(val => val === true, "Debes aceptar los términos y condiciones"),
 });
@@ -25,14 +26,23 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function RegisterPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { register: registerWithApi, isAuthenticated } = useAuth();
+  
   const [role, setRole] = useState(searchParams.get("role") || "student");
   const [showPassword, setShowPassword] = useState(false);
   const [regError, setRegError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false); // Nuevo estado
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [loadingUnis, setLoadingUnis] = useState(true);
 
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
+    setError,
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -41,15 +51,61 @@ export function RegisterPage() {
     }
   });
 
+  const emailValue = watch("email");
+
+  // Detección automática de universidad por dominio de correo
+  useEffect(() => {
+    if (role === "student" && emailValue && emailValue.includes("@")) {
+      const domain = emailValue.split("@")[1]?.toLowerCase();
+      if (domain) {
+        const matchedUni = universities.find(u => u.email_domain.toLowerCase() === domain);
+        if (matchedUni) {
+          setValue("universityId", matchedUni.id);
+        }
+      }
+    }
+  }, [emailValue, universities, role, setValue]);
+
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        const response = await apiClient.get("/auth/universities");
+        const unis = Array.isArray(response.data) ? response.data : (response.data.universities || []);
+        setUniversities(unis);
+      } catch (error) {
+        console.error("Error al cargar universidades:", error);
+      } finally {
+        setLoadingUnis(false);
+      }
+    };
+    fetchUniversities();
+  }, []);
+
   useEffect(() => {
     const roleParam = searchParams.get("role");
     if (roleParam) setRole(roleParam);
   }, [searchParams]);
 
   const onSubmit = async (data: RegisterFormValues) => {
+    if (role === "student" && (!data.universityId || data.universityId === "")) {
+      setError("universityId", { message: "Debes seleccionar una universidad" });
+      return;
+    }
+
     setRegError(null);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("Submit:", { ...data, role });
+    try {
+      await registerWithApi({
+        email: data.email,
+        password: data.password,
+        role: role,
+        university_id: role === "student" ? data.universityId : null
+      });
+      
+      setIsSuccess(true); // Mostramos la vista de éxito
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Error al crear la cuenta. Verifica los datos.";
+      setRegError(message);
+    }
   };
 
   return (
@@ -86,53 +142,45 @@ export function RegisterPage() {
       <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-20" style={{ backgroundColor: '#ffffff' }}>
         <div className="w-full max-w-[400px] space-y-8">
           
-          <div className="space-y-2 text-center lg:text-left">
-            <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: '#0f172a' }}>Crea tu cuenta</h1>
-            <p className="text-sm font-medium" style={{ color: '#64748b' }}>Completa tus datos para empezar</p>
-          </div>
+          {isSuccess ? (
+            /* VISTA DE ÉXITO */
+            <div className="space-y-8 text-center animate-in fade-in zoom-in duration-500">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100">
+                <div className="h-10 w-10 text-emerald-600">
+                  <svg fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">¡Cuenta creada!</h1>
+                <p className="text-slate-500 font-medium">
+                  Hemos enviado un enlace de verificación a tu correo institucional. Por favor, revísalo para activar tu cuenta.
+                </p>
+              </div>
+              <Button 
+                onClick={() => navigate("/login")}
+                className="w-full h-14 text-lg font-bold rounded-xl"
+                style={{ backgroundColor: '#064e3b', color: '#ffffff' }}
+              >
+                Ir a Iniciar sesión
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </div>
+          ) : (
+            /* FORMULARIO DE REGISTRO */
+            <>
+              <div className="space-y-2 text-center lg:text-left">
+                <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: '#0f172a' }}>Crea tu cuenta</h1>
+                <p className="text-sm font-medium" style={{ color: '#64748b' }}>Acceso directo con tus credenciales</p>
+              </div>
 
           <Alert message={regError || ""} />
 
-          {/* Selector de Rol Animado */}
           <RoleSelector role={role} onChange={setRole} />
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold ml-1 text-slate-700">Nombre completo</label>
-              <Input 
-                placeholder="Tu nombre y apellidos" 
-                icon={<User className="h-4 w-4" />}
-                error={errors.fullName?.message}
-                {...register("fullName")}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold ml-1 text-slate-700">Universidad / Institución</label>
-              <div className="relative flex items-center">
-                <School className={cn(
-                  "absolute left-3 h-4 w-4 z-10 transition-colors",
-                  errors.universityId ? "text-red-500" : "text-slate-400"
-                )} />
-                <select 
-                  {...register("universityId")}
-                  className={cn(
-                    "flex h-12 w-full rounded-xl border bg-white pl-10 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 transition-all appearance-none font-medium",
-                    errors.universityId ? "border-red-500 text-red-500" : "border-slate-200 text-[#0f172a]"
-                  )}
-                >
-                  <option value="" className="text-slate-400">Selecciona tu universidad</option>
-                  {UNIVERSITIES.map(u => (
-                    <option key={u.id} value={u.id} className="text-[#0f172a]">{u.name}</option>
-                  ))}
-                </select>
-                <div className="absolute right-3 pointer-events-none text-slate-400">
-                  <ArrowRight className="h-4 w-4 rotate-90" />
-                </div>
-              </div>
-              {errors.universityId && <p className="text-[11px] font-bold text-red-500 ml-1">{errors.universityId.message}</p>}
-            </div>
-
+            
             <div className="space-y-1.5">
               <label className="text-sm font-bold ml-1 text-slate-700">Correo electrónico</label>
               <Input 
@@ -143,6 +191,39 @@ export function RegisterPage() {
                 {...register("email")}
               />
             </div>
+
+            {role === "student" && (
+              <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
+                <label className="text-sm font-bold ml-1 text-slate-700">Universidad / Institución</label>
+                <div className="relative flex items-center">
+                  <School className={cn(
+                    "absolute left-3 h-4 w-4 z-10 transition-colors",
+                    errors.universityId ? "text-red-500" : "text-slate-400"
+                  )} />
+                  <select 
+                    {...register("universityId")}
+                    disabled={loadingUnis}
+                    className={cn(
+                      "flex h-12 w-full rounded-xl border bg-white pl-10 pr-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 transition-all appearance-none font-medium",
+                      errors.universityId ? "border-red-500 text-red-500" : "border-slate-200 text-[#0f172a]",
+                      loadingUnis && "opacity-50 cursor-not-allowed"
+                    )}
+                  >
+                    <option value="" style={{ color: '#94a3b8' }}>
+                      {loadingUnis ? "Cargando universidades..." : "Selecciona tu universidad"}
+                    </option>
+                    {universities.map(u => (
+                      <option key={u.id} value={u.id} style={{ color: '#0f172a' }}>{u.name}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 pointer-events-none text-slate-400">
+                    <ArrowRight className="h-4 w-4 rotate-90" />
+                  </div>
+                </div>
+                {errors.universityId && <p className="text-[11px] font-bold text-red-500 ml-1">{errors.universityId.message}</p>}
+                <p className="text-[10px] text-slate-400 ml-1">Se detectará automáticamente según tu correo institucional.</p>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <label className="text-sm font-bold ml-1 text-slate-700">Contraseña</label>
@@ -181,11 +262,9 @@ export function RegisterPage() {
                 Iniciar sesión
               </Link>
             </p>
-            <div className="flex justify-center gap-6 text-[10px] uppercase tracking-widest font-black text-slate-300">
-              <div className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5" />SSL SEGURO</div>
-              <div className="flex items-center gap-2"><Globe className="h-3.5 w-3.5" />PRIVACIDAD</div>
-            </div>
           </div>
+        </>
+      )}
         </div>
       </div>
     </div>
