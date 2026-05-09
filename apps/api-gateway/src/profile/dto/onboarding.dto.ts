@@ -141,17 +141,3 @@ export class UpdateEmployerProfileDto {
   @ApiPropertyOptional() @IsString() @IsOptional() name?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() description?: string;
 }
-
-export class UpdateProfileDto {
-  @ApiPropertyOptional() @IsString() @IsOptional() full_name?: string;
-  @ApiPropertyOptional() @IsString() @IsOptional() career_id?: string;
-  @ApiPropertyOptional() @IsInt() @Min(1) @Max(12) @IsOptional() academic_cycle?: number;
-  @ApiPropertyOptional() @IsString() @IsOptional() bio?: string;
-  @ApiPropertyOptional() @IsNumber() @IsOptional() gpa?: number;
-  @ApiPropertyOptional() @IsObject() @IsOptional() availability_blocks?: Record<string, string>;
-  @ApiPropertyOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => SkillInputDto) @IsOptional() skill_inputs?: SkillInputDto[];
-  
-  @ApiPropertyOptional() @IsString() @IsOptional() company_name?: string;
-  @ApiPropertyOptional() @IsString() @IsOptional() name?: string;
-  @ApiPropertyOptional() @IsString() @IsOptional() description?: string;
-}

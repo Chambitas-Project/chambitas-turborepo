@@ -113,8 +113,8 @@ export class ProfileController {
   async completeOnboarding(data: CompleteOnboardingRequest, metadata: any): Promise<ProfileResponse> {
     const { userId, role } = this.getUserFromMetadata(metadata);
     // Sobreescribir con identidad real del JWT — previene spoofing del payload
-    data.user_id = userId;
-    data.role = role;
+    (data as any).user_id = userId;
+    (data as any).role = role;
     return await this.profileService.completeOnboarding(data);
   }
 }

@@ -87,4 +87,22 @@ export class ApplicationsController implements OnModuleInit {
       })
     );
   }
+
+  @Post(':id/cancel')
+  @ApiOperation({ summary: 'Cancelar una postulación (Estudiante)' })
+  async cancelApplication(@Param('id') id: string, @Req() req: any) {
+    const user = req.user;
+    
+    // 1. Obtener la postulación para ver de quién es
+    const application = await firstValueFrom(this.marketplaceService.GetApplication({ id }));
+    
+    // 2. Validar que sea el dueño de la postulación
+    if (application.student_id !== user.id) {
+      throw new ForbiddenException('No puedes cancelar una postulación que no te pertenece');
+    }
+
+    return firstValueFrom(
+      this.marketplaceService.DeleteApplication({ id })
+    );
+  }
 }

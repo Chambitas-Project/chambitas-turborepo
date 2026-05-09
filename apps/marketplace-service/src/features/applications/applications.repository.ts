@@ -9,10 +9,10 @@ export class ApplicationsRepository {
     return this.supabaseService.getClient<Database>();
   }
 
-  async findById(id: string): Promise<Tables<'applications'> | null> {
+  async findById(id: string): Promise<any | null> {
     const { data, error } = await this.client
       .from('applications')
-      .select('*')
+      .select('*, projects(title), student_profiles(full_name, academic_cycle, careers(name), student_skills(proficiency_level, skills(id, name))), matches(score)')
       .eq('id', id)
       .is('deleted_at', null)
       .single();
@@ -40,10 +40,10 @@ export class ApplicationsRepository {
     status?: Enums<'application_status'>;
     limit?: number;
     offset?: number;
-  }): Promise<{ data: Tables<'applications'>[]; total: number }> {
+  }): Promise<{ data: any[]; total: number }> {
     let query = this.client
       .from('applications')
-      .select('*', { count: 'exact' })
+      .select('*, projects(title), student_profiles(full_name, academic_cycle, careers(name), student_skills(proficiency_level, skills(id, name))), matches(score)', { count: 'exact' })
       .is('deleted_at', null);
 
     if (filters.student_id) query = query.eq('student_id', filters.student_id);
@@ -103,5 +103,23 @@ export class ApplicationsRepository {
       .eq('id', id);
 
     if (error) throw new Error(`Error soft deleting application: ${error.message}`);
+  }
+
+  async getStudentValidationData(studentId: string): Promise<{ university_id: string; skills: { skill_id: string; proficiency_level: number }[] } | null> {
+    const { data, error } = await this.client
+      .from('student_profiles')
+      .select('university_id, student_skills(skill_id, proficiency_level)')
+      .eq('id', studentId)
+      .single();
+
+    if (error || !data) return null;
+
+    return {
+      university_id: data.university_id,
+      skills: (data.student_skills as any[] || []).map(ss => ({
+        skill_id: ss.skill_id,
+        proficiency_level: ss.proficiency_level || 1,
+      })),
+    };
   }
 }
