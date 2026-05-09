@@ -1,5 +1,24 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString, Min, IsUUID } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString, Min, IsUUID, ValidateNested, IsBoolean, Max, IsInt, IsObject } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class SkillRequirementDto {
+  @ApiProperty({ description: 'ID de la skill del catálogo', example: 'uuid-skill-1' })
+  @IsUUID()
+  skill_id!: string;
+
+  @ApiPropertyOptional({ description: 'Nivel mínimo (1-5)', example: 3 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  min_proficiency?: number;
+
+  @ApiPropertyOptional({ description: '¿Es obligatorio?', example: true })
+  @IsOptional()
+  @IsBoolean()
+  mandatory?: boolean;
+}
 
 export class CreateProjectDto {
   @ApiProperty({ example: 'Desarrollo de App Mobile' })
@@ -40,6 +59,18 @@ export class CreateProjectDto {
   @IsNumber()
   @Min(0)
   max_hours_week?: number;
+
+  @ApiPropertyOptional({ type: [SkillRequirementDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SkillRequirementDto)
+  skills?: SkillRequirementDto[];
+
+  @ApiPropertyOptional({ description: 'Restricciones de horario (Mapa de bits JSON)', example: { "mon": "11110000..." } })
+  @IsOptional()
+  @IsObject()
+  schedule_constraints?: Record<string, string>;
 }
 
 export class UpdateProjectDto {
@@ -90,4 +121,16 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsNumber()
   max_hours_week?: number;
+
+  @ApiPropertyOptional({ type: [SkillRequirementDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SkillRequirementDto)
+  skills?: SkillRequirementDto[];
+
+  @ApiPropertyOptional({ description: 'Restricciones de horario (Mapa de bits JSON)', example: { "mon": "11110000..." } })
+  @IsOptional()
+  @IsObject()
+  schedule_constraints?: Record<string, string>;
 }

@@ -165,6 +165,8 @@ export class AuthService {
       const profileData: any = { id: userId };
       if (data.role === 'student') {
         profileData.university_id = universityId;
+      } else if (data.role === 'employer') {
+        profileData.name = 'Nueva Empresa'; // Valor por defecto temporal para evitar NOT NULL
       }
 
       const { error: profileError } = await supabase

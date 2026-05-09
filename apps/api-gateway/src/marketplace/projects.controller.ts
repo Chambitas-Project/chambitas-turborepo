@@ -29,7 +29,7 @@ export class ProjectsController implements OnModuleInit {
     const user = req.user;
 
     if (user.role !== 'employer') {
-      throw new ForbiddenException('Solo los empleadores pueden publicar proyectos');
+      throw new ForbiddenException('Solo los empleadores con perfil completado pueden publicar proyectos');
     }
 
     // Propagamos la identidad vía Metadata
@@ -46,6 +46,12 @@ export class ProjectsController implements OnModuleInit {
         deadline: dto.deadline || '',
         max_hours_week: dto.max_hours_week || 0,
         employer_id: user.id,
+        skills: (dto.skills || []).map(s => ({
+          skill_id: s.skill_id,
+          min_proficiency: s.min_proficiency || 1,
+          mandatory: s.mandatory ?? true,
+        })),
+        schedule_constraints: dto.schedule_constraints ? JSON.stringify(dto.schedule_constraints) : undefined,
       }, metadata)
     );
   }
@@ -98,6 +104,12 @@ export class ProjectsController implements OnModuleInit {
         university_ids: dto.university_ids,
         deadline: dto.deadline,
         max_hours_week: dto.max_hours_week,
+        skills: dto.skills?.map(s => ({
+          skill_id: s.skill_id,
+          min_proficiency: s.min_proficiency || 1,
+          mandatory: s.mandatory ?? true,
+        })),
+        schedule_constraints: dto.schedule_constraints ? JSON.stringify(dto.schedule_constraints) : undefined,
       }, metadata)
     );
   }

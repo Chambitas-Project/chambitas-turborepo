@@ -121,7 +121,6 @@ export interface UnifiedProfileResponse {
   university_id?: string;
   university_name?: string;
   university_logo?: string;
-  sector?: string;
   bio?: string;
   academic_cycle?: number;
   gpa?: number;
@@ -129,6 +128,8 @@ export interface UnifiedProfileResponse {
   activity: ActivityInfo[];
   is_onboarded: boolean;
   availability_blocks?: string;
+  company_name?: string;
+  commercial_name?: string;
 }
 
 export interface CreateStudentProfileRequest {
@@ -254,6 +255,15 @@ export interface Project {
   created_at: string;
   updated_at: string;
   deleted_at: string;
+  skills: SkillRequirement[];
+  schedule_constraints?: string;
+}
+
+export interface SkillRequirement {
+  skill_id: string;
+  skill_name?: string;
+  min_proficiency: number;
+  mandatory: boolean;
 }
 
 export interface CreateProjectRequest {
@@ -266,6 +276,8 @@ export interface CreateProjectRequest {
   university_ids: string[];
   deadline: string;
   max_hours_week: number;
+  skills: SkillRequirement[];
+  schedule_constraints?: string;
 }
 
 export interface GetProjectRequest {
@@ -297,6 +309,8 @@ export interface UpdateProjectRequest {
   university_ids?: string[];
   deadline?: string;
   max_hours_week?: number;
+  skills?: SkillRequirement[];
+  schedule_constraints?: string;
 }
 
 export interface DeleteProjectRequest {

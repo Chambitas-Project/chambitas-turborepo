@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { 
   CreateProjectRequest, 
   Project, 
@@ -28,15 +28,19 @@ export class ProjectsService {
   async createProject(request: CreateProjectRequest): Promise<Project> {
     this.logger.log(`Creating project: ${request.title} for employer: ${request.employer_id}`);
     
-    // 1. Validación de existencia del empleador
-    const { data: employer, error } = await this.supabase
-      .from('employer_profiles')
-      .select('id')
+    // 1. Validación de existencia y rol en la tabla users
+    const { data: user, error } = await this.supabase
+      .from('users')
+      .select('id, role')
       .eq('id', request.employer_id)
       .single();
 
-    if (error || !employer) {
-      throw new NotFoundException(`El empleador con ID ${request.employer_id} no existe.`);
+    if (error || !user) {
+      throw new NotFoundException(`El usuario con ID ${request.employer_id} no existe.`);
+    }
+
+    if (user.role !== 'employer') {
+      throw new ForbiddenException('Solo los usuarios con rol "employer" pueden publicar proyectos');
     }
 
     // 2. Formateo de requisitos para ML
@@ -54,7 +58,8 @@ export class ProjectsService {
       service_category: request.service_category,
       deadline: request.deadline,
       max_hours_week: request.max_hours_week,
-    }, request.university_ids);
+      schedule_constraints: request.schedule_constraints ? JSON.parse(request.schedule_constraints) : undefined,
+    }, request.university_ids, request.skills);
 
     return this.mapToProto(project);
   }
@@ -100,7 +105,8 @@ export class ProjectsService {
       service_category: request.service_category ?? undefined,
       deadline: request.deadline ?? undefined,
       max_hours_week: request.max_hours_week ?? undefined,
-    }, request.university_ids);
+      schedule_constraints: request.schedule_constraints ? JSON.parse(request.schedule_constraints) : undefined,
+    }, request.university_ids, request.skills);
 
     return this.mapToProto(project);
   }
@@ -113,7 +119,7 @@ export class ProjectsService {
     };
   }
 
-  private mapToProto(project: Tables<'projects'> & { university_ids: string[] }): Project {
+  private mapToProto(project: Tables<'projects'> & { university_ids: string[]; skills: any[] }): Project {
     return {
       id: project.id,
       title: project.title,
@@ -126,6 +132,8 @@ export class ProjectsService {
       university_ids: project.university_ids || [],
       deadline: project.deadline || '',
       max_hours_week: project.max_hours_week || 0,
+      skills: project.skills || [],
+      schedule_constraints: project.schedule_constraints ? JSON.stringify(project.schedule_constraints) : '',
       created_at: project.created_at || '',
       updated_at: project.updated_at || '',
       deleted_at: project.deleted_at || '',

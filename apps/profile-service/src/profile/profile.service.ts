@@ -143,24 +143,9 @@ export class ProfileService {
           this.logger.log(`[Onboarding] Student profile updated successfully`);
         }
 
-        // 7. Sincronizar estado de onboarding en tabla users pública
-        const { error: userError } = await supabase.from('users').update({ is_onboarded: true }).eq('id', data.user_id);
-        if (userError) {
-          this.logger.error(`[Onboarding] User table update failed: ${userError.message}`);
-        } else {
-          this.logger.log(`[Onboarding] User table marked as onboarded`);
-        }
-
-        // 8. Actualizar auth.users user_metadata
-        try {
-          const adminClient = this.supabaseService.getAdminClient<Database>();
-          await adminClient.auth.admin.updateUserById(data.user_id, {
-            user_metadata: { is_onboarded: true },
-          });
-          this.logger.log(`[Onboarding] Auth metadata updated`);
-        } catch (metaErr: any) {
-          this.logger.warn(`[Onboarding] Auth metadata update failed: ${metaErr?.message}`);
-        }
+        // 7. Sincronizar estado de onboarding (Centralizado)
+        await this.checkAndUpdateOnboarding(data.user_id, 'student');
+        this.logger.log(`[Onboarding] Student onboarding state synced`);
 
       } else if (data.role === 'employer') {
         // 1. Validar campos mandatorios
@@ -284,7 +269,7 @@ export class ProfileService {
   private async checkAndUpdateOnboarding(userId: string, role: 'student' | 'employer'): Promise<boolean> {
     const supabase = this.supabaseService.getClient<Database>();
 
-    // Verificación final del estado
+    // 1. Verificación de reglas de negocio por rol
     let isComplete = false;
     if (role === 'student') {
       const { data: profile } = await supabase.from('student_profiles').select('*').eq('id', userId).single();
@@ -306,8 +291,22 @@ export class ProfileService {
       );
     }
 
+    // 2. Si está completo, sincronizar con Identity (users y auth.users)
     if (isComplete) {
+      this.logger.log(`[IdentitySync] User ${userId} completed onboarding. Syncing...`);
+      
+      // Tabla pública
       await supabase.from('users').update({ is_onboarded: true }).eq('id', userId);
+
+      // Metadatos de Auth (Admin)
+      try {
+        const adminClient = this.supabaseService.getAdminClient<Database>();
+        await adminClient.auth.admin.updateUserById(userId, {
+          user_metadata: { is_onboarded: true },
+        });
+      } catch (authError: any) {
+        this.logger.error(`[IdentitySync] Error updating auth metadata: ${authError?.message}`);
+      }
     }
 
     return isComplete;
@@ -407,9 +406,10 @@ export class ProfileService {
     return {
       id: employer.id,
       role: 'employer',
-      full_name: employer.company_name, // Mapping company name as full name for display
-      sector: employer.sector,
-      bio: employer.description, // Mapeamos descripción a bio para unificar
+      full_name: employer.name || employer.company_name, // Prioritize brand name for display
+      company_name: employer.company_name,
+      commercial_name: employer.name,
+      bio: employer.description,
       is_onboarded: employer.user?.is_onboarded || false,
       skills: [],
       activity: [],
