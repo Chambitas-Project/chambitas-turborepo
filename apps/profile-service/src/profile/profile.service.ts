@@ -391,6 +391,7 @@ export class ProfileService {
       university_logo: student.university?.logo_url,
       academic_cycle: student.academic_cycle,
       bio: student.bio,
+      availability_blocks: student.availability_blocks ? JSON.stringify(student.availability_blocks) : undefined,
       is_onboarded: student.user?.is_onboarded || false,
       skills: (student.student_skills || []).map((ss: any) => ({
         id: ss.skill?.id,

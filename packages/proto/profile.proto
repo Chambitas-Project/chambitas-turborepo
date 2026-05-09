@@ -74,6 +74,7 @@ message UnifiedProfileResponse {
   repeated SkillInfo skills = 12;
   repeated ActivityInfo activity = 13;
   bool is_onboarded = 14;
+  optional string availability_blocks = 15;
 }
 
 message GetProfileRequest {

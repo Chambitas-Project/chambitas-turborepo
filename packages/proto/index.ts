@@ -128,6 +128,7 @@ export interface UnifiedProfileResponse {
   skills: SkillInfo[];
   activity: ActivityInfo[];
   is_onboarded: boolean;
+  availability_blocks?: string;
 }
 
 export interface CreateStudentProfileRequest {
@@ -426,6 +427,7 @@ export interface IProfileService {
   CreateEmployerProfile(data: CreateEmployerProfileRequest, metadata?: any): Observable<ProfileResponse>;
   GetEmployerProfile(data: { id: string }, metadata?: any): Observable<EmployerProfileResponse>;
   UpdateEmployerProfile(data: UpdateEmployerProfileRequest, metadata?: any): Observable<ProfileResponse>;
+  UpdateProfile(request: CompleteOnboardingRequest, metadata?: any): Observable<ProfileResponse>;
   DeleteProfile(data: { user_id: string }, metadata?: any): Observable<ProfileResponse>;
   SearchProfiles(data: { query: string, role?: string, limit?: number, offset?: number }, metadata?: any): Observable<{ profiles: UnifiedProfileResponse[] }>;
   GetProfile(data: { id: string }, metadata?: any): Observable<UnifiedProfileResponse>;
