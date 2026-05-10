@@ -5,7 +5,6 @@ import subprocess
 import os
 import sys
 
-# Añadir carpetas al path para que gRPC encuentre sus módulos
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src', 'proto'))
 
