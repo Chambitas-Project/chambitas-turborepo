@@ -131,6 +131,8 @@ export class ProfileService {
             academic_cycle: data.academic_cycle || 1,
             bio: data.bio || null,
             gpa: data.gpa || null,
+            is_gpa_verified: false,
+            evidence_url: data.evidence_url || null,
             availability_blocks: data.availability_blocks
               ? (typeof data.availability_blocks === 'string' ? JSON.parse(data.availability_blocks) : data.availability_blocks)
               : null,
@@ -328,6 +330,8 @@ export class ProfileService {
         if (data.academic_cycle !== undefined) updateData.academic_cycle = data.academic_cycle;
         if (data.bio !== undefined) updateData.bio = data.bio;
         if (data.gpa !== undefined) updateData.gpa = data.gpa;
+        if (data.is_gpa_verified !== undefined) updateData.is_gpa_verified = data.is_gpa_verified;
+        if (data.evidence_url !== undefined) updateData.evidence_url = data.evidence_url;
         if (data.availability_blocks) {
           try {
             updateData.availability_blocks = typeof data.availability_blocks === 'string'
@@ -393,6 +397,9 @@ export class ProfileService {
       university_logo: student.university?.logo_url,
       academic_cycle: student.academic_cycle,
       bio: student.bio,
+      gpa: student.gpa,
+      is_gpa_verified: student.is_gpa_verified || false,
+      evidence_url: student.evidence_url,
       availability_blocks: student.availability_blocks ? JSON.stringify(student.availability_blocks) : undefined,
       is_onboarded: student.user?.is_onboarded || false,
       skills: (student.student_skills || []).map((ss: any) => ({
@@ -414,6 +421,7 @@ export class ProfileService {
       commercial_name: employer.name,
       bio: employer.description,
       is_onboarded: employer.user?.is_onboarded || false,
+      is_gpa_verified: false,
       skills: [],
       activity: [],
     };
