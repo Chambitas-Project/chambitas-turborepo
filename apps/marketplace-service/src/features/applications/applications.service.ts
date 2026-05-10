@@ -39,6 +39,35 @@ export class ApplicationsService {
       throw new BadRequestException('Ya tienes una postulación activa para este proyecto.');
     }
 
+    // 3. Validar requerimientos del proyecto
+    const studentData = await this.applicationsRepository.getStudentValidationData(request.student_id);
+    if (!studentData) {
+      throw new BadRequestException('No se pudo encontrar el perfil del estudiante para validar los requisitos.');
+    }
+
+    // 3.1 Validar Universidad
+    if (project.university_ids && project.university_ids.length > 0) {
+      if (!project.university_ids.includes(studentData.university_id)) {
+        throw new BadRequestException('Este proyecto no está disponible para tu universidad.');
+      }
+    }
+
+    // 3.2 Validar Skills Obligatorios
+    if (project.skills && project.skills.length > 0) {
+      const mandatorySkills = project.skills.filter(s => s.mandatory);
+      for (const reqSkill of mandatorySkills) {
+        const studentSkill = studentData.skills.find(ss => ss.skill_id === reqSkill.skill_id);
+        if (!studentSkill) {
+          throw new BadRequestException(`No cumples con el requisito obligatorio: ${reqSkill.skill_name || reqSkill.skill_id}`);
+        }
+        if (studentSkill.proficiency_level < reqSkill.min_proficiency) {
+          throw new BadRequestException(
+            `Tu nivel en ${reqSkill.skill_name || reqSkill.skill_id} (${studentSkill.proficiency_level}) es inferior al requerido (${reqSkill.min_proficiency}).`
+          );
+        }
+      }
+    }
+
     const application = await this.applicationsRepository.create({
       project_id: request.project_id,
       student_id: request.student_id,
@@ -50,8 +79,10 @@ export class ApplicationsService {
   }
 
   async getApplication(request: GetApplicationRequest): Promise<Application> {
+    this.logger.debug(`Fetching application: ${request.id}`);
     const application = await this.applicationsRepository.findById(request.id);
     if (!application) {
+      this.logger.warn(`Application not found: ${request.id}`);
       throw new NotFoundException(`Postulación ${request.id} no encontrada.`);
     }
     return this.mapToProto(application);
@@ -84,11 +115,30 @@ export class ApplicationsService {
   }
 
   async updateApplicationStatus(request: UpdateApplicationStatusRequest): Promise<Application> {
-    const application = await this.applicationsRepository.updateStatus(request.id, request.status as any);
+    this.logger.log(`Updating status for app ${request.id} to ${request.status}`);
+    const status = request.status as any;
+    
+    // 1. Actualizar el estado de la postulación
+    const application = await this.applicationsRepository.updateStatus(request.id, status);
+    
+    // 2. Si se acepta la postulación, cambiar el estado del proyecto a 'in_progress'
+    if (status === 'accepted') {
+      this.logger.log(`Application accepted, moving project ${application.project_id} to in_progress`);
+      await this.projectsRepository.updateStatus(application.project_id, 'in_progress');
+    }
+
     return this.mapToProto(application);
   }
 
-  private mapToProto(app: Tables<'applications'>): Application {
+  async deleteApplication(request: any): Promise<{ success: boolean; message: string }> {
+    await this.applicationsRepository.softDelete(request.id);
+    return {
+      success: true,
+      message: 'Postulación eliminada correctamente.',
+    };
+  }
+
+  private mapToProto(app: any): Application {
     return {
       id: app.id,
       project_id: app.project_id,
@@ -100,6 +150,17 @@ export class ApplicationsService {
       created_at: app.created_at || '',
       updated_at: app.updated_at || '',
       deleted_at: app.deleted_at || '',
+      student_name: app.student_profiles?.full_name || undefined,
+      student_career: app.student_profiles?.careers?.name || undefined,
+      student_academic_cycle: app.student_profiles?.academic_cycle || undefined,
+      match_score: app.matches?.score || undefined,
+      project_title: app.projects?.title || undefined,
+      student_skills: app.student_profiles?.student_skills?.map((ss: any) => ({
+        id: ss.skills?.id,
+        name: ss.skills?.name,
+        proficiency_level: ss.proficiency_level,
+        verified: ss.verified || false,
+      })) || [],
     };
   }
 }

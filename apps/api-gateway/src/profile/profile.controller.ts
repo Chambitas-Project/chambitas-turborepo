@@ -30,18 +30,16 @@ import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { 
   CreateStudentProfileDto, 
-  UpdateStudentProfileDto, 
-  CreateEmployerProfileDto, 
-  UpdateEmployerProfileDto 
+  CreateEmployerProfileDto 
 } from './dto/profile.dto';
-import { StudentOnboardingDto, EmployerOnboardingDto, UpdateProfileDto } from './dto/onboarding.dto';
+import { StudentOnboardingDto, EmployerOnboardingDto, UpdateStudentProfileDto, UpdateEmployerProfileDto } from './dto/onboarding.dto';
 import { IProfileService } from '@chambitas/proto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
 
 @ApiTags('Profile')
 @ApiBearerAuth('JWT-auth')
-@ApiExtraModels(StudentOnboardingDto, EmployerOnboardingDto)
+@ApiExtraModels(StudentOnboardingDto, EmployerOnboardingDto, UpdateStudentProfileDto, UpdateEmployerProfileDto)
 @UseGuards(JwtAuthGuard)
 @Controller('profile')
 export class ProfileController implements OnModuleInit {
@@ -112,8 +110,15 @@ export class ProfileController implements OnModuleInit {
 
   @Patch('me')
   @ApiOperation({ summary: 'Actualización parcial del perfil del usuario actual' })
-  @ApiBody({ type: UpdateProfileDto })
-  async updateMyProfile(@Body() dto: UpdateProfileDto, @Req() req: Request) {
+  @ApiBody({ 
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(UpdateStudentProfileDto) },
+        { $ref: getSchemaPath(UpdateEmployerProfileDto) },
+      ],
+    },
+  })
+  async updateMyProfile(@Body() dto: any, @Req() req: Request) {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
     

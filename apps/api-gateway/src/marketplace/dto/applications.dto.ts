@@ -10,11 +10,6 @@ export class CreateApplicationDto {
   @ApiProperty({ example: 'uuid-proyecto' })
   @IsUUID('4')
   project_id!: string;
-
-  @ApiPropertyOptional({ example: 'uuid-match' })
-  @IsOptional()
-  @IsUUID('4')
-  match_id?: string;
 }
 
 export class UpdateApplicationStatusDto {

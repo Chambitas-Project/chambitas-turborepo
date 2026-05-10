@@ -39,4 +39,9 @@ export class ApplicationsController {
   async updateApplicationStatus(request: UpdateApplicationStatusRequest): Promise<Application> {
     return this.applicationsService.updateApplicationStatus(request);
   }
+
+  @GrpcMethod('MarketplaceService', 'DeleteApplication')
+  async deleteApplication(request: any): Promise<any> {
+    return this.applicationsService.deleteApplication(request);
+  }
 }

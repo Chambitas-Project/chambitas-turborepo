@@ -9,10 +9,10 @@ export class ApplicationsRepository {
     return this.supabaseService.getClient<Database>();
   }
 
-  async findById(id: string): Promise<Tables<'applications'> | null> {
+  async findById(id: string): Promise<any | null> {
     const { data, error } = await this.client
       .from('applications')
-      .select('*')
+      .select('*, projects(title, employer_id), student_profiles(full_name)')
       .eq('id', id)
       .is('deleted_at', null)
       .single();
@@ -40,14 +40,27 @@ export class ApplicationsRepository {
     status?: Enums<'application_status'>;
     limit?: number;
     offset?: number;
-  }): Promise<{ data: Tables<'applications'>[]; total: number }> {
+  }): Promise<{ data: any[]; total: number }> {
     let query = this.client
       .from('applications')
-      .select('*', { count: 'exact' })
+      .select('*, projects(title, employer_id), student_profiles(full_name)', { count: 'exact' })
       .is('deleted_at', null);
 
-    if (filters.student_id) query = query.eq('student_id', filters.student_id);
-    if (filters.project_id) query = query.eq('project_id', filters.project_id);
+    const isUuid = (uuid: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
+
+    if (filters.student_id) {
+      if (!isUuid(filters.student_id)) {
+        throw new Error(`invalid input syntax for type uuid: "${filters.student_id}"`);
+      }
+      query = query.eq('student_id', filters.student_id);
+    }
+    
+    if (filters.project_id) {
+      if (!isUuid(filters.project_id)) {
+        throw new Error(`invalid input syntax for type uuid: "${filters.project_id}"`);
+      }
+      query = query.eq('project_id', filters.project_id);
+    }
     if (filters.status) query = query.eq('status', filters.status);
 
     if (filters.limit) {
@@ -103,5 +116,23 @@ export class ApplicationsRepository {
       .eq('id', id);
 
     if (error) throw new Error(`Error soft deleting application: ${error.message}`);
+  }
+
+  async getStudentValidationData(studentId: string): Promise<{ university_id: string; skills: { skill_id: string; proficiency_level: number }[] } | null> {
+    const { data, error } = await this.client
+      .from('student_profiles')
+      .select('university_id, student_skills(skill_id, proficiency_level)')
+      .eq('id', studentId)
+      .single();
+
+    if (error || !data) return null;
+
+    return {
+      university_id: data.university_id,
+      skills: (data.student_skills as any[] || []).map(ss => ({
+        skill_id: ss.skill_id,
+        proficiency_level: ss.proficiency_level || 1,
+      })),
+    };
   }
 }

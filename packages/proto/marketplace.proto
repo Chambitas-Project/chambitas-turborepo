@@ -9,6 +9,7 @@ service MarketplaceService {
   rpc ListProjects (ListProjectsRequest) returns (ListProjectsResponse) {}
   rpc UpdateProject (UpdateProjectRequest) returns (Project) {}
   rpc DeleteProject (DeleteProjectRequest) returns (DeleteProjectResponse) {}
+  rpc CompleteProject (CompleteProjectRequest) returns (CompleteProjectResponse) {}
 
   // Applications
   rpc CreateApplication (CreateApplicationRequest) returns (Application) {}
@@ -16,6 +17,7 @@ service MarketplaceService {
   rpc ListStudentApplications (ListStudentApplicationsRequest) returns (ListApplicationsResponse) {}
   rpc ListProjectApplications (ListProjectApplicationsRequest) returns (ListApplicationsResponse) {}
   rpc UpdateApplicationStatus (UpdateApplicationStatusRequest) returns (Application) {}
+  rpc DeleteApplication (DeleteApplicationRequest) returns (DeleteApplicationResponse) {}
 }
 
 message Project {
@@ -113,6 +115,21 @@ message Application {
   string created_at = 8;
   string updated_at = 9;
   string deleted_at = 10;
+  
+  // Extended info for lists
+  optional string student_name = 11;
+  optional string student_career = 12;
+  optional int32 student_academic_cycle = 13;
+  optional double match_score = 14;
+  optional string project_title = 15;
+  repeated SkillInfo student_skills = 16;
+}
+
+message SkillInfo {
+  string id = 1;
+  string name = 2;
+  int32 proficiency_level = 3;
+  bool verified = 4;
 }
 
 message CreateApplicationRequest {
@@ -146,6 +163,24 @@ message ListApplicationsResponse {
 message UpdateApplicationStatusRequest {
   string id = 1;
   string status = 2;
+}
+
+message DeleteApplicationRequest {
+  string id = 1;
+}
+
+message DeleteApplicationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CompleteProjectRequest {
+  string id = 1;
+}
+
+message CompleteProjectResponse {
+  bool success = 1;
+  string message = 2;
 }
 
 message University {

@@ -14,6 +14,7 @@ service ProfileService {
   rpc DeleteProfile (DeleteProfileRequest) returns (ProfileResponse);
   rpc SearchProfiles (SearchProfilesRequest) returns (SearchProfilesResponse);
   rpc GetProfile (GetProfileRequest) returns (UnifiedProfileResponse);
+  rpc UpdateProfile (CompleteOnboardingRequest) returns (ProfileResponse);
   rpc CompleteOnboarding (CompleteOnboardingRequest) returns (ProfileResponse);
   rpc ListSkills (ListSkillsRequest) returns (ListSkillsResponse);
 }

@@ -181,20 +181,30 @@ export interface SkillInput {
   proficiency_level: number; // 1=Básico, 2=Elemental, 3=Intermedio, 4=Avanzado, 5=Experto
 }
 
-export interface CompleteOnboardingRequest {
+export interface BaseOnboardingRequest {
   user_id: string;
   role: string;
-  full_name?: string;
-  career_id?: string;
-  academic_cycle?: number;
-  skill_inputs?: SkillInput[];
-  company_name?: string;
-  name?: string;
-  description?: string;
+}
+
+export interface StudentOnboardingRequest extends BaseOnboardingRequest {
+  role: 'student';
+  full_name: string;
+  career_id: string;
+  academic_cycle: number;
+  skill_inputs: SkillInput[];
   bio?: string;
   gpa?: number;
   availability_blocks?: string;
 }
+
+export interface EmployerOnboardingRequest extends BaseOnboardingRequest {
+  role: 'employer';
+  company_name: string;
+  name: string;
+  description: string;
+}
+
+export type CompleteOnboardingRequest = StudentOnboardingRequest | EmployerOnboardingRequest;
 
 export interface Skill {
   id: string;
@@ -333,6 +343,12 @@ export interface Application {
   created_at: string;
   updated_at: string;
   deleted_at: string;
+  student_name?: string;
+  student_career?: string;
+  student_academic_cycle?: number;
+  match_score?: number;
+  project_title?: string;
+  student_skills?: SkillInfo[];
 }
 
 export interface CreateApplicationRequest {
@@ -366,6 +382,24 @@ export interface ListApplicationsResponse {
 export interface UpdateApplicationStatusRequest {
   id: string;
   status: string;
+}
+
+export interface DeleteApplicationRequest {
+  id: string;
+}
+
+export interface DeleteApplicationResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface CompleteProjectRequest {
+  id: string;
+}
+
+export interface CompleteProjectResponse {
+  success: boolean;
+  message: string;
 }
 
 // --- Matching Interfaces ---
@@ -454,12 +488,14 @@ export interface IMarketplaceService {
   GetProject(data: GetProjectRequest, metadata?: any): Observable<Project>;
   ListProjects(data: ListProjectsRequest, metadata?: any): Observable<ListProjectsResponse>;
   UpdateProject(data: UpdateProjectRequest, metadata?: any): Observable<Project>;
-  DeleteProject(data: DeleteProjectRequest, metadata?: any): Observable<DeleteProjectResponse>;
+  DeleteProject(request: DeleteProjectRequest, metadata?: any): Observable<DeleteProjectResponse>;
+  CompleteProject(request: CompleteProjectRequest, metadata?: any): Observable<CompleteProjectResponse>;
   CreateApplication(data: CreateApplicationRequest, metadata?: any): Observable<Application>;
   GetApplication(data: GetApplicationRequest, metadata?: any): Observable<Application>;
   ListStudentApplications(data: ListStudentApplicationsRequest, metadata?: any): Observable<ListApplicationsResponse>;
   ListProjectApplications(data: ListProjectApplicationsRequest, metadata?: any): Observable<ListApplicationsResponse>;
   UpdateApplicationStatus(data: UpdateApplicationStatusRequest, metadata?: any): Observable<Application>;
+  DeleteApplication(data: DeleteApplicationRequest, metadata?: any): Observable<DeleteApplicationResponse>;
 }
 
 export interface IMatchingService {
