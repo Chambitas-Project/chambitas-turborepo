@@ -5,8 +5,9 @@ import subprocess
 import os
 import sys
 
-# Añadir src al path para importaciones limpias
+# Añadir carpetas al path para que gRPC encuentre sus módulos
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src', 'proto'))
 
 from proto import ml_engine_pb2, ml_engine_pb2_grpc
 from features.matching.engine import engine
@@ -76,7 +77,6 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
             return ml_engine_pb2.GetModelStatusResponse()
 
 def serve():
-    # El puerto 50058 según el .env del usuario
     port = os.environ.get("ML_ENGINE_GRPC_PORT", "50058")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     ml_engine_pb2_grpc.add_MLEngineServiceServicer_to_server(MLEngineServicer(), server)

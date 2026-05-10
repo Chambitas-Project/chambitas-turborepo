@@ -118,7 +118,7 @@ def train_tesis_v10_hybrid():
     }
     
     print("\n" + "="*50)
-    print("--- ENTRENAMIENTO V10.0.0 COMPLETADO (HÍBRIDO FINAL) ---")
+    print("--- ENTRENAMIENTO V11 COMPLETADO (HÍBRIDO FINAL) ---")
     print(f"F1-Score:  {f1:.3f} (Meta: >0.85)")
     print(f"Precision: {prec:.3f}")
     print(f"Recall:    {rec:.3f}")
@@ -192,6 +192,18 @@ def register_model_version_in_supabase(metrics, version="v10.0.0"):
         
         supabase.table("ml_model_versions").update({"active": False}).eq("active", True).execute()
         supabase.table("ml_model_versions").insert(data).execute()
+        
+        # Guardar copia del CSV con el nombre de la versión para trazabilidad física
+        try:
+            import shutil
+            base_data_path = os.path.join(os.path.dirname(__file__), '../../data')
+            src_csv = os.path.join(base_data_path, 'students_data_tesis_final.csv')
+            dst_csv = os.path.join(base_data_path, f'students_data_{version_tag}.csv')
+            shutil.copy2(src_csv, dst_csv)
+            print(f"[OK] Dataset versionado guardado en: data/students_data_{version_tag}.csv")
+        except Exception as e:
+            print(f"[WARN] No se pudo crear la copia versionada del CSV: {e}")
+
         print(f"\n[OK] Model version '{version_tag}' registered and activated in Supabase.")
     except Exception as e:
         print(f"\n[ERROR] Failed to register model version in Supabase: {str(e)}")
