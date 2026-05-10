@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Body, Param, Query, Inject, OnModuleInit, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Param, Query, Inject, OnModuleInit, UseGuards, Req, ForbiddenException, Logger } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { IMarketplaceService } from '@chambitas/proto';
@@ -12,6 +12,7 @@ import { firstValueFrom } from 'rxjs';
 @UseGuards(JwtAuthGuard, OnboardingGuard)
 @Controller('marketplace/applications')
 export class ApplicationsController implements OnModuleInit {
+  private readonly logger = new Logger(ApplicationsController.name);
   private marketplaceService!: IMarketplaceService;
 
   constructor(@Inject('MARKETPLACE_PACKAGE') private client: ClientGrpc) {}
@@ -72,23 +73,30 @@ export class ApplicationsController implements OnModuleInit {
   ) {
     const user = req.user;
     
-    // 1. Obtener la postulación para ver a qué proyecto pertenece
-    const application = await firstValueFrom(this.marketplaceService.GetApplication({ id }));
-    
-    // 2. Obtener el proyecto para ver quién es el dueño
-    const project = await firstValueFrom(this.marketplaceService.GetProject({ id: application.project_id }));
-    
-    // 3. Validar que el usuario sea el dueño del proyecto
-    if (project.employer_id !== user.id) {
-      throw new ForbiddenException('No tienes permiso para gestionar las postulaciones de este proyecto');
-    }
+    try {
+      this.logger.debug(`Attempting to update application ${id} to status ${dto.status}`);
+      
+      // 1. Obtener la postulación para ver a qué proyecto pertenece
+      const application = await firstValueFrom(this.marketplaceService.GetApplication({ id }));
+      
+      // 2. Obtener el proyecto para ver quién es el dueño
+      const project = await firstValueFrom(this.marketplaceService.GetProject({ id: application.project_id }));
+      
+      // 3. Validar que el usuario sea el dueño del proyecto
+      if (project.employer_id !== user.id) {
+        throw new ForbiddenException('No tienes permiso para gestionar las postulaciones de este proyecto');
+      }
 
-    return firstValueFrom(
-      this.marketplaceService.UpdateApplicationStatus({
-        id,
-        status: dto.status,
-      })
-    );
+      return await firstValueFrom(
+        this.marketplaceService.UpdateApplicationStatus({
+          id,
+          status: dto.status,
+        })
+      );
+    } catch (error: any) {
+      this.logger.error(`Error updating application status: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   @Post(':id/cancel')

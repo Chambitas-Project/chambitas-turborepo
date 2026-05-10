@@ -12,7 +12,7 @@ export class ApplicationsRepository {
   async findById(id: string): Promise<any | null> {
     const { data, error } = await this.client
       .from('applications')
-      .select('*, projects(title), student_profiles(full_name, academic_cycle, careers(name), student_skills(proficiency_level, skills(id, name))), matches(score)')
+      .select('*, projects(title, employer_id), student_profiles(full_name)')
       .eq('id', id)
       .is('deleted_at', null)
       .single();
@@ -43,11 +43,24 @@ export class ApplicationsRepository {
   }): Promise<{ data: any[]; total: number }> {
     let query = this.client
       .from('applications')
-      .select('*, projects(title), student_profiles(full_name, academic_cycle, careers(name), student_skills(proficiency_level, skills(id, name))), matches(score)', { count: 'exact' })
+      .select('*, projects(title, employer_id), student_profiles(full_name)', { count: 'exact' })
       .is('deleted_at', null);
 
-    if (filters.student_id) query = query.eq('student_id', filters.student_id);
-    if (filters.project_id) query = query.eq('project_id', filters.project_id);
+    const isUuid = (uuid: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
+
+    if (filters.student_id) {
+      if (!isUuid(filters.student_id)) {
+        throw new Error(`invalid input syntax for type uuid: "${filters.student_id}"`);
+      }
+      query = query.eq('student_id', filters.student_id);
+    }
+    
+    if (filters.project_id) {
+      if (!isUuid(filters.project_id)) {
+        throw new Error(`invalid input syntax for type uuid: "${filters.project_id}"`);
+      }
+      query = query.eq('project_id', filters.project_id);
+    }
     if (filters.status) query = query.eq('status', filters.status);
 
     if (filters.limit) {

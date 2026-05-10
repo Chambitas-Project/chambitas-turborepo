@@ -79,8 +79,10 @@ export class ApplicationsService {
   }
 
   async getApplication(request: GetApplicationRequest): Promise<Application> {
+    this.logger.debug(`Fetching application: ${request.id}`);
     const application = await this.applicationsRepository.findById(request.id);
     if (!application) {
+      this.logger.warn(`Application not found: ${request.id}`);
       throw new NotFoundException(`Postulación ${request.id} no encontrada.`);
     }
     return this.mapToProto(application);
@@ -113,6 +115,7 @@ export class ApplicationsService {
   }
 
   async updateApplicationStatus(request: UpdateApplicationStatusRequest): Promise<Application> {
+    this.logger.log(`Updating status for app ${request.id} to ${request.status}`);
     const status = request.status as any;
     
     // 1. Actualizar el estado de la postulación
@@ -120,10 +123,8 @@ export class ApplicationsService {
     
     // 2. Si se acepta la postulación, cambiar el estado del proyecto a 'in_progress'
     if (status === 'accepted') {
+      this.logger.log(`Application accepted, moving project ${application.project_id} to in_progress`);
       await this.projectsRepository.updateStatus(application.project_id, 'in_progress');
-      
-      // Opcional: Rechazar automáticamente otras postulaciones para este proyecto
-      // await this.applicationsRepository.rejectOthers(application.project_id, application.id);
     }
 
     return this.mapToProto(application);
