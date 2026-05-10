@@ -15,6 +15,7 @@ message Recommendation {
   string jobId = 1;
   double score = 2;
   string reason = 3;
+  int32 cluster = 4;
 }
 
 message GetRecommendationsResponse {
