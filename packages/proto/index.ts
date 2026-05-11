@@ -544,6 +544,23 @@ export interface IProfileService {
   GetProfile(data: { id: string }, metadata?: any): Observable<UnifiedProfileResponse>;
   CompleteOnboarding(data: CompleteOnboardingRequest, metadata?: any): Observable<ProfileResponse>;
   ListSkills(data: ListSkillsRequest, metadata?: any): Observable<ListSkillsResponse>;
+  ListCareers(data: ListCareersRequest, metadata?: any): Observable<ListCareersResponse>;
+}
+
+export interface Career {
+  id: string;
+  name: string;
+  area: string;
+  is_active: boolean;
+}
+
+export interface ListCareersRequest {
+  university_id?: string;
+  area?: string;
+}
+
+export interface ListCareersResponse {
+  careers: Career[];
 }
 
 export interface IMarketplaceService {
