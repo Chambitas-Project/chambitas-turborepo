@@ -39,6 +39,11 @@ class MLEngineServiceStub(object):
                 request_serializer=ml__engine__pb2.PredictMatchRequest.SerializeToString,
                 response_deserializer=ml__engine__pb2.PredictMatchResponse.FromString,
                 _registered_method=True)
+        self.PredictBatch = channel.unary_unary(
+                '/ml_engine.MLEngineService/PredictBatch',
+                request_serializer=ml__engine__pb2.PredictBatchRequest.SerializeToString,
+                response_deserializer=ml__engine__pb2.PredictBatchResponse.FromString,
+                _registered_method=True)
         self.TrainModel = channel.unary_unary(
                 '/ml_engine.MLEngineService/TrainModel',
                 request_serializer=ml__engine__pb2.TrainModelRequest.SerializeToString,
@@ -56,6 +61,13 @@ class MLEngineServiceServicer(object):
 
     def PredictMatch(self, request, context):
         """Predicción técnica (Solo matemáticas e IA)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def PredictBatch(self, request, context):
+        """Predicción por lotes (Optimizado para rendimiento)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -81,6 +93,11 @@ def add_MLEngineServiceServicer_to_server(servicer, server):
                     servicer.PredictMatch,
                     request_deserializer=ml__engine__pb2.PredictMatchRequest.FromString,
                     response_serializer=ml__engine__pb2.PredictMatchResponse.SerializeToString,
+            ),
+            'PredictBatch': grpc.unary_unary_rpc_method_handler(
+                    servicer.PredictBatch,
+                    request_deserializer=ml__engine__pb2.PredictBatchRequest.FromString,
+                    response_serializer=ml__engine__pb2.PredictBatchResponse.SerializeToString,
             ),
             'TrainModel': grpc.unary_unary_rpc_method_handler(
                     servicer.TrainModel,
@@ -120,6 +137,33 @@ class MLEngineService(object):
             '/ml_engine.MLEngineService/PredictMatch',
             ml__engine__pb2.PredictMatchRequest.SerializeToString,
             ml__engine__pb2.PredictMatchResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def PredictBatch(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ml_engine.MLEngineService/PredictBatch',
+            ml__engine__pb2.PredictBatchRequest.SerializeToString,
+            ml__engine__pb2.PredictBatchResponse.FromString,
             options,
             channel_credentials,
             insecure,

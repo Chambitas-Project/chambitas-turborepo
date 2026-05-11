@@ -71,57 +71,54 @@ export class MatchingService implements OnModuleInit {
         return { recommendations: [] };
       }
 
-      // 3. Loop de Inferencia Stateless (Cerebro IA)
-      const recommendations = await Promise.all(
-        projects.map(async (project: any) => {
-          try {
-            const predictResponse = await firstValueFrom(
-              this.mlEngineService.predictMatch({
-                student: {
-                  id: student.id,
-                  career: (student.careers as any)?.name || 'Unknown',
-                  ciclo: student.academic_cycle || 0,
-                  gpa: student.gpa || 0,
-                  isGpaVerified: !!student.is_gpa_verified,
-                  hoursAvailable: hoursAvailable,
-                  availabilityJson: JSON.stringify(student.availability_blocks),
-                  hSkills: (student.student_skills as any[])
-                    .filter(s => s.skills.type === 'hard')
-                    .map(s => s.skills.name).join(', '),
-                  sSkills: (student.student_skills as any[])
-                    .filter(s => s.skills.type === 'soft')
-                    .map(s => s.skills.name).join(', '),
-                },
-                project: {
-                  id: project.id,
-                  title: project.title,
-                  category: project.service_category,
-                  maxHours: project.max_hours_week || 0,
-                  scheduleJson: JSON.stringify(project.schedule_constraints),
-                  reqJson: JSON.stringify(project.project_required_skills),
-                  reqHSkills: (project.project_required_skills as any[])
-                    .map(s => s.skills.name).join(', '),
-                  complexity: 'Media',
-                },
-              })
-            );
-
-            return {
-              jobId: project.id,
-              score: predictResponse.score,
-              reason: `Similitud del ${(predictResponse.score * 100).toFixed(0)}% basada en tu perfil de ${(student.careers as any)?.name}`,
-              aiMetadata: JSON.stringify({
-                cluster: predictResponse.cluster,
-                skillMatch: predictResponse.skillMatchRatio,
-                mandatoryOk: predictResponse.mandatoryMatch
-              })
-            };
-          } catch (err: any) {
-            this.logger.warn(`Fallo en predicción para proyecto ${project.id}: ${err.message}`);
-            return null;
-          }
+      // 3. Inferencia por Lote (Optimizado para Rendimiento)
+      const batchResponse = await firstValueFrom(
+        this.mlEngineService.predictBatch({
+          student: {
+            id: student.id,
+            career: (student.careers as any)?.name || 'Unknown',
+            ciclo: student.academic_cycle || 0,
+            gpa: student.gpa || 0,
+            isGpaVerified: !!student.is_gpa_verified,
+            hoursAvailable: hoursAvailable,
+            availabilityJson: JSON.stringify(student.availability_blocks),
+            hSkills: (student.student_skills as any[])
+              .filter(s => s.skills.type === 'hard')
+              .map(s => s.skills.name).join(', '),
+            sSkills: (student.student_skills as any[])
+              .filter(s => s.skills.type === 'soft')
+              .map(s => s.skills.name).join(', '),
+          },
+          projects: projects.map((project: any) => ({
+            id: project.id,
+            title: project.title,
+            category: project.service_category,
+            maxHours: project.max_hours_week || 0,
+            scheduleJson: JSON.stringify(project.schedule_constraints),
+            reqJson: JSON.stringify(project.project_required_skills),
+            reqHSkills: (project.project_required_skills as any[])
+              .map(s => s.skills.name).join(', '),
+            complexity: 'Media',
+          })),
         })
       );
+
+      const recommendations = batchResponse.results.map((predictResponse, index) => {
+        const project = projects[index];
+        if (!project) return null;
+
+        return {
+          jobId: project.id,
+          score: predictResponse.score,
+          reason: `Similitud del ${(predictResponse.score * 100).toFixed(0)}% basada en tu perfil de ${(student.careers as any)?.name}`,
+          aiMetadata: JSON.stringify({
+            cluster: predictResponse.cluster,
+            skillMatch: predictResponse.skillMatchRatio,
+            mandatoryOk: predictResponse.mandatoryMatch
+          })
+        };
+      })
+      .filter((r): r is any => r !== null && r.score >= 0.5); // <--- FILTRO DE RELEVANCIA (50%)
 
       // 4. Persistencia en DB (Auditoría y Trazabilidad)
       const { data: activeModel } = await this.supabase.getClient<Database>()
@@ -133,7 +130,6 @@ export class MatchingService implements OnModuleInit {
         .single();
 
       const sortedRecommendations = recommendations
-        .filter((r): r is any => r !== null)
         .sort((a, b) => b.score - a.score);
 
       if (activeModel && sortedRecommendations.length > 0) {

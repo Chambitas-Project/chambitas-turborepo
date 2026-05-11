@@ -15,15 +15,25 @@ from database import supabase
 class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
     def PredictMatch(self, request, context):
         # print(f"[gRPC] Recibida petición de matching para carrera: {request.student.career}")
-        
         result = engine.calculate_match(request.student, request.project)
-        
         return ml_engine_pb2.PredictMatchResponse(
             score=result['score'],
             cluster=result['cluster'],
             skillMatchRatio=result['skill_match_ratio'],
             mandatoryMatch=result['mandatory_match']
         )
+
+    def PredictBatch(self, request, context):
+        results = []
+        for project in request.projects:
+            res = engine.calculate_match(request.student, project)
+            results.append(ml_engine_pb2.PredictMatchResponse(
+                score=res['score'],
+                cluster=res['cluster'],
+                skillMatchRatio=res['skill_match_ratio'],
+                mandatoryMatch=res['mandatory_match']
+            ))
+        return ml_engine_pb2.PredictBatchResponse(results=results)
 
     def TrainModel(self, request, context):
         print(f"[gRPC] Disparando entrenamiento manual. Escenario: {request.scenario or 'default'}")

@@ -6,6 +6,9 @@ service MLEngineService {
   // Predicción técnica (Solo matemáticas e IA)
   rpc PredictMatch (PredictMatchRequest) returns (PredictMatchResponse) {}
   
+  // Predicción por lotes (Optimizado para rendimiento)
+  rpc PredictBatch (PredictBatchRequest) returns (PredictBatchResponse) {}
+
   // Administración del motor
   rpc TrainModel (TrainModelRequest) returns (TrainModelResponse) {}
   rpc GetModelStatus (GetModelStatusRequest) returns (GetModelStatusResponse) {}
@@ -34,6 +37,15 @@ message ProjectMLData {
 message PredictMatchRequest {
   StudentMLData student = 1;
   ProjectMLData project = 2;
+}
+
+message PredictBatchRequest {
+  StudentMLData student = 1;
+  repeated ProjectMLData projects = 2;
+}
+
+message PredictBatchResponse {
+  repeated PredictMatchResponse results = 1;
 }
 
 message PredictMatchResponse {

@@ -35,8 +35,18 @@ export interface PredictMatchResponse {
   mandatoryMatch: boolean;
 }
 
+export interface PredictBatchRequest {
+  student: StudentMLData;
+  projects: ProjectMLData[];
+}
+
+export interface PredictBatchResponse {
+  results: PredictMatchResponse[];
+}
+
 export interface MLEngineServiceClient {
   predictMatch(request: PredictMatchRequest): Observable<PredictMatchResponse>;
+  predictBatch(request: PredictBatchRequest): Observable<PredictBatchResponse>;
   trainModel(request: any): Observable<any>;
   getModelStatus(request: any): Observable<any>;
 }
