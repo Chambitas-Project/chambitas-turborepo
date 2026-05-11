@@ -74,6 +74,9 @@ export class ProfileController implements OnModuleInit {
       commercial_name,
       availability_blocks,
       skills,
+      gpa,
+      is_gpa_verified,
+      evidence_url,
       ...rest 
     } = profile;
 
@@ -96,6 +99,9 @@ export class ProfileController implements OnModuleInit {
         ...s,
         level: proficiency_level
       })) || [];
+      response.gpa = gpa;
+      response.isGpaVerified = is_gpa_verified;
+      response.evidenceUrl = evidence_url;
     } 
     
     // Campos exclusivos de Empleadores
@@ -160,6 +166,7 @@ export class ProfileController implements OnModuleInit {
           name: s.name,
           proficiency_level: s.proficiency_level ?? 1,
         })),
+        evidence_url: dto.evidence_url,
       } as any, metadata)
     );
 

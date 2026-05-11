@@ -101,9 +101,13 @@ export class StudentOnboardingDto {
     description: 'Bloques de disponibilidad semanal (32 bits por día)', 
     example: { mon: '11110000...', tue: '00001111...', } 
   })
-  @IsObject()
   @IsOptional()
   availability_blocks?: Record<string, string>;
+
+  @ApiPropertyOptional({ description: 'URL de evidencia para validación de GPA', example: 'https://storage.com/file.pdf' })
+  @IsOptional()
+  @IsString()
+  evidence_url?: string;
 }
 
 export class EmployerOnboardingDto {
@@ -134,6 +138,8 @@ export class UpdateStudentProfileDto {
   @ApiPropertyOptional() @IsNumber() @IsOptional() gpa?: number;
   @ApiPropertyOptional() @IsObject() @IsOptional() availability_blocks?: Record<string, string>;
   @ApiPropertyOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => SkillInputDto) @IsOptional() skill_inputs?: SkillInputDto[];
+  @ApiPropertyOptional() @IsString() @IsOptional() evidence_url?: string;
+  @ApiPropertyOptional() @IsOptional() is_gpa_verified?: boolean;
 }
 
 export class UpdateEmployerProfileDto {

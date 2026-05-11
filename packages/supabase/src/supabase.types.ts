@@ -858,9 +858,11 @@ export type Database = {
           created_at: string | null
           deleted_at: string | null
           embedding: string | null
+          evidence_url: string | null
           full_name: string | null
           gpa: number | null
           id: string
+          is_gpa_verified: boolean | null
           skills: string[] | null
           university_id: string
           updated_at: string | null
@@ -873,9 +875,11 @@ export type Database = {
           created_at?: string | null
           deleted_at?: string | null
           embedding?: string | null
+          evidence_url?: string | null
           full_name?: string | null
           gpa?: number | null
           id: string
+          is_gpa_verified?: boolean | null
           skills?: string[] | null
           university_id: string
           updated_at?: string | null
@@ -888,9 +892,11 @@ export type Database = {
           created_at?: string | null
           deleted_at?: string | null
           embedding?: string | null
+          evidence_url?: string | null
           full_name?: string | null
           gpa?: number | null
           id?: string
+          is_gpa_verified?: boolean | null
           skills?: string[] | null
           university_id?: string
           updated_at?: string | null

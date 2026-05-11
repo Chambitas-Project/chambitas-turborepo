@@ -130,6 +130,8 @@ export interface UnifiedProfileResponse {
   availability_blocks?: string;
   company_name?: string;
   commercial_name?: string;
+  is_gpa_verified: boolean;
+  evidence_url?: string;
 }
 
 export interface CreateStudentProfileRequest {
@@ -158,6 +160,8 @@ export interface UpdateStudentProfileRequest {
   availability_blocks?: string;
   skill_updates?: SkillUpdate[];
   gpa?: number;
+  is_gpa_verified?: boolean;
+  evidence_url?: string;
 }
 
 export interface CreateEmployerProfileRequest {
@@ -195,6 +199,8 @@ export interface StudentOnboardingRequest extends BaseOnboardingRequest {
   bio?: string;
   gpa?: number;
   availability_blocks?: string;
+  is_gpa_verified?: boolean;
+  evidence_url?: string;
 }
 
 export interface EmployerOnboardingRequest extends BaseOnboardingRequest {
@@ -232,6 +238,8 @@ export interface StudentProfileResponse {
   skills: string[];
   gpa: number;
   is_onboarded: boolean;
+  is_gpa_verified: boolean;
+  evidence_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -413,10 +421,22 @@ export interface Recommendation {
   jobId: string;
   score: number;
   reason: string;
+  aiMetadata: string;
+  matchId: string;
 }
 
 export interface GetRecommendationsResponse {
   recommendations: Recommendation[];
+}
+
+export interface UpdateMatchStatusRequest {
+  matchId: string;
+  status: string;
+  userId: string;
+}
+
+export interface UpdateMatchStatusResponse {
+  success: boolean;
 }
 
 // --- Media Interfaces ---
@@ -500,6 +520,7 @@ export interface IMarketplaceService {
 
 export interface IMatchingService {
   GetRecommendations(data: GetRecommendationsRequest, metadata?: any): Observable<GetRecommendationsResponse>;
+  UpdateMatchStatus(data: UpdateMatchStatusRequest, metadata?: any): Observable<UpdateMatchStatusResponse>;
 }
 
 export interface IMediaService {
