@@ -371,6 +371,36 @@ export class ProfileService {
           .eq('id', userId);
 
         if (error) throw new RpcException({ code: status.INTERNAL, message: error.message });
+
+        // Update skills if provided
+        if (data.skill_inputs && Array.isArray(data.skill_inputs)) {
+          this.logger.log(`[UpdateProfile] Updating skills for student ${userId}`);
+          const resolvedSkills = await this.resolveSkillInputs(data.skill_inputs);
+          
+          // Delete existing skills
+          const { error: deleteError } = await supabase
+            .from('student_skills')
+            .delete()
+            .eq('student_id', userId);
+          
+          if (deleteError) {
+            this.logger.error(`[UpdateProfile] Error deleting skills: ${deleteError.message}`);
+          } else if (resolvedSkills.length > 0) {
+            // Insert new skills
+            const { error: insertError } = await supabase
+              .from('student_skills')
+              .insert(resolvedSkills.map(s => ({
+                student_id: userId,
+                skill_id: s.id,
+                proficiency_level: s.proficiency_level
+              })));
+            
+            if (insertError) {
+              this.logger.error(`[UpdateProfile] Error inserting skills: ${insertError.message}`);
+              throw new RpcException({ code: status.INTERNAL, message: `Error al guardar habilidades: ${insertError.message}` });
+            }
+          }
+        }
       } else {
         const updateData: any = {};
         if (data.company_name) updateData.company_name = data.company_name;

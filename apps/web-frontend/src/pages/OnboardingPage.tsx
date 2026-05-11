@@ -15,13 +15,20 @@ import {
   Clock,
   Info,
   Plus,
-  AlertCircle
+  AlertCircle,
+  BookOpen
 } from "lucide-react";
 
 interface Skill {
   id: string;
   name: string;
   category: string;
+}
+
+interface Career {
+  id: string;
+  name: string;
+  area: string;
 }
 
 interface SelectedSkill {
@@ -54,18 +61,21 @@ const TIME_SLOTS = Array.from({ length: 32 }, (_, i) => {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 });
 
+const DEFAULT_UNIVERSITY_ID = "59a91332-e18f-4e68-8061-fe83f4c7610f";
+
 export function OnboardingPage() {
   const { user, logout, refreshUser } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [skillsError, setSkillsError] = useState(false);
+  const [careersError, setCareersError] = useState(false);
   const suggestionRef = useRef<HTMLDivElement>(null);
 
   // Estados para Estudiante
   const [studentData, setStudentData] = useState({
     fullName: "",
-    career: "",
+    careerId: "",
     academicCycle: 1,
     gpa: 15.0,
     bio: "",
@@ -90,14 +100,15 @@ export function OnboardingPage() {
   });
 
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
+  const [availableCareers, setAvailableCareers] = useState<Career[]>([]);
   const [skillSearch, setSkillSearch] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCatalogData = async () => {
       try {
+        // Fetch Skills
         const skillsResponse = await apiClient.get("/profile/skills");
-        // Ajuste para manejar array directo o envuelto
         const skillsData = Array.isArray(skillsResponse.data) ? skillsResponse.data : (skillsResponse.data?.skills || []);
         setAvailableSkills(skillsData);
         setSkillsError(false);
@@ -105,8 +116,19 @@ export function OnboardingPage() {
         console.error("Error fetching skills:", err);
         setSkillsError(true);
       }
+
+      try {
+        // Fetch Careers filtradas por universidad
+        const careersResponse = await apiClient.get(`/profile/careers?university_id=${DEFAULT_UNIVERSITY_ID}`);
+        const careersData = Array.isArray(careersResponse.data) ? careersResponse.data : (careersResponse.data?.careers || []);
+        setAvailableCareers(careersData);
+        setCareersError(false);
+      } catch (err: any) {
+        console.error("Error fetching careers:", err);
+        setCareersError(true);
+      }
     };
-    if (user) fetchData();
+    if (user) fetchCatalogData();
   }, [user]);
 
   useEffect(() => {
@@ -134,7 +156,7 @@ export function OnboardingPage() {
 
   const isStepValid = () => {
     if (user?.role === "student") {
-      if (step === 1) return studentData.fullName.trim().length > 3 && studentData.bio.trim().length > 10 && studentData.career.trim().length > 3;
+      if (step === 1) return studentData.fullName.trim().length > 3 && studentData.bio.trim().length > 10 && studentData.careerId !== "";
       if (step === 2) return studentData.gpa >= 0 && studentData.gpa <= 20 && calculateTotalHours() >= 4;
       if (step === 3) return studentData.skills.length >= 3;
     } else {
@@ -147,8 +169,8 @@ export function OnboardingPage() {
 
   const handleNext = () => {
     if (!isStepValid()) {
-      if (user?.role === "student" && step === 1 && studentData.career === "") {
-        setError("Por favor, ingresa tu carrera académica.");
+      if (user?.role === "student" && step === 1 && studentData.careerId === "") {
+        setError("Por favor, selecciona tu carrera académica del catálogo.");
       } else if (user?.role === "student" && step === 2 && calculateTotalHours() < 4) {
         setError("Por favor, selecciona al menos 4 horas de disponibilidad semanal.");
       } else if (user?.role === "student" && step === 3 && studentData.skills.length < 3) {
@@ -175,7 +197,7 @@ export function OnboardingPage() {
     setError(null);
     const payload = {
       full_name: studentData.fullName,
-      career_id: studentData.career, 
+      career_id: studentData.careerId, 
       academic_cycle: Number(studentData.academicCycle),
       gpa: Number(studentData.gpa),
       weekly_availability: Math.round(calculateTotalHours()),
@@ -191,7 +213,9 @@ export function OnboardingPage() {
     } catch (err: any) {
       console.error("Submission error details:", err.response?.data || err);
       if (err.response?.status === 500) {
-          setError("Error interno del servidor (500). Verifica que las habilidades seleccionadas sean del catálogo oficial.");
+          setError("Error interno del servidor (500). Verifica que tu carrera y habilidades sean válidas.");
+      } else if (err.response?.status === 503) {
+          setError("El servicio de perfiles está temporalmente inactivo (Circuit Open). Por favor, espera un minuto e inténtalo de nuevo.");
       } else if (err.response?.status === 400) {
           const details = Array.isArray(err.response.data.message) 
             ? err.response.data.message.join(", ") 
@@ -251,11 +275,9 @@ export function OnboardingPage() {
     if (!trimmed) return;
     if (studentData.skills.length >= 10) return;
     
-    // Validar que la skill esté en el catálogo si no hay error de carga
-    if (!skillsError) {
-        const exists = availableSkills.some(s => s.name.toLowerCase() === trimmed.toLowerCase());
-        if (!exists) return; // No permitir manual si el catálogo está disponible
-    }
+    // Solo permitir si está en el catálogo
+    const exists = availableSkills.some(s => s.name.toLowerCase() === trimmed.toLowerCase());
+    if (!exists) return;
 
     // Check if skill already added
     if (studentData.skills.some(s => s.name.toLowerCase() === trimmed.toLowerCase())) {
@@ -385,12 +407,76 @@ export function OnboardingPage() {
 
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Carrera Académica</label>
-                        <Input 
-                          placeholder="Ej: Ingeniería de Sistemas" 
-                          className="h-12 rounded-xl border-slate-200 focus:ring-emerald-500/10 text-base font-medium"
-                          value={studentData.career}
-                          onChange={e => setStudentData({...studentData, career: e.target.value})}
-                        />
+                        <div className="relative">
+                          <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 z-10" />
+                          <select 
+                            className={cn(
+                              "w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 bg-white text-base font-black appearance-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all",
+                              studentData.careerId === "" ? "text-slate-300" : "text-slate-900"
+                            )}
+                            value={studentData.careerId}
+                            onChange={e => setStudentData({...studentData, careerId: e.target.value})}
+                          >
+                            <option value="">{careersError ? "No se pudo cargar el catálogo" : "Selecciona tu carrera..."}</option>
+                            {availableCareers.map(career => (
+                              <option key={career.id} value={career.id} className="text-slate-900 font-bold">{career.name}</option>
+                            ))}
+                          </select>
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <ChevronRight className="h-4 w-4 text-slate-400 rotate-90" />
+                          </div>
+                        </div>
+                        {careersError && (
+                          <span className="text-[9px] font-bold text-amber-600 flex items-center gap-1 mt-1 ml-1">
+                            <AlertCircle className="h-3 w-3" />
+                            Error de conexión. Intenta re-loguear para ver las carreras.
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Sección de Promedio Ponderado (GPA) */}
+                      <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 relative overflow-hidden group hover:border-emerald-200 transition-all">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 blur-3xl opacity-50 group-hover:bg-emerald-100 transition-colors" />
+                        
+                        <div className="flex flex-col md:flex-row gap-8 items-center relative z-10">
+                          <div className="flex-1 space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-900/20">
+                                <Star className="h-5 w-5 text-white fill-white" />
+                              </div>
+                              <h3 className="text-xl font-black text-slate-900 tracking-tight">Tu Rendimiento Académico</h3>
+                            </div>
+                            
+                            <div className="space-y-3">
+                              <p className="text-sm font-bold text-slate-600 leading-relaxed">
+                                El <span className="text-emerald-700">Promedio Ponderado (GPA)</span> refleja tu desempeño general. 
+                                Las empresas utilizan este dato para validar tu compromiso y excelencia en tus estudios.
+                              </p>
+                              <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 w-fit px-3 py-1.5 rounded-lg border border-slate-100">
+                                <Info className="h-3 w-3 text-emerald-500" />
+                                Rango permitido: 0.0 a 20.0
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="shrink-0 flex flex-col items-center gap-3">
+                            <div className="relative group/input">
+                              <input 
+                                type="number" 
+                                step="0.1" 
+                                min="0" 
+                                max="20"
+                                className="h-24 w-40 rounded-3xl border-4 border-slate-100 bg-slate-50/50 text-center font-black text-4xl text-emerald-700 focus:border-emerald-500 focus:bg-white outline-none transition-all hover:border-slate-200"
+                                value={studentData.gpa}
+                                onChange={e => setStudentData({...studentData, gpa: Number(e.target.value)})}
+                              />
+                              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg opacity-0 group-focus-within/input:opacity-100 transition-opacity whitespace-nowrap">
+                                PUNTAJE ACTUAL
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">PROMEDIO ACTUAL</span>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="space-y-1.5">
@@ -438,21 +524,6 @@ export function OnboardingPage() {
                         </div>
                       </div>
 
-                      <div className="space-y-1.5 px-1">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Promedio Ponderado (GPA)</label>
-                        <div className="flex items-center gap-4">
-                           <Input 
-                              type="number" step="0.1" min="0" max="20"
-                              className="h-12 w-32 rounded-xl border-slate-200 text-center font-black text-emerald-700"
-                              value={studentData.gpa}
-                              onChange={e => setStudentData({...studentData, gpa: Number(e.target.value)})}
-                           />
-                           <div className="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-xl border border-amber-100">
-                              <Info className="h-4 w-4" />
-                              <span className="text-[10px] font-bold">Rango: 0.0 - 20.0</span>
-                           </div>
-                        </div>
-                      </div>
 
                       {/* Grilla de Disponibilidad */}
                       <div className="bg-white border border-slate-100 rounded-[2.5rem] p-6 shadow-xl shadow-slate-200/50 overflow-x-auto">

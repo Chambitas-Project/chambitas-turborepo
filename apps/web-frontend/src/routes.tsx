@@ -5,6 +5,8 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { JobSearchPage } from "./pages/JobSearchPage";
+import { ProjectDetailsPage } from "./pages/ProjectDetailsPage";
 import { useAuth } from "./context/AuthContext";
 
 // Componente para proteger rutas privadas
@@ -56,6 +58,22 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <DashboardPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/jobs",
+    element: (
+      <ProtectedRoute>
+        <JobSearchPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/projects/:id",
+    element: (
+      <ProtectedRoute>
+        <ProjectDetailsPage />
       </ProtectedRoute>
     ),
   },
