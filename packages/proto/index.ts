@@ -410,6 +410,49 @@ export interface CompleteProjectResponse {
   message: string;
 }
 
+// --- Review Interfaces ---
+
+export interface Review {
+  id: string;
+  application_id: string;
+  reviewer_id: string;
+  reviewer_role: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  reviewer_name?: string;
+}
+
+export interface CreateReviewRequest {
+  application_id: string;
+  reviewer_id: string;
+  rating: number;
+  comment: string;
+}
+
+export interface ListReviewsRequest {
+  student_id?: string;
+  employer_id?: string;
+  project_id?: string;
+}
+
+export interface ListReviewsResponse {
+  reviews: Review[];
+  average_rating: number;
+}
+
+export interface UpdateReviewRequest {
+  id: string;
+  reviewer_id: string;
+  rating?: number;
+  comment?: string;
+}
+
+export interface DeleteReviewRequest {
+  id: string;
+  reviewer_id: string;
+}
+
 // --- Matching Interfaces ---
 
 export interface GetRecommendationsRequest {
@@ -501,6 +544,23 @@ export interface IProfileService {
   GetProfile(data: { id: string }, metadata?: any): Observable<UnifiedProfileResponse>;
   CompleteOnboarding(data: CompleteOnboardingRequest, metadata?: any): Observable<ProfileResponse>;
   ListSkills(data: ListSkillsRequest, metadata?: any): Observable<ListSkillsResponse>;
+  ListCareers(data: ListCareersRequest, metadata?: any): Observable<ListCareersResponse>;
+}
+
+export interface Career {
+  id: string;
+  name: string;
+  area: string;
+  is_active: boolean;
+}
+
+export interface ListCareersRequest {
+  university_id?: string;
+  area?: string;
+}
+
+export interface ListCareersResponse {
+  careers: Career[];
 }
 
 export interface IMarketplaceService {
@@ -516,6 +576,10 @@ export interface IMarketplaceService {
   ListProjectApplications(data: ListProjectApplicationsRequest, metadata?: any): Observable<ListApplicationsResponse>;
   UpdateApplicationStatus(data: UpdateApplicationStatusRequest, metadata?: any): Observable<Application>;
   DeleteApplication(data: DeleteApplicationRequest, metadata?: any): Observable<DeleteApplicationResponse>;
+  CreateReview(data: CreateReviewRequest, metadata?: any): Observable<Review>;
+  ListReviews(data: ListReviewsRequest, metadata?: any): Observable<ListReviewsResponse>;
+  UpdateReview(data: UpdateReviewRequest, metadata?: any): Observable<Review>;
+  DeleteReview(data: DeleteReviewRequest, metadata?: any): Observable<Review>;
 }
 
 export interface IMatchingService {

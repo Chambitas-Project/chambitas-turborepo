@@ -222,6 +222,17 @@ export class ProfileController implements OnModuleInit {
     return response.skills || [];
   }
 
+  @Get('careers')
+  @ApiOperation({ summary: 'Obtener todas las carreras disponibles para el onboarding' })
+  @ApiResponse({ status: 200, description: 'Lista completa de carreras' })
+  async getCareers(@Req() req: Request, @Query('university_id') universityId?: string) {
+    const metadata = createGrpcMetadata((req as any).user);
+    const response = await firstValueFrom(
+      this.profileService.ListCareers({ university_id: universityId }, metadata)
+    );
+    return response.careers || [];
+  }
+
   @Get('search')
   @ApiOperation({ summary: 'Buscar perfiles' })
   async searchProfiles(

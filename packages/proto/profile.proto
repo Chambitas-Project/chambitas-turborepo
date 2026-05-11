@@ -17,6 +17,23 @@ service ProfileService {
   rpc UpdateProfile (CompleteOnboardingRequest) returns (ProfileResponse);
   rpc CompleteOnboarding (CompleteOnboardingRequest) returns (ProfileResponse);
   rpc ListSkills (ListSkillsRequest) returns (ListSkillsResponse);
+  rpc ListCareers (ListCareersRequest) returns (ListCareersResponse);
+}
+
+message ListCareersRequest {
+  optional string university_id = 1;
+  optional string area = 2;
+}
+
+message ListCareersResponse {
+  repeated Career careers = 1;
+}
+
+message Career {
+  string id = 1;
+  string name = 2;
+  string area = 3;
+  bool is_active = 4;
 }
 
 message ListSkillsRequest {

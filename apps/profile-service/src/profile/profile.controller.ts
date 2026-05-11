@@ -79,6 +79,11 @@ export class ProfileController {
     return await this.profileService.listSkills(data.category);
   }
 
+  @GrpcMethod('ProfileService', 'ListCareers')
+  async listCareers(data: any) {
+    return await this.profileService.listCareers(data);
+  }
+
   // ─── Write operations (identity enforced from gRPC metadata) ───
 
   @UseGuards(ProfileOwnerGuard)

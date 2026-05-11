@@ -3,6 +3,7 @@ import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
 import { StudentRepository } from './repositories/student.repository';
 import { EmployerRepository } from './repositories/employer.repository';
+import { CareersRepository } from './repositories/careers.repository';
 import { SupabaseModule } from '@chambitas/supabase';
 
 @Module({
@@ -12,6 +13,7 @@ import { SupabaseModule } from '@chambitas/supabase';
     ProfileService,
     StudentRepository,
     EmployerRepository,
+    CareersRepository,
   ],
   exports: [ProfileService],
 })

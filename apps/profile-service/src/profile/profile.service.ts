@@ -5,10 +5,14 @@ import { SupabaseService } from '@chambitas/supabase';
 import {
   CompleteOnboardingRequest,
   ProfileResponse,
-  UnifiedProfileResponse
+  UnifiedProfileResponse,
+  ListCareersRequest,
+  ListCareersResponse,
+  Career
 } from '@chambitas/proto';
 import { StudentRepository } from './repositories/student.repository';
 import { EmployerRepository } from './repositories/employer.repository';
+import { CareersRepository } from './repositories/careers.repository';
 import { Database } from '@chambitas/supabase';
 
 @Injectable()
@@ -19,7 +23,25 @@ export class ProfileService {
     private readonly supabaseService: SupabaseService,
     private readonly studentRepo: StudentRepository,
     private readonly employerRepo: EmployerRepository,
+    private readonly careersRepo: CareersRepository,
   ) { }
+
+  async listCareers(request: ListCareersRequest): Promise<ListCareersResponse> {
+    this.logger.log(`Listing careers with filters: ${JSON.stringify(request)}`);
+    const careers = await this.careersRepo.findAll({
+      university_id: request.university_id,
+      area: request.area,
+    });
+
+    return {
+      careers: careers.map(c => ({
+        id: c.id,
+        name: c.name,
+        area: c.area || '',
+        is_active: c.is_active || false,
+      })),
+    };
+  }
 
   // --- Legacy Compatibility Methods (CamelCase) ---
   async createStudentProfile(data: any) { return this.completeOnboarding({ ...data, role: 'student', user_id: data.userId }); }
