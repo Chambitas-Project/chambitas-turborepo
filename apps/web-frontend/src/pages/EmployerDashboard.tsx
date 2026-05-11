@@ -33,8 +33,8 @@ export function EmployerDashboard() {
           { id: '2', title: 'Creador de Contenido para Redes Sociales', status: 'pending', createdAt: 'hace 1d', budget: '$200 Fijo', applicantCount: 4 },
           { id: '3', title: 'Especialista en Entrada de Datos', status: 'completed', createdAt: 'hace 3d', budget: '$50.00', applicantCount: 1 },
         ]);
-      } catch (err) {
-        console.error("Error fetching data:", err);
+      } catch {
+        console.error("Error fetching data");
       }
     };
     fetchData();
