@@ -1,6 +1,11 @@
 import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { GetRecommendationsRequest, GetRecommendationsResponse } from '@chambitas/proto';
+import { 
+  GetRecommendationsRequest, 
+  GetRecommendationsResponse, 
+  UpdateMatchStatusRequest, 
+  UpdateMatchStatusResponse 
+} from '@chambitas/proto';
 import { SupabaseService, Database } from '@chambitas/supabase';
 import { Observable, firstValueFrom } from 'rxjs';
 import { MLEngineServiceClient, PredictMatchResponse } from './ml-engine.interface';
@@ -157,5 +162,23 @@ export class MatchingService implements OnModuleInit {
       this.logger.error(`Fallo crítico en el orquestador de matching: ${error.message}`);
       return { recommendations: [] };
     }
+  }
+
+  async updateMatchStatus(data: UpdateMatchStatusRequest): Promise<UpdateMatchStatusResponse> {
+    const { matchId, status, userId } = data;
+
+    const { error } = await this.supabase.getClient<Database>()
+      .from('matches')
+      .update({ status: status as any })
+      .eq('id', matchId)
+      .eq('student_id', userId);
+
+    if (error) {
+      this.logger.error(`Error al actualizar estado del match ${matchId}: ${error.message}`);
+      return { success: false };
+    }
+
+    this.logger.log(`Match ${matchId} actualizado a estado: ${status}`);
+    return { success: true };
   }
 }

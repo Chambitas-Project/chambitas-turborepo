@@ -421,10 +421,21 @@ export interface Recommendation {
   jobId: string;
   score: number;
   reason: string;
+  aiMetadata: string;
 }
 
 export interface GetRecommendationsResponse {
   recommendations: Recommendation[];
+}
+
+export interface UpdateMatchStatusRequest {
+  matchId: string;
+  status: string;
+  userId: string;
+}
+
+export interface UpdateMatchStatusResponse {
+  success: boolean;
 }
 
 // --- Media Interfaces ---
@@ -508,6 +519,7 @@ export interface IMarketplaceService {
 
 export interface IMatchingService {
   GetRecommendations(data: GetRecommendationsRequest, metadata?: any): Observable<GetRecommendationsResponse>;
+  UpdateMatchStatus(data: UpdateMatchStatusRequest, metadata?: any): Observable<UpdateMatchStatusResponse>;
 }
 
 export interface IMediaService {
