@@ -315,4 +315,59 @@ export class AuthService {
 
     return { universities: data || [] };
   }
+
+  async forgotPassword(data: { email: string }) {
+    const supabase = this.supabaseService.getClient<Database>();
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+      // La URL de redirección debe apuntar al frontend que procesará el token
+      redirectTo: process.env.RESET_PASSWORD_URL || 'http://localhost:3000/reset-password',
+    });
+
+    if (error) {
+      throw new RpcException({
+        code: 13,
+        message: error.message,
+      });
+    }
+
+    return { success: true, message: 'Se ha enviado un correo para restablecer tu contraseña' };
+  }
+
+  async resetPassword(data: { password: string, access_token?: string }) {
+    // Si viene un token, necesitamos crear un cliente temporal con ese token
+    // para que Supabase sepa qué usuario está actualizando su contraseña.
+    let supabase = this.supabaseService.getClient<Database>();
+
+    if (data.access_token) {
+      // Nota: Aquí asumimos que el SupabaseService permite obtener un cliente con un token específico
+      // o que podemos usar setSession. 
+      // Si no, podemos usar el cliente actual si el Gateway ya pasó el token en el metadata
+      // y el interceptor de Supabase lo inyectó.
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: '', // No es estrictamente necesario para un reset único
+      });
+
+      if (sessionError) {
+        throw new RpcException({
+          code: 16, // UNAUTHENTICATED
+          message: 'Token de recuperación inválido o expirado',
+        });
+      }
+    }
+
+    const { error } = await supabase.auth.updateUser({
+      password: data.password,
+    });
+
+    if (error) {
+      throw new RpcException({
+        code: 13,
+        message: error.message,
+      });
+    }
+
+    return { success: true, message: 'Contraseña actualizada exitosamente' };
+  }
 }

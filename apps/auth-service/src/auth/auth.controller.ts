@@ -27,4 +27,14 @@ export class AuthController {
   async listUniversities() {
     return this.authService.listUniversities();
   }
+
+  @GrpcMethod('AuthService', 'ForgotPassword')
+  async forgotPassword(@Payload() data: any) {
+    return this.authService.forgotPassword(data);
+  }
+
+  @GrpcMethod('AuthService', 'ResetPassword')
+  async resetPassword(@Payload() data: any) {
+    return this.authService.resetPassword(data);
+  }
 }

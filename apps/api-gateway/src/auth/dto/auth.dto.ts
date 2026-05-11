@@ -58,4 +58,26 @@ export class LoginDto {
   password!: string;
 }
 
+export class ForgotPasswordDto {
+  @ApiProperty({ example: 'user@example.com' })
+  @IsEmail()
+  @IsNotEmpty()
+  email!: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty({ example: 'NewStrongPassword123!' })
+  @IsString()
+  @IsNotEmpty()
+  password!: string;
+
+  @ApiPropertyOptional({ 
+    description: 'Token de acceso enviado por correo (si aplica)',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' 
+  })
+  @IsString()
+  @IsOptional()
+  access_token?: string;
+}
+
 
