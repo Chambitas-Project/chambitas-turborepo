@@ -60,8 +60,8 @@ export function StudentDashboard() {
         academicCycle: response.data.academicCycle?.toString() || "1",
         availability: response.data.availability_blocks?.schedule || {}
       });
-    } catch (err) {
-      console.error("Error fetching profile:", err);
+    } catch {
+      console.error("Error fetching profile");
     } finally {
       setLoading(false);
     }
@@ -94,8 +94,8 @@ export function StudentDashboard() {
         setShowEditModal(false);
         setSuccessMessage(null);
       }, 1500);
-    } catch (err) {
-      console.error("Error updating profile:", err);
+    } catch {
+      console.error("Error updating profile");
       alert("Error al actualizar el perfil. Por favor, intenta de nuevo.");
     } finally {
       setUpdating(false);

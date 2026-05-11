@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await apiClient.get('/profile/me');
       setUser(response.data);
-    } catch (err) {
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
