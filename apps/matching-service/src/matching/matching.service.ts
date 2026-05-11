@@ -143,12 +143,16 @@ export class MatchingService implements OnModuleInit {
           model_version_id: activeModel.id,
           score: r.score,
           feature_vector: JSON.parse(r.aiMetadata),
-          status: 'pending' as any
+          status: 'pending' as any,
+          created_at: new Date().toISOString()
         }));
 
+        // Guardamos con upsert para evitar duplicados y ahorrar espacio
         await this.supabase.getClient<Database>()
           .from('matches')
-          .insert(matchesToInsert);
+          .upsert(matchesToInsert, {
+            onConflict: 'student_id, project_id, model_version_id'
+          });
       }
 
       return { recommendations: sortedRecommendations };
