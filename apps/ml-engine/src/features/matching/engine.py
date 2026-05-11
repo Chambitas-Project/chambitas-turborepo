@@ -60,8 +60,12 @@ class MatchingEngine:
         match_score = 0
         mandatory_fail = False
         for req in req_data:
-            if req['name'] in est_skills: match_score += 1 # En prod usaríamos IDs
-            elif req['mandatory']: mandatory_fail = True
+            skill_obj = req.get('skills', {})
+            skill_name = skill_obj.get('name', '')
+            if skill_name in est_skills: 
+                match_score += 1
+            elif req.get('mandatory', False): 
+                mandatory_fail = True
         
         skill_match_ratio = match_score / len(req_data) if req_data else 0
         mandatory_match = 0 if mandatory_fail else 1

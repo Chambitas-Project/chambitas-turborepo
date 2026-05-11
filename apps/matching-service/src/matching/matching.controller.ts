@@ -9,7 +9,7 @@ export class MatchingController {
   constructor(private readonly matchingService: MatchingService) {}
 
   @GrpcMethod('MatchingService', 'GetRecommendations')
-  getRecommendations(data: GetRecommendationsRequest): Observable<GetRecommendationsResponse> {
+  getRecommendations(data: GetRecommendationsRequest): Promise<GetRecommendationsResponse> {
     return this.matchingService.getRecommendations(data);
   }
 }
