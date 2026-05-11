@@ -18,12 +18,12 @@ export function RegisterPage() {
   }, [searchParams]);
 
   return (
-    <div className="flex min-h-screen w-full font-sans overflow-hidden bg-background">
+    <div className="flex min-h-screen w-full font-sans overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
       {/* Panel Izquierdo (Organism) */}
       <AuthHeroPanel />
 
       {/* Panel Derecho (Assembler) */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-20 bg-background">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-20" style={{ backgroundColor: '#ffffff' }}>
         <div className="w-full max-w-[400px]">
           {isSuccess ? (
             <RegisterSuccessView />
