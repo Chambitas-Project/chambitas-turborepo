@@ -14,7 +14,7 @@ from database import supabase
 
 class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
     def PredictMatch(self, request, context):
-        print(f"[gRPC] Recibida petición de matching para carrera: {request.student.career}")
+        # print(f"[gRPC] Recibida petición de matching para carrera: {request.student.career}")
         
         result = engine.calculate_match(request.student, request.project)
         

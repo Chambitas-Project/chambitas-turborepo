@@ -71,15 +71,14 @@ class MatchingEngine:
         mandatory_match = 0 if mandatory_fail else 1
 
         # 3. K-MEANS (Clustering de Perfil)
-        # Usamos DataFrame para evitar el UserWarning de feature names
+        # Usamos DataFrame con los nombres exactos del entrenamiento
         kmeans_df = pd.DataFrame(
             [[student_data.gpa, student_data.ciclo, cosine_sim]], 
-            columns=['gpa', 'ciclo', 'cosine_sim']
+            columns=['est_gpa', 'est_ciclo', 'cosine_sim']
         )
         cluster = int(self.kmeans.predict(kmeans_df)[0])
 
         # 4. PREDICCIÓN RANDOM FOREST
-        # Reconstruir el vector de entrada con One-Hot Encoding para Carrera y Complejidad
         X_numeric = [
             student_data.ciclo, student_data.gpa, int(student_data.isGpaVerified),
             mandatory_match, skill_match_ratio,
@@ -93,19 +92,19 @@ class MatchingEngine:
             f"pub_complexity_{project_data.complexity}": 1
         }
         
-        # 4. PREDICCIÓN RANDOM FOREST
         X_cat = [current_features.get(col, 0) for col in self.cat_cols]
         
-        # Combinar todo en un DataFrame con nombres de columnas
+        # Combinar todo en un DataFrame con nombres de columnas del entrenamiento
         numeric_cols = [
-            'ciclo', 'gpa', 'is_gpa_verified', 'mandatory_match', 
-            'skill_match_ratio', 'hours_available', 'max_hours', 
+            'est_ciclo', 'est_gpa', 'est_is_gpa_verified', 'mandatory_match', 
+            'skill_match_ratio', 'est_hours_available', 'pub_max_hours', 
             'cosine_sim', 'schedule_overlap', 'cluster'
         ]
         X_final_df = pd.DataFrame([X_numeric + X_cat], columns=numeric_cols + list(self.cat_cols))
 
         # Obtener probabilidad de clase 1 (Apto)
-        proba = self.rf.predict_proba(X_final_df)[0][1]
+        # Usamos .values para pasar solo la matriz y evitar el Warning si RF se entrenó sin nombres
+        proba = self.rf.predict_proba(X_final_df.values)[0][1]
 
         return {
             "score": round(float(proba), 4),
