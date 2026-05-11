@@ -8,7 +8,7 @@ import {
   ApiBearerAuth
 } from '@nestjs/swagger';
 import { Response, Request } from 'express';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from './dto/auth.dto';
 import { firstValueFrom } from 'rxjs';
 import { Public } from './decorators/public.decorator';
 import {
@@ -16,7 +16,8 @@ import {
   RegisterResponse,
   LoginResponse,
   OnboardingResponse,
-  IProfileService
+  IProfileService,
+  AuthResponse
 } from '@chambitas/proto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GrpcMetadataForwarder } from '@chambitas/common';
@@ -85,4 +86,29 @@ export class AuthController implements OnModuleInit {
     return { success: true };
   }
 
+  @Public()
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiResponse({ status: 200, description: 'Correo de recuperación enviado' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<AuthResponse> {
+    return firstValueFrom(this.authService.ForgotPassword(dto));
+  }
+
+  @Public()
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Restablecer contraseña' })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiResponse({ status: 200, description: 'Contraseña actualizada' })
+  async resetPassword(@Body() dto: ResetPasswordDto, @Req() req: Request): Promise<AuthResponse> {
+    // Si no viene token en el body, intentamos sacarlo de la cookie (si el usuario ya fue redirigido)
+    const token = dto.access_token || req.cookies?.access_token;
+    
+    return firstValueFrom(
+      this.authService.ResetPassword({
+        password: dto.password,
+        access_token: token,
+      })
+    );
+  }
 }

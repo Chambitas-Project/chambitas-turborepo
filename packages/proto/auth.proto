@@ -7,6 +7,8 @@ service AuthService {
   rpc Login (LoginRequest) returns (LoginResponse) {}
   rpc UpdateOnboarding (OnboardingRequest) returns (OnboardingResponse) {}
   rpc ListUniversities (Empty) returns (UniversityListResponse) {}
+  rpc ForgotPassword (ForgotPasswordRequest) returns (AuthResponse) {}
+  rpc ResetPassword (ResetPasswordRequest) returns (AuthResponse) {}
 }
 
 message Empty {}
@@ -62,4 +64,18 @@ message OnboardingRequest {
 
 message OnboardingResponse {
   bool success = 1;
+}
+
+message ForgotPasswordRequest {
+  string email = 1;
+}
+
+message ResetPasswordRequest {
+  string password = 1;
+  string access_token = 2; // Opcional si se usa el flujo de sesión actual
+}
+
+message AuthResponse {
+  bool success = 1;
+  string message = 2;
 }

@@ -70,6 +70,20 @@ export interface OnboardingResponse {
   success: boolean;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  password: string;
+  access_token?: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface University {
   id: string;
   name: string;
@@ -529,6 +543,8 @@ export interface IAuthService {
   Login(data: LoginRequest, metadata?: any): Observable<LoginResponse>;
   UpdateOnboarding(data: OnboardingRequest, metadata?: any): Observable<OnboardingResponse>;
   ListUniversities(data: {}, metadata?: any): Observable<UniversityListResponse>;
+  ForgotPassword(data: ForgotPasswordRequest, metadata?: any): Observable<AuthResponse>;
+  ResetPassword(data: ResetPasswordRequest, metadata?: any): Observable<AuthResponse>;
 }
 
 export interface IProfileService {
