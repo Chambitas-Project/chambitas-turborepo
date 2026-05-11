@@ -148,15 +148,27 @@ export class MatchingService implements OnModuleInit {
           created_at: new Date().toISOString()
         }));
 
-        // Guardamos con upsert para evitar duplicados y ahorrar espacio
-        await this.supabase.getClient<Database>()
+        // Guardamos y recuperamos los IDs generados/existentes
+        const { data: insertedMatches } = await this.supabase.getClient<Database>()
           .from('matches')
           .upsert(matchesToInsert, {
             onConflict: 'student_id, project_id, model_version_id'
-          });
+          })
+          .select('id, project_id');
+
+        // Enriquecer las recomendaciones con el matchId real
+        const finalRecommendations = sortedRecommendations.map(r => {
+          const match = insertedMatches?.find(m => m.project_id === r.jobId);
+          return {
+            ...r,
+            matchId: match?.id || ''
+          };
+        });
+
+        return { recommendations: finalRecommendations };
       }
 
-      return { recommendations: sortedRecommendations };
+      return { recommendations: sortedRecommendations.map(r => ({ ...r, matchId: '' })) };
 
     } catch (error: any) {
       this.logger.error(`Fallo crítico en el orquestador de matching: ${error.message}`);
@@ -167,15 +179,41 @@ export class MatchingService implements OnModuleInit {
   async updateMatchStatus(data: UpdateMatchStatusRequest): Promise<UpdateMatchStatusResponse> {
     const { matchId, status, userId } = data;
 
-    const { error } = await this.supabase.getClient<Database>()
+    // 1. Actualizar el estado del match
+    const { data: match, error: updateError } = await this.supabase.getClient<Database>()
       .from('matches')
       .update({ status: status as any })
       .eq('id', matchId)
-      .eq('student_id', userId);
+      .eq('student_id', userId)
+      .select('project_id')
+      .single();
 
-    if (error) {
-      this.logger.error(`Error al actualizar estado del match ${matchId}: ${error.message}`);
+    if (updateError || !match) {
+      this.logger.error(`Error al actualizar estado del match ${matchId}: ${updateError?.message}`);
       return { success: false };
+    }
+
+    // 2. Si el estado es 'accepted', crear la postulación oficial en el marketplace
+    if (status === 'accepted') {
+      const { error: appError } = await this.supabase.getClient<Database>()
+        .from('applications')
+        .upsert({
+          student_id: userId,
+          project_id: match.project_id,
+          match_id: matchId,
+          status: 'pending', // Estado inicial de la postulación para el empleador
+          cover_note: 'Postulación generada vía Recomendación IA',
+          applied_at: new Date().toISOString()
+        }, {
+          onConflict: 'student_id, project_id'
+        });
+
+      if (appError) {
+        this.logger.error(`Error al crear postulación automática: ${appError.message}`);
+        // No bloqueamos el éxito del match, pero lo logueamos
+      } else {
+        this.logger.log(`Postulación oficial creada para el estudiante ${userId} en el proyecto ${match.project_id}`);
+      }
     }
 
     this.logger.log(`Match ${matchId} actualizado a estado: ${status}`);

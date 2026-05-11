@@ -422,6 +422,7 @@ export interface Recommendation {
   score: number;
   reason: string;
   aiMetadata: string;
+  matchId: string;
 }
 
 export interface GetRecommendationsResponse {

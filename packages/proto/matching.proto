@@ -27,6 +27,7 @@ message Recommendation {
   double score = 2;
   string reason = 3;
   string aiMetadata = 4;
+  string matchId = 5;
 }
 
 message GetRecommendationsResponse {

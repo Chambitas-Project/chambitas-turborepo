@@ -4,11 +4,11 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UpdateMatchStatusDto {
   @ApiProperty({ 
     description: 'Nuevo estado del match',
-    example: 'applied',
-    enum: ['pending', 'viewed', 'applied', 'rejected']
+    example: 'accepted',
+    enum: ['pending', 'viewed', 'accepted', 'rejected']
   })
   @IsString()
   @IsNotEmpty()
-  @IsEnum(['pending', 'viewed', 'applied', 'rejected'])
+  @IsEnum(['pending', 'viewed', 'accepted', 'rejected'])
   status!: string;
 }
