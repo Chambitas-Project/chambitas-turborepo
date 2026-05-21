@@ -24,8 +24,8 @@ export function RegisterForm({ role, setRole }: RegisterFormProps) {
   return (
     <div className="w-full max-w-[400px] space-y-8">
       <div className="space-y-2 text-center lg:text-left">
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Crea tu cuenta</h1>
-        <p className="text-sm font-medium text-muted-foreground">Acceso directo con tus credenciales</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Crea tu cuenta</h1>
+        <p className="text-sm font-medium text-slate-500">Acceso directo con tus credenciales</p>
       </div>
 
       <Alert message={regError || ""} />
@@ -34,10 +34,10 @@ export function RegisterForm({ role, setRole }: RegisterFormProps) {
 
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <label className="text-sm font-bold ml-1 text-slate-300">Correo electrónico</label>
+          <label className="text-sm font-bold ml-1 text-slate-700">Correo electrónico</label>
           <Input
             type="email"
-            placeholder="nombre@universidad.edu"
+            placeholder={role === 'employer' ? "correo@empresa.com" : "nombre@universidad.edu"}
             icon={<Mail className="h-4 w-4" />}
             error={errors.email?.message}
             {...register("email")}
@@ -46,7 +46,7 @@ export function RegisterForm({ role, setRole }: RegisterFormProps) {
 
         {role === "student" && (
           <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
-            <label className="text-sm font-bold ml-1 text-slate-300">Universidad / Institución</label>
+            <label className="text-sm font-bold ml-1 text-slate-700">Universidad / Institución</label>
             <div className="relative flex items-center">
               <School className={cn(
                 "absolute left-3 h-4 w-4 z-10 transition-colors",
@@ -78,7 +78,7 @@ export function RegisterForm({ role, setRole }: RegisterFormProps) {
         )}
 
         <div className="space-y-1.5">
-          <label className="text-sm font-bold ml-1 text-slate-300">Contraseña</label>
+          <label className="text-sm font-bold ml-1 text-slate-700">Contraseña</label>
           <Input
             type={showPassword ? "text" : "password"}
             placeholder="••••••••••••"
@@ -108,10 +108,10 @@ export function RegisterForm({ role, setRole }: RegisterFormProps) {
         </Button>
       </form>
 
-      <div className="pt-4 space-y-8 text-center border-t border-border">
-        <p className="text-sm font-bold text-muted-foreground">
+      <div className="pt-4 space-y-8 text-center border-t border-slate-100">
+        <p className="text-sm font-bold text-slate-500">
           ¿Ya tienes cuenta?{" "}
-          <Link to="/login" className="text-primary-400 font-extrabold hover:underline">
+          <Link to="/login" className="font-extrabold hover:underline" style={{ color: '#065f46' }}>
             Iniciar sesión
           </Link>
         </p>
