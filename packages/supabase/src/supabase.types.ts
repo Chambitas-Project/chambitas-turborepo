@@ -407,6 +407,7 @@ export type Database = {
           created_at: string | null
           feature_vector: Json | null
           id: string
+          insights: Json | null
           model_version_id: string
           project_id: string
           score: number | null
@@ -417,6 +418,7 @@ export type Database = {
           created_at?: string | null
           feature_vector?: Json | null
           id?: string
+          insights?: Json | null
           model_version_id: string
           project_id: string
           score?: number | null
@@ -427,6 +429,7 @@ export type Database = {
           created_at?: string | null
           feature_vector?: Json | null
           id?: string
+          insights?: Json | null
           model_version_id?: string
           project_id?: string
           score?: number | null
@@ -490,6 +493,45 @@ export type Database = {
           recall_val?: number | null
           trained_at?: string | null
           version_tag?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          email_sent_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          priority: Database["public"]["Enums"]["notification_priority"]
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_sent_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
+          title: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_sent_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -1174,6 +1216,7 @@ export type Database = {
     }
     Enums: {
       application_status:
+      | "pending_scoring"
       | "pending"
       | "reviewing"
       | "accepted"
@@ -1207,6 +1250,8 @@ export type Database = {
       | "matching"
       | "ml"
       | "notification"
+      notification_priority: "LOW" | "MEDIUM" | "HIGH"
+      notification_type: "SYSTEM" | "MATCH" | "APPLICATION" | "MESSAGE"
       post_project_status:
       | "seeking"
       | "formal_employed"
@@ -1353,6 +1398,7 @@ export const Constants = {
   public: {
     Enums: {
       application_status: [
+        "pending_scoring",
         "pending",
         "reviewing",
         "accepted",
@@ -1391,6 +1437,8 @@ export const Constants = {
         "ml",
         "notification",
       ],
+      notification_priority: ["LOW", "MEDIUM", "HIGH"],
+      notification_type: ["SYSTEM", "MATCH", "APPLICATION", "MESSAGE"],
       post_project_status: [
         "seeking",
         "formal_employed",

@@ -176,6 +176,102 @@ export class MatchingService implements OnModuleInit {
     }
   }
 
+  async calculateSingleMatchScore(studentId: string, projectId: string): Promise<{ score: number, cluster: number, skillMatchRatio: number, mandatoryMatch: boolean, strengths: string[], weaknesses: string[] }> {
+    this.logger.log(`Calculando score asíncrono para estudiante ${studentId} y proyecto ${projectId}`);
+
+    // 1. Obtener perfil del estudiante
+    const { data: student, error: stError } = await this.supabase.getClient<Database>()
+      .from('student_profiles')
+      .select(`
+        id,
+        gpa,
+        academic_cycle,
+        is_gpa_verified,
+        availability_blocks,
+        careers(name),
+        student_skills(proficiency_level, skills(id, name, type))
+      `)
+      .eq('id', studentId)
+      .single();
+
+    if (stError || !student) {
+      throw new Error(`Error al obtener estudiante: ${stError?.message}`);
+    }
+
+    const availability = (student.availability_blocks as any) || {};
+    const totalBits = Object.values(availability).reduce((acc: number, dayBits: any) => {
+      return acc + (dayBits.toString().split('1').length - 1);
+    }, 0);
+    const hoursAvailable = totalBits * 0.5;
+
+    // 2. Obtener proyecto
+    const { data: project, error: prError } = await this.supabase.getClient<Database>()
+      .from('projects')
+      .select(`
+        id,
+        title,
+        service_category,
+        max_hours_week,
+        schedule_constraints,
+        project_required_skills(min_proficiency, mandatory, skills(id, name))
+      `)
+      .eq('id', projectId)
+      .single();
+
+    if (prError || !project) {
+      throw new Error(`Error al obtener proyecto: ${prError?.message}`);
+    }
+
+    // 3. Inferencia
+    const response = await firstValueFrom(
+      this.mlEngineService.predictMatch({
+        student: {
+          id: student.id,
+          career: (student.careers as any)?.name || 'Unknown',
+          ciclo: student.academic_cycle || 0,
+          gpa: student.gpa || 0,
+          isGpaVerified: !!student.is_gpa_verified,
+          hoursAvailable: hoursAvailable,
+          availabilityJson: JSON.stringify(student.availability_blocks),
+          hSkills: (student.student_skills as any[])
+            .filter(s => s.skills.type === 'hard')
+            .map(s => s.skills.name).join(', '),
+          sSkills: (student.student_skills as any[])
+            .filter(s => s.skills.type === 'soft')
+            .map(s => s.skills.name).join(', '),
+        },
+        project: {
+          id: project.id,
+          title: project.title,
+          category: project.service_category,
+          maxHours: project.max_hours_week || 0,
+          scheduleJson: JSON.stringify(project.schedule_constraints),
+          reqJson: JSON.stringify(project.project_required_skills),
+          reqHSkills: (project.project_required_skills as any[])
+            .map(s => s.skills.name).join(', '),
+          complexity: 'Media',
+        }
+      })
+    );
+
+    // 4. Determinar strengths y weaknesses
+    const strengths: string[] = [];
+    const weaknesses: string[] = [];
+
+    if (response.skillMatchRatio > 0.8) strengths.push('Alta coincidencia de habilidades');
+    if (!response.mandatoryMatch) weaknesses.push('No cumple algunos requisitos obligatorios');
+    if (student.gpa && student.gpa > 16) strengths.push('Alto rendimiento académico');
+
+    return {
+      score: response.score,
+      cluster: response.cluster,
+      skillMatchRatio: response.skillMatchRatio,
+      mandatoryMatch: response.mandatoryMatch,
+      strengths,
+      weaknesses
+    };
+  }
+
   async updateMatchStatus(data: UpdateMatchStatusRequest): Promise<UpdateMatchStatusResponse> {
     const { matchId, status, userId } = data;
 

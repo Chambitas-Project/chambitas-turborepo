@@ -3,7 +3,7 @@ import { SupabaseService, Database, Tables, TablesInsert, TablesUpdate, Enums } 
 
 @Injectable()
 export class ApplicationsRepository {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(private readonly supabaseService: SupabaseService) { }
 
   private get client() {
     return this.supabaseService.getClient<Database>();
@@ -54,7 +54,7 @@ export class ApplicationsRepository {
       }
       query = query.eq('student_id', filters.student_id);
     }
-    
+
     if (filters.project_id) {
       if (!isUuid(filters.project_id)) {
         throw new Error(`invalid input syntax for type uuid: "${filters.project_id}"`);
@@ -72,7 +72,7 @@ export class ApplicationsRepository {
     const { data, error, count } = await query.order('created_at', { ascending: false });
 
     if (error) throw new Error(`Error listing applications: ${error.message}`);
-    
+
     return {
       data: data || [],
       total: count || 0,
@@ -97,7 +97,7 @@ export class ApplicationsRepository {
   async updateStatus(id: string, status: Enums<'application_status'>): Promise<Tables<'applications'>> {
     const { data: application, error } = await this.client
       .from('applications')
-      .update({ 
+      .update({
         status,
         updated_at: new Date().toISOString()
       })

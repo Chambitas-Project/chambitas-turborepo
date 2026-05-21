@@ -23,6 +23,7 @@ message StudentMLData {
   int32 hoursAvailable = 6;
   string availabilityJson = 7;
   string career = 8;
+  string id = 9;
 }
 
 message ProjectMLData {
@@ -32,6 +33,8 @@ message ProjectMLData {
   string reqHSkills = 4;
   string complexity = 5;
   string reqJson = 6;
+  string id = 7;
+  string title = 8;
 }
 
 message PredictMatchRequest {
