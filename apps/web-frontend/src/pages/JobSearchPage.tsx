@@ -1,21 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Search, 
-  Filter, 
-  MapPin, 
-  Clock, 
-  TrendingUp, 
+import {
+  Search,
+  Filter,
+  TrendingUp,
   ChevronRight,
   ChevronLeft,
-  Star,
   Zap,
   CheckCircle2,
-  DollarSign,
-  Briefcase,
   X,
-  Loader2,
-  Circle
+  Loader2
 } from "lucide-react";
 import { Button, Badge, cn } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
@@ -55,7 +49,7 @@ export function JobSearchPage() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // States for dynamic filtering
   const [activeCategory, setActiveCategory] = useState("Todos");
   const [maxPrice, setMaxPrice] = useState(5000);
@@ -73,10 +67,10 @@ export function JobSearchPage() {
           apiClient.get("/marketplace/projects"),
           apiClient.get("/matching/recommendations/me")
         ]);
-        
+
         const allProjects = Array.isArray(projRes.data) ? projRes.data : (projRes.data.projects || []);
         const recs = Array.isArray(recRes.data) ? recRes.data : (recRes.data.recommendations || []);
-        
+
         setProjects(allProjects);
         setRecommendations(recs);
       } catch (error) {
@@ -99,12 +93,12 @@ export function JobSearchPage() {
     const isProjectOpen = (project.status || "open").toLowerCase() === "open";
     if (!isProjectOpen) return false;
 
-    const matchesSearch = 
+    const matchesSearch =
       project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory = 
-      activeCategory === "Todos" || 
+
+    const matchesCategory =
+      activeCategory === "Todos" ||
       (project.service_category || "").toLowerCase() === activeCategory.toLowerCase();
 
     const matchesPrice = project.budget <= maxPrice;
@@ -126,7 +120,7 @@ export function JobSearchPage() {
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <span className="text-xl font-black tracking-tighter text-emerald-600">Chambitas</span>
           </div>
-          
+
           <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-400">
             <button onClick={() => navigate("/jobs")} className="text-emerald-600 border-b-2 border-emerald-600 h-16 px-2 cursor-pointer">Buscar Empleos</button>
             <button className="hover:text-emerald-600 transition-colors cursor-pointer">Mis Tareas</button>
@@ -135,15 +129,15 @@ export function JobSearchPage() {
           </div>
 
           <div className="flex items-center gap-4">
-             <div className="h-9 w-9 rounded-full bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer shadow-sm hover:scale-105 transition-transform" onClick={() => navigate("/dashboard")}>
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`} alt="Avatar" />
-             </div>
+            <div className="h-9 w-9 rounded-full bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer shadow-sm hover:scale-105 transition-transform" onClick={() => navigate("/dashboard")}>
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`} alt="Avatar" />
+            </div>
           </div>
         </div>
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 py-8 md:py-10 space-y-10">
-        
+
         {recommendations.length > 0 && currentPage === 1 && (
           <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0F172A] p-8 md:p-12 text-white shadow-2xl transition-all hover:shadow-emerald-900/10">
             <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
@@ -166,11 +160,11 @@ export function JobSearchPage() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1 group">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por título o descripción..." 
+              placeholder="Buscar por título o descripción..."
               className="w-full pl-14 pr-6 py-5 bg-white rounded-2xl border-2 border-slate-100 shadow-sm outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 font-bold transition-all text-slate-700 placeholder:text-slate-300"
             />
             {searchQuery && <X className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 hover:text-slate-600 cursor-pointer transition-colors" onClick={() => setSearchQuery("")} />}
@@ -204,12 +198,12 @@ export function JobSearchPage() {
               <div className="space-y-6">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Precio Máximo (S/.)</p>
                 <div className="space-y-4">
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="5000" 
+                  <input
+                    type="range"
+                    min="0"
+                    max="5000"
                     step="50"
-                    value={maxPrice} 
+                    value={maxPrice}
                     onChange={(e) => setMaxPrice(parseInt(e.target.value))}
                     className="w-full h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-emerald-500"
                   />
@@ -237,7 +231,7 @@ export function JobSearchPage() {
             ) : paginatedProjects.length > 0 ? (
               <div className="space-y-6">
                 {paginatedProjects.map(project => <JobCard key={project.id} project={project} />)}
-                
+
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center gap-3 pt-10">
@@ -279,7 +273,7 @@ function JobCard({ project }: { project: Project }) {
   const match = project.match_score || project.matchScore || 85;
 
   return (
-    <div 
+    <div
       onClick={handleNavigate}
       className="bg-white rounded-[2rem] p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-emerald-900/5 hover:translate-y-[-4px] transition-all group cursor-pointer relative overflow-hidden"
     >
@@ -321,7 +315,7 @@ function JobCard({ project }: { project: Project }) {
                 );
               })}
             </div>
-            <Button 
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 const projectId = project.id || (project as any).project_id || (project as any)._id;

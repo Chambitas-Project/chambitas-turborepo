@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { 
-  ArrowLeft, 
-  Calendar, 
-  Zap, 
-  ShieldCheck, 
-  Clock, 
+import {
+  ArrowLeft,
+  Calendar,
+  Zap,
+  ShieldCheck,
+  Clock,
   Send,
   CheckCircle2,
   AlertCircle,
   Loader2,
   History
 } from "lucide-react";
-import { Button, Badge, cn } from "@chambitas/ui";
+import { Button, Badge } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 
 // Helper nativo para tiempo relativo sin dependencias externas
@@ -55,7 +55,7 @@ interface Project {
 export function ProjectDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -81,7 +81,7 @@ export function ProjectDetailsPage() {
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!coverNote.trim()) return;
-    
+
     setSubmitting(true);
     setError(null);
     try {
@@ -128,38 +128,38 @@ export function ProjectDetailsPage() {
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <nav className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <button 
-            onClick={() => navigate("/jobs")} 
+          <button
+            onClick={() => navigate("/jobs")}
             className="flex items-center gap-3 text-slate-500 hover:text-slate-900 font-black transition-all group"
           >
             <div className="h-10 w-10 rounded-full border border-slate-100 flex items-center justify-center group-hover:bg-slate-50 transition-colors">
-                <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
             </div>
             <span className="hidden sm:inline">Marketplace</span>
           </button>
-          
+
           <div className="flex items-center gap-4">
-             <Badge className="bg-emerald-50 text-emerald-700 border-none px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">{project.service_category}</Badge>
+            <Badge className="bg-emerald-50 text-emerald-700 border-none px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">{project.service_category}</Badge>
           </div>
 
           <div className="flex items-center gap-3">
-             <div className="h-10 w-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
-                <History className="h-4 w-4 text-slate-400" />
-             </div>
+            <div className="h-10 w-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
+              <History className="h-4 w-4 text-slate-400" />
+            </div>
           </div>
         </div>
       </nav>
 
       <main className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
-          
+
           <div className="lg:col-span-8 border-r border-slate-100 min-h-screen">
-            
+
             <div className="p-8 md:p-16 space-y-12 border-b border-slate-50">
               <div className="space-y-6">
                 <div className="flex items-center gap-3 text-emerald-600">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-xs font-black uppercase tracking-[0.2em]">Publicado {timeAgo}</span>
+                  <Clock className="h-4 w-4" />
+                  <span className="text-xs font-black uppercase tracking-[0.2em]">Publicado {timeAgo}</span>
                 </div>
                 <h1 className="text-5xl md:text-7xl font-black leading-[0.95] tracking-tighter text-slate-900">
                   {project.title}
@@ -168,17 +168,17 @@ export function ProjectDetailsPage() {
 
               <div className="flex flex-wrap gap-12">
                 <div className="space-y-1">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Presupuesto Estimado</p>
-                    <p className="text-4xl font-black text-slate-900">S/.{project.budget}</p>
-                    <p className="text-[10px] font-bold text-emerald-600 uppercase">{project.budget_type === "hourly" ? "Tarifa por hora" : "Precio por proyecto"}</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Presupuesto Estimado</p>
+                  <p className="text-4xl font-black text-slate-900">S/.{project.budget}</p>
+                  <p className="text-[10px] font-bold text-emerald-600 uppercase">{project.budget_type === "hourly" ? "Tarifa por hora" : "Precio por proyecto"}</p>
                 </div>
                 <div className="h-16 w-px bg-slate-100 hidden sm:block" />
                 <div className="space-y-1">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</p>
-                    <div className="flex items-center gap-2 pt-1">
-                        <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
-                        <p className="text-lg font-black text-slate-900 uppercase">Abierto</p>
-                    </div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
+                    <p className="text-lg font-black text-slate-900 uppercase">Abierto</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -250,44 +250,44 @@ export function ProjectDetailsPage() {
                   <div className="space-y-1">
                     <h4 className="text-lg font-black text-slate-900">{companyName}</h4>
                     <div className="flex items-center gap-1.5 text-emerald-600">
-                        <CheckCircle2 className="h-3 w-3" />
-                        <span className="text-[9px] font-black uppercase tracking-widest">Verificado</span>
+                      <CheckCircle2 className="h-3 w-3" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">Verificado</span>
                     </div>
                   </div>
                 </div>
                 <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
-                    <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Contrataciones</span>
-                        <span className="text-xs font-black">12 proyectos</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Tasa de éxito</span>
-                        <span className="text-xs font-black text-emerald-600">85%</span>
-                    </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">Contrataciones</span>
+                    <span className="text-xs font-black">12 proyectos</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">Tasa de éxito</span>
+                    <span className="text-xs font-black text-emerald-600">85%</span>
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-8">
                 <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 rounded-full bg-slate-900" />
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Tu Postulación</h3>
+                  <div className="h-2 w-2 rounded-full bg-slate-900" />
+                  <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Tu Postulación</h3>
                 </div>
 
                 {applied ? (
                   <div className="bg-emerald-600 rounded-[2.5rem] p-10 text-white text-center space-y-6 shadow-2xl shadow-emerald-200">
                     <div className="h-16 w-16 bg-white/20 rounded-full flex items-center justify-center mx-auto border border-white/30">
-                        <CheckCircle2 className="h-8 w-8 text-white" />
+                      <CheckCircle2 className="h-8 w-8 text-white" />
                     </div>
                     <div className="space-y-2">
-                        <h4 className="text-2xl font-black tracking-tight">¡Enviado!</h4>
-                        <p className="text-emerald-50 text-sm font-medium">Hemos enviado tu propuesta a {companyName}.</p>
+                      <h4 className="text-2xl font-black tracking-tight">¡Enviado!</h4>
+                      <p className="text-emerald-50 text-sm font-medium">Hemos enviado tu propuesta a {companyName}.</p>
                     </div>
                     <Button onClick={() => navigate("/jobs")} className="w-full bg-white text-emerald-600 hover:bg-emerald-50 font-black py-6 rounded-2xl transition-all">Ver más</Button>
                   </div>
                 ) : (
                   <form onSubmit={handleApply} className="space-y-6">
                     <div className="relative group">
-                      <textarea 
+                      <textarea
                         value={coverNote}
                         onChange={(e) => setCoverNote(e.target.value)}
                         placeholder="Escribe por qué eres ideal para este proyecto..."
@@ -302,15 +302,15 @@ export function ProjectDetailsPage() {
                     {error && (
                       <div className="p-4 bg-red-50 text-red-600 rounded-2xl flex flex-col gap-1 border border-red-100">
                         <div className="flex items-center gap-2">
-                           <AlertCircle className="h-4 w-4" />
-                           <p className="text-[10px] font-black uppercase">Error de Postulación</p>
+                          <AlertCircle className="h-4 w-4" />
+                          <p className="text-[10px] font-black uppercase">Error de Postulación</p>
                         </div>
                         <p className="text-[10px] font-medium leading-tight">{error}</p>
                       </div>
                     )}
 
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       disabled={submitting || !coverNote.trim()}
                       className="w-full bg-slate-900 hover:bg-black text-white font-black py-8 rounded-[2rem] text-lg shadow-xl shadow-slate-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3 group"
                     >
@@ -323,7 +323,7 @@ export function ProjectDetailsPage() {
                       )}
                     </Button>
                     <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4">
-                        Tu perfil será compartido con el empleador.
+                      Tu perfil será compartido con el empleador.
                     </p>
                   </form>
                 )}
