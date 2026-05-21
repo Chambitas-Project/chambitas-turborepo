@@ -407,6 +407,7 @@ export type Database = {
           created_at: string | null
           feature_vector: Json | null
           id: string
+          insights: Json | null
           model_version_id: string
           project_id: string
           score: number | null
@@ -417,6 +418,7 @@ export type Database = {
           created_at?: string | null
           feature_vector?: Json | null
           id?: string
+          insights?: Json | null
           model_version_id: string
           project_id: string
           score?: number | null
@@ -427,6 +429,7 @@ export type Database = {
           created_at?: string | null
           feature_vector?: Json | null
           id?: string
+          insights?: Json | null
           model_version_id?: string
           project_id?: string
           score?: number | null
@@ -1213,6 +1216,7 @@ export type Database = {
     }
     Enums: {
       application_status:
+      | "pending_scoring"
       | "pending"
       | "reviewing"
       | "accepted"
@@ -1394,6 +1398,7 @@ export const Constants = {
   public: {
     Enums: {
       application_status: [
+        "pending_scoring",
         "pending",
         "reviewing",
         "accepted",

@@ -11,6 +11,8 @@ import {
 import { ApplicationsRepository } from './applications.repository';
 import { ProjectsRepository } from '../projects/projects.repository';
 import { Tables } from '@chambitas/supabase';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class ApplicationsService {
@@ -19,6 +21,7 @@ export class ApplicationsService {
   constructor(
     private readonly applicationsRepository: ApplicationsRepository,
     private readonly projectsRepository: ProjectsRepository,
+    @InjectQueue('ml-scoring-queue') private scoringQueue: Queue,
   ) {}
 
   async createApplication(request: CreateApplicationRequest): Promise<Application> {
@@ -39,33 +42,10 @@ export class ApplicationsService {
       throw new BadRequestException('Ya tienes una postulación activa para este proyecto.');
     }
 
-    // 3. Validar requerimientos del proyecto
+    // 3. Obtener el perfil (ya no bloquea, pero se podría usar para advertencias en frontend)
     const studentData = await this.applicationsRepository.getStudentValidationData(request.student_id);
     if (!studentData) {
-      throw new BadRequestException('No se pudo encontrar el perfil del estudiante para validar los requisitos.');
-    }
-
-    // 3.1 Validar Universidad
-    if (project.university_ids && project.university_ids.length > 0) {
-      if (!project.university_ids.includes(studentData.university_id)) {
-        throw new BadRequestException('Este proyecto no está disponible para tu universidad.');
-      }
-    }
-
-    // 3.2 Validar Skills Obligatorios
-    if (project.skills && project.skills.length > 0) {
-      const mandatorySkills = project.skills.filter(s => s.mandatory);
-      for (const reqSkill of mandatorySkills) {
-        const studentSkill = studentData.skills.find(ss => ss.skill_id === reqSkill.skill_id);
-        if (!studentSkill) {
-          throw new BadRequestException(`No cumples con el requisito obligatorio: ${reqSkill.skill_name || reqSkill.skill_id}`);
-        }
-        if (studentSkill.proficiency_level < reqSkill.min_proficiency) {
-          throw new BadRequestException(
-            `Tu nivel en ${reqSkill.skill_name || reqSkill.skill_id} (${studentSkill.proficiency_level}) es inferior al requerido (${reqSkill.min_proficiency}).`
-          );
-        }
-      }
+      throw new BadRequestException('No se pudo encontrar el perfil del estudiante.');
     }
 
     const application = await this.applicationsRepository.create({
@@ -73,6 +53,14 @@ export class ApplicationsService {
       student_id: request.student_id,
       cover_note: request.cover_note,
       match_id: request.match_id || null,
+      status: 'pending_scoring' as any,
+    });
+
+    // Enviar a la cola de BullMQ para evaluación asíncrona
+    await this.scoringQueue.add('calculate-score', {
+      application_id: application.id,
+      project_id: application.project_id,
+      student_id: application.student_id,
     });
 
     return this.mapToProto(application);
