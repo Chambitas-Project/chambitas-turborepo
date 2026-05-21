@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiClient } from "../api/api-client";
 import { Button, Input, Badge, cn } from "@chambitas/ui";
+import { useNavigate } from "react-router-dom";
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -71,6 +72,7 @@ export function OnboardingPage() {
   const [skillsError, setSkillsError] = useState(false);
   const [careersError, setCareersError] = useState(false);
   const suggestionRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Estados para Estudiante
   const [studentData, setStudentData] = useState({
@@ -93,9 +95,8 @@ export function OnboardingPage() {
 
   // Estados para Empleador
   const [employerData, setEmployerData] = useState({
+    name: "",
     companyName: "",
-    ruc: "",
-    sector: "",
     description: ""
   });
 
@@ -160,9 +161,7 @@ export function OnboardingPage() {
       if (step === 2) return studentData.gpa >= 0 && studentData.gpa <= 20 && calculateTotalHours() >= 4;
       if (step === 3) return studentData.skills.length >= 3;
     } else {
-      if (step === 1) return employerData.companyName.trim().length > 2 && employerData.ruc.length === 11;
-      if (step === 2) return employerData.sector.trim().length > 2;
-      if (step === 3) return employerData.description.trim().length > 20;
+      if (step === 1) return employerData.name.trim().length > 2 && employerData.companyName.trim().length > 2 && employerData.description.trim().length > 20;
     }
     return true;
   };
@@ -181,7 +180,8 @@ export function OnboardingPage() {
       return;
     }
     setError(null);
-    if (step < 3) {
+    const maxStep = user?.role === "student" ? 3 : 1;
+    if (step < maxStep) {
       setStep(s => s + 1);
     } else {
       if (user?.role === "student") {
@@ -209,7 +209,7 @@ export function OnboardingPage() {
     try {
       await apiClient.post("/profile/onboarding/student", payload);
       await refreshUser();
-      window.location.assign("/");
+      navigate("/");
     } catch (err: any) {
       console.error("Submission error details:", err.response?.data || err);
       if (err.response?.status === 500) {
@@ -236,14 +236,13 @@ export function OnboardingPage() {
     setError(null);
     try {
       await apiClient.post("/profile/onboarding/employer", {
-        company_name: employerData.companyName,
-        ruc: employerData.ruc,
-        sector: employerData.sector,
+        name: employerData.name, 
+        company_name: employerData.companyName, 
         description: employerData.description
       });
 
       await refreshUser();
-      window.location.assign("/");
+      navigate("/");
     } catch (err: any) {
       console.error("Submission error:", err);
       if (err.response?.status === 401) {
@@ -330,7 +329,7 @@ export function OnboardingPage() {
             </div>
 
             <nav className="flex lg:flex-col gap-4 lg:gap-6 overflow-x-auto lg:overflow-visible no-scrollbar pb-2 lg:pb-0">
-              {[1, 2, 3].map(i => (
+              {(user?.role === "student" ? [1, 2, 3] : [1]).map(i => (
                 <div key={i} className={cn(
                   "flex items-center gap-3 shrink-0 transition-all duration-300",
                   step < i ? "opacity-30 scale-95" : "opacity-100 scale-100"
@@ -346,7 +345,7 @@ export function OnboardingPage() {
                     <span className="text-xs font-bold">
                       {user?.role === "student" 
                         ? (i === 1 ? "Identidad" : i === 2 ? "Disponibilidad" : "Skills")
-                        : (i === 1 ? "Empresa" : i === 2 ? "Sector" : "Finalizar")
+                        : "Completar Perfil"
                       }
                     </span>
                   </div>
@@ -371,7 +370,7 @@ export function OnboardingPage() {
                 {user.role === "student" ? (
                   step === 1 ? "¿Quién eres?" : step === 2 ? "¿Cuándo estás libre?" : "Tus superpoderes"
                 ) : (
-                  step === 1 ? "Sobre la empresa" : step === 2 ? "Tu sector" : "Últimos pasos"
+                  "Perfil de Empresa"
                 )}
               </h1>
               <p className="mt-3 text-slate-500 font-medium text-base">
@@ -627,12 +626,12 @@ export function OnboardingPage() {
                         ) : (
                           <div className="space-y-3">
                             {studentData.skills.map((skill) => (
-                              <div key={skill.name} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:border-emerald-200 transition-all group">
+                              <div key={skill.name} className="flex flex-wrap items-center justify-between gap-4 p-5 bg-white border border-slate-100 rounded-2xl shadow-sm hover:border-emerald-200 transition-all group">
                                 <div className="flex items-center gap-3">
-                                  <div className="h-10 w-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                                  <div className="h-10 w-10 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
                                     <Star className="h-5 w-5 text-emerald-600 fill-emerald-600" />
                                   </div>
-                                  <span className="font-black text-slate-800">{skill.name}</span>
+                                  <span className="font-black text-slate-800 break-words">{skill.name}</span>
                                 </div>
 
                                 <div className="flex items-center gap-4">
@@ -675,6 +674,15 @@ export function OnboardingPage() {
                   {step === 1 && (
                     <div className="space-y-5">
                       <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tu Nombre Completo</label>
+                        <Input 
+                          placeholder="Ej: Juan Pérez" 
+                          className="h-12 rounded-xl border-slate-200 text-base font-medium"
+                          value={employerData.name}
+                          onChange={e => setEmployerData({...employerData, name: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre de la Empresa</label>
                         <Input 
                           placeholder="Ej: Chambitas S.A.C." 
@@ -684,48 +692,23 @@ export function OnboardingPage() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">RUC</label>
-                        <Input 
-                          placeholder="20XXXXXXXXX" 
-                          maxLength={11}
-                          className="h-12 rounded-xl border-slate-200 text-base font-medium"
-                          value={employerData.ruc}
-                          onChange={e => setEmployerData({...employerData, ruc: e.target.value})}
+                        <div className="flex justify-between items-center px-1">
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Descripción de la Empresa</label>
+                          <span className={cn(
+                            "text-[10px] font-bold",
+                            employerData.description.length > 450 ? "text-amber-500" : "text-slate-300"
+                          )}>
+                            {employerData.description.length}/500
+                          </span>
+                        </div>
+                        <textarea 
+                          maxLength={500}
+                          className="w-full min-h-[140px] rounded-xl border border-slate-200 p-4 text-base font-medium focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
+                          placeholder="Cuéntanos sobre tu empresa..."
+                          value={employerData.description}
+                          onChange={e => setEmployerData({...employerData, description: e.target.value})}
                         />
                       </div>
-                    </div>
-                  )}
-
-                  {step === 2 && (
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sector</label>
-                      <Input 
-                        placeholder="Ej: Tecnología" 
-                        className="h-12 rounded-xl border-slate-200 text-base font-medium"
-                        value={employerData.sector}
-                        onChange={e => setEmployerData({...employerData, sector: e.target.value})}
-                      />
-                    </div>
-                  )}
-
-                  {step === 3 && (
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between items-center px-1">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Descripción</label>
-                        <span className={cn(
-                          "text-[10px] font-bold",
-                          employerData.description.length > 450 ? "text-amber-500" : "text-slate-300"
-                        )}>
-                          {employerData.description.length}/500
-                        </span>
-                      </div>
-                      <textarea 
-                        maxLength={500}
-                        className="w-full min-h-[140px] rounded-xl border border-slate-200 p-4 text-base font-medium focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
-                        placeholder="Cuéntanos sobre tu empresa..."
-                        value={employerData.description}
-                        onChange={e => setEmployerData({...employerData, description: e.target.value})}
-                      />
                     </div>
                   )}
                 </div>
@@ -743,7 +726,7 @@ export function OnboardingPage() {
                     : "bg-slate-100 text-slate-400 cursor-not-allowed"
                 )}
               >
-                {loading ? "PROCESANDO..." : step === 3 ? "FINALIZAR" : "CONTINUAR"}
+                {loading ? "PROCESANDO..." : ((user?.role === "student" && step === 3) || (user?.role === "employer" && step === 1)) ? "FINALIZAR" : "CONTINUAR"}
                 <ChevronRight className="h-5 w-5" />
               </Button>
 

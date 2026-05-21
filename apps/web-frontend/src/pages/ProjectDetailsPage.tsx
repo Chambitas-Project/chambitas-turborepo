@@ -92,10 +92,10 @@ export function ProjectDetailsPage() {
       setApplied(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
-      // Manejo mejorado para errores de backend (como el 503/Circuit Open)
+      // Manejo mejorado para errores de backend (como el 503/Circuit Open provocado por el rechazo de habilidades)
       const errorMsg = err.response?.data?.message || err.message || "Error de conexión";
       if (err.response?.status === 503) {
-        setError("El servicio de postulaciones no está disponible en este momento. Por favor, intenta en unos minutos.");
+        setError("No cumples con las habilidades obligatorias de esta postulación (o el servicio está ocupado).");
       } else {
         setError(errorMsg);
       }
@@ -127,7 +127,7 @@ export function ProjectDetailsPage() {
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <nav className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="w-full px-6 md:px-10 h-20 flex items-center justify-between">
           <button
             onClick={() => navigate("/jobs")}
             className="flex items-center gap-3 text-slate-500 hover:text-slate-900 font-black transition-all group"
@@ -150,18 +150,17 @@ export function ProjectDetailsPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+      <main className="w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 min-h-screen">
 
-          <div className="lg:col-span-8 border-r border-slate-100 min-h-screen">
-
-            <div className="p-8 md:p-16 space-y-12 border-b border-slate-50">
-              <div className="space-y-6">
+          <div className="lg:col-span-8 2xl:col-span-9 border-r border-slate-100 min-h-screen">
+            <div className="p-6 md:p-10 lg:pl-16 space-y-8 border-b border-slate-50">
+              <div className="space-y-4">
                 <div className="flex items-center gap-3 text-emerald-600">
                   <Clock className="h-4 w-4" />
                   <span className="text-xs font-black uppercase tracking-[0.2em]">Publicado {timeAgo}</span>
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black leading-[0.95] tracking-tighter text-slate-900">
+                <h1 className="text-3xl md:text-5xl font-black leading-tight tracking-tight text-slate-900">
                   {project.title}
                 </h1>
               </div>
@@ -169,38 +168,29 @@ export function ProjectDetailsPage() {
               <div className="flex flex-wrap gap-12">
                 <div className="space-y-1">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Presupuesto Estimado</p>
-                  <p className="text-4xl font-black text-slate-900">S/.{project.budget}</p>
+                  <p className="text-3xl font-black text-slate-900">S/.{project.budget}</p>
                   <p className="text-[10px] font-bold text-emerald-600 uppercase">{project.budget_type === "hourly" ? "Tarifa por hora" : "Precio por proyecto"}</p>
                 </div>
-                <div className="h-16 w-px bg-slate-100 hidden sm:block" />
+                <div className="h-14 w-px bg-slate-100 hidden sm:block" />
                 <div className="space-y-1">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</p>
                   <div className="flex items-center gap-2 pt-1">
                     <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
-                    <p className="text-lg font-black text-slate-900 uppercase">Abierto</p>
+                    <p className="text-base font-black text-slate-900 uppercase">Abierto</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-8 md:p-16 space-y-20">
-              <div className="max-w-3xl space-y-8">
+            <div className="p-6 md:p-10 lg:pl-16 space-y-12 pb-20">
+              <div className="max-w-4xl space-y-6">
                 <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Sobre el Proyecto</h3>
-                <p className="text-xl text-slate-600 leading-[1.6] font-medium selection:bg-emerald-100">
+                <p className="text-lg text-slate-600 leading-relaxed font-medium selection:bg-emerald-100">
                   {project.description}
                 </p>
               </div>
 
-              {project.requirements && (
-                <div className="max-w-3xl space-y-8">
-                  <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Requerimientos</h3>
-                  <div className="bg-slate-50/50 rounded-3xl p-10 border border-slate-100/50">
-                    <p className="text-lg text-slate-700 italic leading-relaxed font-medium">
-                      "{project.requirements}"
-                    </p>
-                  </div>
-                </div>
-              )}
+
 
               <div className="space-y-8">
                 <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Habilidades Técnicas</h3>
@@ -239,12 +229,12 @@ export function ProjectDetailsPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-4 bg-slate-50/50">
-            <div className="sticky top-20 p-8 md:p-12 space-y-12">
+          <div className="lg:col-span-4 2xl:col-span-3 bg-slate-50/50 border-l border-slate-100">
+            <div className="sticky top-20 p-6 md:p-10 lg:pr-16 space-y-10">
               <div className="space-y-8">
                 <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Publicado por</h3>
                 <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-900 font-black text-2xl shadow-sm">
+                  <div className="h-14 w-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-900 font-black text-xl shadow-sm">
                     {companyName[0]}
                   </div>
                   <div className="space-y-1">
@@ -253,16 +243,6 @@ export function ProjectDetailsPage() {
                       <CheckCircle2 className="h-3 w-3" />
                       <span className="text-[9px] font-black uppercase tracking-widest">Verificado</span>
                     </div>
-                  </div>
-                </div>
-                <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">Contrataciones</span>
-                    <span className="text-xs font-black">12 proyectos</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">Tasa de éxito</span>
-                    <span className="text-xs font-black text-emerald-600">85%</span>
                   </div>
                 </div>
               </div>

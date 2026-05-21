@@ -37,7 +37,7 @@ export function RegisterForm({ role, setRole }: RegisterFormProps) {
           <label className="text-sm font-bold ml-1 text-slate-700">Correo electrónico</label>
           <Input
             type="email"
-            placeholder="nombre@universidad.edu"
+            placeholder={role === 'employer' ? "correo@empresa.com" : "nombre@universidad.edu"}
             icon={<Mail className="h-4 w-4" />}
             error={errors.email?.message}
             {...register("email")}

@@ -1,10 +1,18 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@chambitas/ui";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
-export function RegisterSuccessView() {
+export function RegisterSuccessView({ role }: { role?: string }) {
   const navigate = useNavigate();
   
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate("/login");
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
     <div className="space-y-8 text-center animate-in fade-in zoom-in duration-500">
       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-success-500/10">
@@ -17,7 +25,9 @@ export function RegisterSuccessView() {
       <div className="space-y-3">
         <h1 className="text-3xl font-extrabold tracking-tight text-foreground">¡Cuenta creada!</h1>
         <p className="text-muted-foreground font-medium">
-          Hemos enviado un enlace de verificación a tu correo institucional. Por favor, revísalo para activar tu cuenta.
+          {role === 'employer' 
+            ? "Tu cuenta de empleador ha sido registrada exitosamente. Te estamos redirigiendo para que inicies sesión..."
+            : "Hemos enviado un enlace de verificación a tu correo institucional. Te estamos redirigiendo al inicio de sesión..."}
         </p>
       </div>
       <Button
