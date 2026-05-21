@@ -273,15 +273,15 @@ export function StudentDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-white pb-12 font-sans selection:bg-emerald-100 selection:text-emerald-900">
-      <nav className="bg-white border-b border-slate-100 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+    <div className="min-h-screen bg-white font-sans selection:bg-emerald-100 selection:text-emerald-900 flex flex-col">
+      <nav className="bg-white border-b border-slate-100 sticky top-0 z-40 shrink-0">
+        <div className="w-full px-6 md:px-10 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-xl font-black tracking-tighter text-emerald-700">Chambitas</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-400">
             <button onClick={() => navigate("/jobs")} className="hover:text-emerald-600 transition-colors cursor-pointer">Buscar Empleos</button>
-            <button className="hover:text-emerald-600 transition-colors cursor-pointer">Mis Tareas</button>
+            <button className="hover:text-emerald-600 transition-colors cursor-pointer">Mis Postulaciones</button>
             <button className="hover:text-emerald-600 transition-colors cursor-pointer">Mensajes</button>
             <button onClick={() => navigate("/dashboard")} className="text-emerald-600 cursor-pointer">Panel</button>
           </div>
@@ -304,10 +304,10 @@ export function StudentDashboard() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12">
+      <main className="w-full flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-12 min-h-full h-full">
           {/* Columna Principal */}
-          <div className="lg:col-span-8 border-r border-slate-100 min-h-screen p-6 md:p-10 space-y-12 md:space-y-16">
+          <div className="lg:col-span-8 2xl:col-span-9 border-r border-slate-100 p-6 md:p-10 lg:pl-16 pb-16 space-y-12 md:space-y-16">
 
             {/* Header Perfil */}
             <div className="space-y-10">
@@ -426,7 +426,7 @@ export function StudentDashboard() {
           </div>
 
           {/* Lateral - Sidebar Integrated */}
-          <div className="lg:col-span-4 p-6 md:p-10 space-y-14 bg-slate-50/30">
+          <div className="lg:col-span-4 2xl:col-span-3 p-6 md:p-10 lg:pr-16 space-y-14 bg-slate-50/50 border-l border-slate-100">
 
             {/* Match de Mercado */}
             <div className="space-y-8">
@@ -474,22 +474,24 @@ export function StudentDashboard() {
             </div>
 
             {/* Nivel de Perfil */}
-            <div className="pt-6">
-              <div className="bg-white border border-slate-100 p-8 md:p-10 rounded-[2.5rem] space-y-6 text-center shadow-sm">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Nivel de Perfil</p>
-                <div className="relative h-28 w-28 md:h-32 md:w-32 mx-auto">
-                  <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" r="16" fill="none" className="text-slate-50 stroke-current" strokeWidth="2.5" />
-                    <circle cx="18" cy="18" r="16" fill="none" className="text-emerald-500 stroke-current" strokeWidth="2.5" strokeDasharray={`${strength}, 100`} strokeLinecap="round" />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl md:text-3xl font-black text-slate-900 leading-none">{strength}%</span>
-                    <span className="text-[8px] font-black text-emerald-600 uppercase mt-1 tracking-tighter">Fuerza</span>
+            {strength < 100 && (
+              <div className="pt-6">
+                <div className="bg-white border border-slate-100 p-8 md:p-10 rounded-[2.5rem] space-y-6 text-center shadow-sm">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Nivel de Perfil</p>
+                  <div className="relative h-28 w-28 md:h-32 md:w-32 mx-auto">
+                    <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="16" fill="none" className="text-slate-50 stroke-current" strokeWidth="2.5" />
+                      <circle cx="18" cy="18" r="16" fill="none" className="text-emerald-500 stroke-current" strokeWidth="2.5" strokeDasharray={`${strength}, 100`} strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-2xl md:text-3xl font-black text-slate-900 leading-none">{strength}%</span>
+                      <span className="text-[8px] font-black text-emerald-600 uppercase mt-1 tracking-tighter">Fuerza</span>
+                    </div>
                   </div>
+                  <p className="text-[10px] font-bold text-slate-400 px-4 leading-relaxed italic">¡Tu perfil está listo para el mercado!</p>
                 </div>
-                <p className="text-[10px] font-bold text-slate-400 px-4 leading-relaxed italic">¡Tu perfil está listo para el mercado!</p>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
@@ -581,26 +583,26 @@ export function StudentDashboard() {
               <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Ajustes de Perfil</h2>
               <button onClick={() => setShowEditModal(false)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-red-500 transition-all shadow-sm"><X className="h-5 w-5" /></button>
             </div>
-            <div className="p-6 md:p-10 overflow-y-auto space-y-10 custom-scrollbar flex-1">
-              <form onSubmit={handleUpdateProfile} className="space-y-10 pb-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ciclo Académico</label>
-                    <input type="number" value={editForm.academicCycle} onChange={(e) => setEditForm({ ...editForm, academicCycle: e.target.value })} className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 font-black text-slate-800 outline-none focus:border-emerald-500 transition-all" />
+            <div className="p-6 md:p-8 overflow-y-auto space-y-8 custom-scrollbar flex-1">
+              <form onSubmit={handleUpdateProfile} className="space-y-6 pb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Ciclo Académico</label>
+                    <input type="number" value={editForm.academicCycle} onChange={(e) => setEditForm({ ...editForm, academicCycle: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-800 text-sm outline-none focus:border-emerald-500 transition-all" />
                   </div>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">GPA Académico</label>
-                    <input type="number" step="0.1" value={editForm.gpa} onChange={(e) => setEditForm({ ...editForm, gpa: e.target.value })} className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 font-black text-slate-800 outline-none focus:border-emerald-500 transition-all" />
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">GPA Académico</label>
+                    <input type="number" step="0.1" value={editForm.gpa} onChange={(e) => setEditForm({ ...editForm, gpa: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-800 text-sm outline-none focus:border-emerald-500 transition-all" />
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sobre Mí (Bio)</label>
-                  <textarea value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} className="w-full px-6 py-4 rounded-2xl border-2 border-slate-100 font-bold text-slate-800 h-32 md:h-40 resize-none outline-none focus:border-emerald-500 transition-all" />
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Sobre Mí (Bio)</label>
+                  <textarea value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 font-medium text-slate-800 h-28 resize-none text-sm outline-none focus:border-emerald-500 transition-all" />
                 </div>
 
-                <div className="space-y-6">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Editar Disponibilidad</label>
-                  <div className="bg-slate-50 p-4 md:p-6 rounded-3xl overflow-x-auto border border-slate-100">
+                <div className="space-y-4">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Editar Disponibilidad</label>
+                  <div className="bg-slate-50 p-4 rounded-2xl overflow-x-auto border border-slate-200">
                     <div className="grid grid-cols-8 gap-2 min-w-[500px]">
                       <div />
                       {DAYS.map(day => <div key={day.id} className="text-[10px] font-black text-center text-slate-900">{day.label}</div>)}
@@ -619,8 +621,8 @@ export function StudentDashboard() {
                   </div>
                 </div>
 
-                <Button type="submit" disabled={updating} className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-black py-8 rounded-2xl text-lg transition-all active:scale-95 shadow-xl shadow-emerald-900/10">
-                  {updating ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : "Guardar Cambios"}
+                <Button type="submit" disabled={updating} className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 h-12 rounded-xl text-base transition-all active:scale-95 shadow-md">
+                  {updating ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Guardar Cambios"}
                 </Button>
               </form>
             </div>

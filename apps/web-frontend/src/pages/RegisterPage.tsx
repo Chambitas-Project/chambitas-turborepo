@@ -26,7 +26,7 @@ export function RegisterPage() {
       <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-20" style={{ backgroundColor: '#ffffff' }}>
         <div className="w-full max-w-[400px]">
           {isSuccess ? (
-            <RegisterSuccessView />
+            <RegisterSuccessView role={role} />
           ) : (
             <RegisterForm role={role} setRole={setRole} />
           )}
