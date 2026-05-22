@@ -8,6 +8,8 @@ import type { EmployerStats, EmployerProject, ActivityItemData } from "../api/em
 import { ProjectListItem } from "../components/organisms/ProjectListItem";
 import { RecentActivityCard } from "../components/organisms/RecentActivityCard";
 import { CompleteProfileCard } from "../components/organisms/CompleteProfileCard";
+import { ReviewsList } from "../components/organisms/ReviewsList";
+import { useAuth } from "../context/AuthContext";
 
 export function EmployerDashboard() {
   const [stats, setStats] = useState<EmployerStats | null>(null);
@@ -15,6 +17,7 @@ export function EmployerDashboard() {
   const [activities, setActivities] = useState<ActivityItemData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,6 +95,10 @@ export function EmployerDashboard() {
                 <ProjectListItem key={project.id} project={project} />
               ))
             )}
+          </div>
+
+          <div className="mt-8">
+            {user?.id && <ReviewsList userId={user.id} role="employer" />}
           </div>
         </div>
 

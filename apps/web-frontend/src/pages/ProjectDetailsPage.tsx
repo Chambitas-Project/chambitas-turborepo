@@ -10,10 +10,12 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  History
+  History,
+  X
 } from "lucide-react";
 import { Button, Badge } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
+import { ReviewModal } from "../components/organisms/ReviewModal";
 
 // Helper nativo para tiempo relativo sin dependencias externas
 function formatTimeAgo(dateString: string) {
@@ -59,23 +61,35 @@ export function ProjectDetailsPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [applied, setApplied] = useState(false);
+  const [application, setApplication] = useState<any>(null);
   const [coverNote, setCoverNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   useEffect(() => {
-    const fetchProject = async () => {
+    const fetchProjectAndApplication = async () => {
       try {
-        const response = await apiClient.get(`/marketplace/projects/${id}`);
-        setProject(response.data);
+        const [projectRes, appsRes] = await Promise.all([
+          apiClient.get(`/marketplace/projects/${id}`),
+          apiClient.get(`/marketplace/applications/my-applications`)
+        ]);
+        
+        setProject(projectRes.data);
+        
+        const myApps = Array.isArray(appsRes.data) ? appsRes.data : (appsRes.data?.applications || []);
+        const myApp = myApps.find((app: any) => app.project_id === id);
+        
+        if (myApp) {
+          setApplication(myApp);
+        }
       } catch (err) {
-        console.error("Error fetching project:", err);
+        console.error("Error fetching project or applications:", err);
         setError("No pudimos cargar los detalles del proyecto.");
       } finally {
         setLoading(false);
       }
     };
-    fetchProject();
+    fetchProjectAndApplication();
   }, [id]);
 
   const handleApply = async (e: React.FormEvent) => {
@@ -85,11 +99,11 @@ export function ProjectDetailsPage() {
     setSubmitting(true);
     setError(null);
     try {
-      await apiClient.post("/marketplace/applications", {
+      const res = await apiClient.post("/marketplace/applications", {
         project_id: id,
         cover_note: coverNote
       });
-      setApplied(true);
+      setApplication(res.data);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
       // Manejo mejorado para errores de backend (como el 503/Circuit Open provocado por el rechazo de habilidades)
@@ -175,11 +189,37 @@ export function ProjectDetailsPage() {
                 <div className="space-y-1">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</p>
                   <div className="flex items-center gap-2 pt-1">
-                    <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
-                    <p className="text-base font-black text-slate-900 uppercase">Abierto</p>
+                    <div className={cn(
+                      "h-3 w-3 rounded-full animate-pulse",
+                      project.status === 'active' ? "bg-emerald-500" :
+                      project.status === 'in_progress' ? "bg-indigo-500" :
+                      "bg-slate-400"
+                    )} />
+                    <p className="text-base font-black text-slate-900 uppercase">
+                      {project.status === 'active' ? 'Abierto' :
+                       project.status === 'in_progress' ? 'En Progreso' :
+                       project.status === 'pending' ? 'Pendiente' : 'Completado'}
+                    </p>
                   </div>
                 </div>
               </div>
+
+              {/* Progress Bar para Proyectos en Progreso */}
+              {project.status === 'in_progress' && (
+                <div className="mt-8 pt-8 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-indigo-500" /> Tiempo del Proyecto
+                    </h3>
+                    <span className="text-xs font-bold text-slate-500">En ejecución</span>
+                  </div>
+                  <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-500 w-1/2 rounded-full relative overflow-hidden">
+                      <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite] -translate-x-full"></div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="p-6 md:p-10 lg:pl-16 space-y-12 pb-20">
@@ -253,16 +293,38 @@ export function ProjectDetailsPage() {
                   <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Tu Postulación</h3>
                 </div>
 
-                {applied ? (
-                  <div className="bg-emerald-600 rounded-[2.5rem] p-10 text-white text-center space-y-6 shadow-2xl shadow-emerald-200">
+                {application ? (
+                  <div className={cn(
+                    "rounded-[2.5rem] p-10 text-white text-center space-y-6 shadow-2xl",
+                    application.status === 'accepted' ? "bg-indigo-600 shadow-indigo-200" :
+                    application.status === 'rejected' ? "bg-red-500 shadow-red-200" :
+                    "bg-emerald-600 shadow-emerald-200"
+                  )}>
                     <div className="h-16 w-16 bg-white/20 rounded-full flex items-center justify-center mx-auto border border-white/30">
-                      <CheckCircle2 className="h-8 w-8 text-white" />
+                      {application.status === 'rejected' ? <X className="h-8 w-8 text-white" /> : <CheckCircle2 className="h-8 w-8 text-white" />}
                     </div>
                     <div className="space-y-2">
-                      <h4 className="text-2xl font-black tracking-tight">¡Enviado!</h4>
-                      <p className="text-emerald-50 text-sm font-medium">Hemos enviado tu propuesta a {companyName}.</p>
+                      <h4 className="text-2xl font-black tracking-tight">
+                        {application.status === 'accepted' ? '¡Fuiste Seleccionado!' : 
+                         application.status === 'rejected' ? 'Postulación Rechazada' :
+                         '¡Enviado!'}
+                      </h4>
+                      <p className="text-white/90 text-sm font-medium">
+                        {application.status === 'accepted' ? 'El empleador aceptó tu propuesta y el proyecto está en curso.' :
+                         application.status === 'rejected' ? 'No fuiste seleccionado para este proyecto.' :
+                         `Hemos enviado tu propuesta a ${companyName}.`}
+                      </p>
                     </div>
-                    <Button onClick={() => navigate("/jobs")} className="w-full bg-white text-emerald-600 hover:bg-emerald-50 font-black py-6 rounded-2xl transition-all">Ver más</Button>
+
+                    {project.status === 'completed' && application.status === 'accepted' ? (
+                      <Button onClick={() => setIsReviewModalOpen(true)} className="w-full bg-amber-500 hover:bg-amber-400 text-white font-black py-6 rounded-2xl transition-all shadow-xl shadow-amber-900/20">
+                        Dejar Reseña al Empleador
+                      </Button>
+                    ) : (
+                      <Button onClick={() => navigate("/jobs")} className="w-full bg-white text-slate-900 hover:bg-slate-50 font-black py-6 rounded-2xl transition-all">
+                        Volver al Marketplace
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <form onSubmit={handleApply} className="space-y-6">
@@ -312,6 +374,13 @@ export function ProjectDetailsPage() {
           </div>
         </div>
       </main>
+
+      <ReviewModal 
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        applicationId={application?.id}
+        targetName={companyName}
+      />
     </div>
   );
 }
