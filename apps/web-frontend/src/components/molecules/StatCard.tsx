@@ -10,7 +10,7 @@ export interface StatCardProps {
   color: 'emerald' | 'blue' | 'amber';
 }
 
-export function StatCard({ title, value, trend, icon, color }: StatCardProps) {
+export function StatCard({ title, value, trend, icon: _icon, color }: StatCardProps) {
   return (
     <Card className="bg-white border-none shadow-sm rounded-3xl overflow-hidden relative group">
       <div className={cn(

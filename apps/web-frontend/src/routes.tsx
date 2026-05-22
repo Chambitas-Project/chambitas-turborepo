@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { EmployerProjectsPage } from "./pages/EmployerProjectsPage";
 import { EmployerProjectDetailsPage } from "./pages/EmployerProjectDetailsPage";
 import { CreateProjectPage } from "./pages/CreateProjectPage";
+import { StudentApplicationsPage } from "./pages/StudentApplicationsPage";
 // Forced refresh to fix HMR sync issues
 import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
@@ -75,6 +76,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <JobSearchPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/student/applications",
+    element: (
+      <ProtectedRoute>
+        <StudentApplicationsPage />
       </ProtectedRoute>
     ),
   },

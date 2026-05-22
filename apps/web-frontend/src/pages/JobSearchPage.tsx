@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button, Badge, cn } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
-import { useAuth } from "../context/AuthContext";
+import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
 
 interface ProjectSkill {
   skill_id: string;
@@ -42,7 +42,6 @@ interface Project {
 const ITEMS_PER_PAGE = 10;
 
 export function JobSearchPage() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [recommendations, setRecommendations] = useState<Project[]>([]);
@@ -63,18 +62,28 @@ export function JobSearchPage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [projRes, recRes] = await Promise.all([
+        const [projRes, recRes] = await Promise.allSettled([
           apiClient.get("/marketplace/projects"),
           apiClient.get("/matching/recommendations/me")
         ]);
 
-        const allProjects = Array.isArray(projRes.data) ? projRes.data : (projRes.data.projects || []);
-        const recs = Array.isArray(recRes.data) ? recRes.data : (recRes.data.recommendations || []);
+        if (projRes.status === "fulfilled") {
+          const data = projRes.value.data;
+          const allProjects = Array.isArray(data) ? data : (data.projects || []);
+          setProjects(allProjects);
+        } else {
+          console.error("Error fetching jobs:", projRes.reason);
+        }
 
-        setProjects(allProjects);
-        setRecommendations(recs);
+        if (recRes.status === "fulfilled") {
+          const data = recRes.value.data;
+          const recs = Array.isArray(data) ? data : (data.recommendations || []);
+          setRecommendations(recs);
+        } else {
+          console.warn("Could not fetch recommendations, possibly service is down:", recRes.reason);
+        }
       } catch (error) {
-        console.error("Error fetching jobs:", error);
+        console.error("Unexpected error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -115,26 +124,7 @@ export function JobSearchPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 font-sans">
-      <nav className="bg-white border-b border-slate-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <span className="text-xl font-black tracking-tighter text-emerald-600">Chambitas</span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-400">
-            <button onClick={() => navigate("/jobs")} className="text-emerald-600 border-b-2 border-emerald-600 h-16 px-2 cursor-pointer">Buscar Empleos</button>
-            <button className="hover:text-emerald-600 transition-colors cursor-pointer">Mis Tareas</button>
-            <button className="hover:text-emerald-600 transition-colors cursor-pointer">Mensajes</button>
-            <button onClick={() => navigate("/dashboard")} className="hover:text-emerald-600 transition-colors cursor-pointer">Panel</button>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="h-9 w-9 rounded-full bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer shadow-sm hover:scale-105 transition-transform" onClick={() => navigate("/dashboard")}>
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`} alt="Avatar" />
-            </div>
-          </div>
-        </div>
-      </nav>
+      <DashboardNavbar role="student" />
 
       <main className="max-w-7xl mx-auto px-4 py-8 md:py-10 space-y-10">
 

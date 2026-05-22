@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiClient } from "../api/api-client";
+import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
+import { ReviewsList } from "../components/organisms/ReviewsList";
 import {
   GraduationCap,
   Calendar,
@@ -62,11 +64,10 @@ const TIME_SLOTS = Array.from({ length: 32 }, (_, i) => {
 });
 
 export function StudentDashboard() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSkillsModal, setShowSkillsModal] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -274,36 +275,7 @@ export function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-emerald-100 selection:text-emerald-900 flex flex-col">
-      <nav className="bg-white border-b border-slate-100 sticky top-0 z-40 shrink-0">
-        <div className="w-full px-6 md:px-10 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl font-black tracking-tighter text-emerald-700">Chambitas</span>
-          </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-400">
-            <button onClick={() => navigate("/jobs")} className="hover:text-emerald-600 transition-colors cursor-pointer">Buscar Empleos</button>
-            <button className="hover:text-emerald-600 transition-colors cursor-pointer">Mis Postulaciones</button>
-            <button className="hover:text-emerald-600 transition-colors cursor-pointer">Mensajes</button>
-            <button onClick={() => navigate("/dashboard")} className="text-emerald-600 cursor-pointer">Panel</button>
-          </div>
-          <div className="flex items-center gap-4 relative">
-            <button className="text-sm font-bold text-slate-400 hover:text-slate-900 cursor-pointer">Ayuda</button>
-            <div className="h-9 w-9 rounded-full bg-slate-50 border border-slate-100 overflow-hidden cursor-pointer hover:scale-105 transition-transform" onClick={() => setShowDropdown(!showDropdown)}>
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.fullName}`} alt="Avatar" />
-            </div>
-            {showDropdown && (
-              <div className="absolute top-12 right-0 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
-                <button onClick={() => { setShowEditModal(true); setShowDropdown(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">
-                  <User className="h-4 w-4" /> Perfil
-                </button>
-                <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50">
-                  <LogOut className="h-4 w-4" /> Salir
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
-
+      <DashboardNavbar role="student" />
       <main className="w-full flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-12 min-h-full h-full">
           {/* Columna Principal */}
@@ -401,28 +373,12 @@ export function StudentDashboard() {
                 </div>
               </div>
             </div>
+            
+            <h2 className="text-xl font-black text-slate-900 mt-4 mb-2">Mi Rendimiento</h2>
+            {/* Componente de Reseñas */}
+            {user?.id && <ReviewsList userId={user.id} role="student" />}
 
-            {/* Cursos */}
-            <div className="space-y-8 pt-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Progreso Académico</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-8 rounded-[2.5rem] bg-slate-50/50 border border-slate-100 border-l-8 border-l-emerald-500">
-                  <div className="flex justify-between items-start mb-8">
-                    <div className="space-y-1">
-                      <p className="font-black text-2xl text-slate-900">Ciclo {profile?.academicCycle || "Actual"}</p>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Semestre Vigente</p>
-                    </div>
-                    <Badge className="bg-emerald-600 text-white border-none text-[9px] font-black px-4 py-1.5 rounded-full shadow-sm">ESTUDIANDO</Badge>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center text-sm"><span className="font-bold text-slate-400">Universidad</span><span className="font-black text-slate-800 text-right ml-4">{profile?.universityName || "UPC"}</span></div>
-                    <div className="flex justify-between items-center text-sm pt-4 border-t border-slate-100"><span className="font-bold text-slate-400">Horas Libres</span><span className="font-black text-slate-800">{profile?.weekly_availability || 0}h / semana</span></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+
           </div>
 
           {/* Lateral - Sidebar Integrated */}

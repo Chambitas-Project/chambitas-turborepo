@@ -18,13 +18,6 @@ interface SelectedSkill {
   proficiency_level: number;
 }
 
-const PROFICIENCY_LABELS: Record<number, string> = {
-  1: "Principiante",
-  2: "Básico",
-  3: "Intermedio",
-  4: "Avanzado",
-  5: "Experto"
-};
 
 export function CreateProjectPage() {
   const [isLoading, setIsLoading] = useState(false);

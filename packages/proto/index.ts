@@ -522,6 +522,33 @@ export interface SendEmailResponse {
   messageId: string;
 }
 
+export enum NotificationType {
+  SYSTEM = 0,
+  MATCH = 1,
+  APPLICATION = 2,
+  MESSAGE = 3,
+}
+
+export enum NotificationPriority {
+  LOW = 0,
+  MEDIUM = 1,
+  HIGH = 2,
+}
+
+export interface CreateNotificationRequest {
+  user_id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  priority: NotificationPriority;
+  metadata_json: string;
+}
+
+export interface CreateNotificationResponse {
+  success: boolean;
+  notification_id: string;
+}
+
 // --- Analytics Interfaces ---
 
 export interface TrackEventRequest {
@@ -609,6 +636,7 @@ export interface IMediaService {
 }
 
 export interface INotificationService {
+  CreateNotification(data: CreateNotificationRequest, metadata?: any): Observable<CreateNotificationResponse>;
   SendEmail(data: SendEmailRequest, metadata?: any): Observable<SendEmailResponse>;
 }
 
