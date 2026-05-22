@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, cn } from "@chambitas/ui";
 import { Bell } from "lucide-react";
-import type { ActivityItemData } from "../../services/employer.service";
+import type { ActivityItemData } from "../../api/employer.api";
 
 export function RecentActivityCard({ activities }: { activities: ActivityItemData[] }) {
   return (

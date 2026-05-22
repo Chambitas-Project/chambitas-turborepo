@@ -15,26 +15,38 @@ export interface EmployerProject {
   description?: string;
   budget?: string | number;
   status: string;
-  applicantsCount: number;
+  applicantCount: number;
+  applicantsCount?: number;
+  contracted?: string | number;
   createdAt: string;
 }
 
 export interface ActivityItemData {
   id: string;
-  type: string;
-  description: string;
-  timestamp: string;
+  type?: string;
+  description?: string;
+  timestamp?: string;
+  user?: string;
+  action?: string;
+  target?: string;
+  time?: string;
+  color?: string;
 }
 
 export interface ApplicationData {
   id: string;
-  studentName: string;
+  studentName?: string;
+  student_name?: string;
   student_id?: string;
   cover_note?: string;
-  matchScore: number;
+  matchScore?: number;
+  match_score?: number;
   status: string;
-  appliedAt: string;
+  appliedAt?: string;
+  applied_at?: string;
   created_at?: string;
+  student_career?: string;
+  student_academic_cycle?: number;
 }
 
 export const employerApi = {
@@ -49,18 +61,51 @@ export const employerApi = {
     };
   },
   getRecentProjects: async (): Promise<EmployerProject[]> => {
-    return [];
+    try {
+      const response = await apiClient.get('/marketplace/projects/my-projects');
+      return Array.isArray(response.data) ? response.data : (response.data?.projects || []);
+    } catch (err) {
+      console.error("Error fetching recent projects:", err);
+      return [];
+    }
   },
   getRecentActivity: async (): Promise<ActivityItemData[]> => {
     return [];
   },
-  getProject: async (_id: string): Promise<EmployerProject | null> => {
-    return null;
+  getProject: async (id: string): Promise<EmployerProject | null> => {
+    try {
+      const response = await apiClient.get(`/marketplace/projects/${id}`);
+      return response.data;
+    } catch (err) {
+      console.error("Error fetching project:", err);
+      return null;
+    }
   },
-  getProjectApplicants: async (_id: string): Promise<ApplicationData[]> => {
-    return [];
+  getProjectApplicants: async (id: string): Promise<ApplicationData[]> => {
+    try {
+      const response = await apiClient.get(`/marketplace/applications/project/${id}`);
+      return Array.isArray(response.data) ? response.data : (response.data?.applications || []);
+    } catch (err) {
+      console.error("Error fetching applicants:", err);
+      return [];
+    }
   },
   createProject: async (data: any): Promise<any> => {
     return apiClient.post('/marketplace/projects', data);
+  },
+  updateApplicationStatus: async (applicationId: string, status: string): Promise<any> => {
+    return apiClient.patch(`/marketplace/applications/${applicationId}/status`, { status });
+  },
+  getStudentProfile: async (studentId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/profile/id/${studentId}`);
+      return response.data;
+    } catch (err) {
+      console.error("Error fetching student profile:", err);
+      return null;
+    }
+  },
+  completeProject: async (projectId: string): Promise<any> => {
+    return apiClient.post(`/marketplace/projects/${projectId}/complete`, {});
   }
 };

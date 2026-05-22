@@ -22,33 +22,33 @@ export function DashboardNavbar({ role }: DashboardNavbarProps) {
           <span className="text-xl font-black text-emerald-700 tracking-tighter cursor-pointer" onClick={() => navigate("/")}>
             Chambitas
           </span>
-          <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500">
-            {role === "student" && (
-              <button 
-                className={location === "/jobs" ? "text-emerald-600 border-b-2 border-emerald-600 pb-5 mt-5 cursor-pointer" : "hover:text-emerald-600 transition-colors cursor-pointer"}
-                onClick={() => navigate("/jobs")}
-              >
-                Buscar Empleos
-              </button>
-            )}
-            
-            <button 
-              className={location.startsWith("/employer/projects") || location === "/student/applications" ? "text-emerald-600 border-b-2 border-emerald-600 pb-5 mt-5 cursor-pointer" : "hover:text-emerald-600 transition-colors cursor-pointer"}
-              onClick={() => navigate(role === "employer" ? "/employer/projects" : "/student/applications")}
-            >
-              {role === "employer" ? "Mis Publicaciones" : "Mis Tareas"}
-            </button>
-
-            <button className="hover:text-emerald-600 transition-colors cursor-pointer">Mensajes</button>
-
-            <button 
-              className={location === "/dashboard" ? "text-emerald-600 border-b-2 border-emerald-600 pb-5 mt-5 cursor-pointer" : "hover:text-emerald-600 transition-colors cursor-pointer"}
-              onClick={() => navigate("/dashboard")}
-            >
-              Panel
-            </button>
-          </div>
         </div>
+
+        <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500">
+          {role === "student" && (
+            <button 
+              className={location === "/jobs" ? "text-emerald-600 border-b-2 border-emerald-600 pb-5 mt-5 cursor-pointer" : "hover:text-emerald-600 transition-colors cursor-pointer"}
+              onClick={() => navigate("/jobs")}
+            >
+              Buscar Empleos
+            </button>
+          )}
+          
+          <button 
+            className={location.startsWith("/employer/projects") || location === "/student/applications" ? "text-emerald-600 border-b-2 border-emerald-600 pb-5 mt-5 cursor-pointer" : "hover:text-emerald-600 transition-colors cursor-pointer"}
+            onClick={() => navigate(role === "employer" ? "/employer/projects" : "/student/applications")}
+          >
+            {role === "employer" ? "Mis Publicaciones" : "Mis Postulaciones"}
+          </button>
+
+          <button 
+            className={location === "/dashboard" ? "text-emerald-600 border-b-2 border-emerald-600 pb-5 mt-5 cursor-pointer" : "hover:text-emerald-600 transition-colors cursor-pointer"}
+            onClick={() => navigate("/dashboard")}
+          >
+            Panel
+          </button>
+        </div>
+
         <div className="flex items-center gap-4 relative">
           {role === "student" && (
             <button className="text-sm font-bold text-slate-500 hover:text-slate-900 cursor-pointer">Cambiar Rol</button>

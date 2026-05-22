@@ -1,7 +1,7 @@
 import { Card, CardContent, Badge, Button, cn } from "@chambitas/ui";
 import { Clock, TrendingUp, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import type { EmployerProject } from "../../services/employer.service";
+import type { EmployerProject } from "../../api/employer.api";
 
 export function ProjectListItem({ project }: { project: EmployerProject }) {
   const navigate = useNavigate();
