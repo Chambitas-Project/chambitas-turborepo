@@ -20,7 +20,7 @@ const buttonVariants = cva(
     "transition-all duration-150 ease-out",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-background]",
     "disabled:pointer-events-none disabled:opacity-40",
-    "select-none",
+    "select-none cursor-pointer",
     /* Ícono SVG interno auto-redimensionado */
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   ],

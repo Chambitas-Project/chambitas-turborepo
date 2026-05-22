@@ -43,29 +43,38 @@ export type Database = {
         Row: {
           applied_at: string | null
           cover_note: string | null
+          created_at: string | null
+          deleted_at: string | null
           id: string
           match_id: string | null
           project_id: string
           status: Database["public"]["Enums"]["application_status"] | null
           student_id: string
+          updated_at: string | null
         }
         Insert: {
           applied_at?: string | null
           cover_note?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
           id?: string
           match_id?: string | null
           project_id: string
           status?: Database["public"]["Enums"]["application_status"] | null
           student_id: string
+          updated_at?: string | null
         }
         Update: {
           applied_at?: string | null
           cover_note?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
           id?: string
           match_id?: string | null
           project_id?: string
           status?: Database["public"]["Enums"]["application_status"] | null
           student_id?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -91,26 +100,70 @@ export type Database = {
           },
         ]
       }
+      careers: {
+        Row: {
+          area: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          university_id: string | null
+        }
+        Insert: {
+          area?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          university_id?: string | null
+        }
+        Update: {
+          area?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          university_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "careers_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employer_profiles: {
         Row: {
           company_name: string | null
+          created_at: string | null
+          deleted_at: string | null
+          description: string | null
           id: string
-          ruc: string | null
-          sector: string | null
+          name: string
+          updated_at: string | null
           verified: boolean | null
         }
         Insert: {
           company_name?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          description?: string | null
           id: string
-          ruc?: string | null
-          sector?: string | null
+          name: string
+          updated_at?: string | null
           verified?: boolean | null
         }
         Update: {
           company_name?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          description?: string | null
           id?: string
-          ruc?: string | null
-          sector?: string | null
+          name?: string
+          updated_at?: string | null
           verified?: boolean | null
         }
         Relationships: [
@@ -229,7 +282,7 @@ export type Database = {
           latency_ms?: number | null
           memory_usage_mb?: number | null
           microservice_name: Database["public"]["Enums"]["microservice_name"]
-          recorded_at?: string
+          recorded_at: string
           transaction_count?: number | null
           university_id?: string | null
         }
@@ -311,7 +364,7 @@ export type Database = {
           checksum?: string | null
           cross_tenant_leaks_found?: number | null
           duration_ms?: number | null
-          executed_at?: string
+          executed_at: string
           executed_by?: string | null
           expected_row_count?: number | null
           id?: string
@@ -354,6 +407,7 @@ export type Database = {
           created_at: string | null
           feature_vector: Json | null
           id: string
+          insights: Json | null
           model_version_id: string
           project_id: string
           score: number | null
@@ -364,6 +418,7 @@ export type Database = {
           created_at?: string | null
           feature_vector?: Json | null
           id?: string
+          insights?: Json | null
           model_version_id: string
           project_id: string
           score?: number | null
@@ -374,6 +429,7 @@ export type Database = {
           created_at?: string | null
           feature_vector?: Json | null
           id?: string
+          insights?: Json | null
           model_version_id?: string
           project_id?: string
           score?: number | null
@@ -440,6 +496,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          email_sent_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          priority: Database["public"]["Enums"]["notification_priority"]
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_sent_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
+          title: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_sent_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       project_required_skills: {
         Row: {
           id: string
@@ -479,51 +574,99 @@ export type Database = {
           },
         ]
       }
+      project_universities: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          id: string
+          project_id: string
+          university_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          project_id: string
+          university_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          id?: string
+          project_id?: string
+          university_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_universities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_universities_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           budget: number | null
           created_at: string | null
           deadline: string | null
+          deleted_at: string | null
           description: string | null
           embedding: string | null
           employer_id: string
           id: string
           max_hours_week: number | null
+          requirements: string[] | null
           schedule_constraints: Json | null
           service_category: string
           status: Database["public"]["Enums"]["project_status"] | null
           title: string
-          university_id: string | null
+          updated_at: string | null
         }
         Insert: {
           budget?: number | null
           created_at?: string | null
           deadline?: string | null
+          deleted_at?: string | null
           description?: string | null
           embedding?: string | null
           employer_id: string
           id?: string
           max_hours_week?: number | null
+          requirements?: string[] | null
           schedule_constraints?: Json | null
           service_category: string
           status?: Database["public"]["Enums"]["project_status"] | null
           title: string
-          university_id?: string | null
+          updated_at?: string | null
         }
         Update: {
           budget?: number | null
           created_at?: string | null
           deadline?: string | null
+          deleted_at?: string | null
           description?: string | null
           embedding?: string | null
           employer_id?: string
           id?: string
           max_hours_week?: number | null
+          requirements?: string[] | null
           schedule_constraints?: Json | null
           service_category?: string
           status?: Database["public"]["Enums"]["project_status"] | null
           title?: string
-          university_id?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -531,13 +674,6 @@ export type Database = {
             columns: ["employer_id"]
             isOneToOne: false
             referencedRelation: "employer_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "projects_university_id_fkey"
-            columns: ["university_id"]
-            isOneToOne: false
-            referencedRelation: "universities"
             referencedColumns: ["id"]
           },
         ]
@@ -616,28 +752,34 @@ export type Database = {
           application_id: string
           comment: string | null
           created_at: string | null
+          deleted_at: string | null
           id: string
           rating: number | null
           reviewer_id: string
           reviewer_role: Database["public"]["Enums"]["reviewer_role"] | null
+          updated_at: string | null
         }
         Insert: {
           application_id: string
           comment?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           rating?: number | null
           reviewer_id: string
           reviewer_role?: Database["public"]["Enums"]["reviewer_role"] | null
+          updated_at?: string | null
         }
         Update: {
           application_id?: string
           comment?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           rating?: number | null
           reviewer_id?: string
           reviewer_role?: Database["public"]["Enums"]["reviewer_role"] | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -677,7 +819,7 @@ export type Database = {
         Insert: {
           actor_user_id?: string | null
           blocked_service_category?: string | null
-          created_at?: string
+          created_at: string
           endpoint?: string | null
           event_type: Database["public"]["Enums"]["audit_event_type"]
           http_method?: Database["public"]["Enums"]["http_method"] | null
@@ -754,11 +896,16 @@ export type Database = {
           academic_cycle: number | null
           availability_blocks: Json | null
           bio: string | null
-          career: string | null
+          career_id: string | null
+          created_at: string | null
+          deleted_at: string | null
           embedding: string | null
+          evidence_url: string | null
           full_name: string | null
           gpa: number | null
           id: string
+          is_gpa_verified: boolean | null
+          skills: string[] | null
           university_id: string
           updated_at: string | null
         }
@@ -766,11 +913,16 @@ export type Database = {
           academic_cycle?: number | null
           availability_blocks?: Json | null
           bio?: string | null
-          career?: string | null
+          career_id?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
           embedding?: string | null
+          evidence_url?: string | null
           full_name?: string | null
           gpa?: number | null
           id: string
+          is_gpa_verified?: boolean | null
+          skills?: string[] | null
           university_id: string
           updated_at?: string | null
         }
@@ -778,15 +930,27 @@ export type Database = {
           academic_cycle?: number | null
           availability_blocks?: Json | null
           bio?: string | null
-          career?: string | null
+          career_id?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
           embedding?: string | null
+          evidence_url?: string | null
           full_name?: string | null
           gpa?: number | null
           id?: string
+          is_gpa_verified?: boolean | null
+          skills?: string[] | null
           university_id?: string
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "student_profiles_career_id_fkey"
+            columns: ["career_id"]
+            isOneToOne: false
+            referencedRelation: "careers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "student_profiles_id_fkey"
             columns: ["id"]
@@ -850,28 +1014,34 @@ export type Database = {
       }
       universities: {
         Row: {
-          active: boolean | null
-          country: string | null
           created_at: string | null
-          domain_pattern: string
+          email_domain: string
           id: string
+          is_active: boolean | null
+          logo_url: string | null
           name: string
+          slug: string | null
+          updated_at: string | null
         }
         Insert: {
-          active?: boolean | null
-          country?: string | null
           created_at?: string | null
-          domain_pattern: string
+          email_domain: string
           id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
           name: string
+          slug?: string | null
+          updated_at?: string | null
         }
         Update: {
-          active?: boolean | null
-          country?: string | null
           created_at?: string | null
-          domain_pattern?: string
+          email_domain?: string
           id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
           name?: string
+          slug?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -939,7 +1109,7 @@ export type Database = {
           flow_name: Database["public"]["Enums"]["flow_name"]
           id?: string
           navigation_time_total_ms?: number | null
-          recorded_at?: string
+          recorded_at: string
           satisfaction_score_csat?: number | null
           session_id: string
           step_name: string
@@ -993,9 +1163,60 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       auth_student_id: { Args: never; Returns: string }
+      complete_student_onboarding:
+      | {
+        Args: {
+          p_academic_cycle: number
+          p_career: string
+          p_full_name: string
+          p_skill_ids: string[]
+          p_university_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      | {
+        Args: {
+          p_academic_cycle: number
+          p_career: string
+          p_full_name: string
+          p_proficiency_levels: number[]
+          p_skill_ids: string[]
+          p_university_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      | {
+        Args: {
+          p_academic_cycle: number
+          p_bio?: string
+          p_career: string
+          p_full_name: string
+          p_proficiency_levels: number[]
+          p_skill_ids: string[]
+          p_university_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      | {
+        Args: {
+          p_academic_cycle: number
+          p_bio?: string
+          p_career_id: string
+          p_full_name: string
+          p_proficiency_levels: number[]
+          p_skill_ids: string[]
+          p_university_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       application_status:
+      | "pending_scoring"
       | "pending"
       | "reviewing"
       | "accepted"
@@ -1029,6 +1250,8 @@ export type Database = {
       | "matching"
       | "ml"
       | "notification"
+      notification_priority: "LOW" | "MEDIUM" | "HIGH"
+      notification_type: "SYSTEM" | "MATCH" | "APPLICATION" | "MESSAGE"
       post_project_status:
       | "seeking"
       | "formal_employed"
@@ -1175,6 +1398,7 @@ export const Constants = {
   public: {
     Enums: {
       application_status: [
+        "pending_scoring",
         "pending",
         "reviewing",
         "accepted",
@@ -1213,6 +1437,8 @@ export const Constants = {
         "ml",
         "notification",
       ],
+      notification_priority: ["LOW", "MEDIUM", "HIGH"],
+      notification_type: ["SYSTEM", "MATCH", "APPLICATION", "MESSAGE"],
       post_project_status: [
         "seeking",
         "formal_employed",

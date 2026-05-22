@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package notification;
+
+service NotificationService {
+  // El método principal que llamarán otros servicios para persistir y disparar flujo
+  rpc CreateNotification (CreateNotificationRequest) returns (CreateNotificationResponse) {}
+  
+  // Para envíos directos de correo transaccional
+  rpc SendEmail (SendEmailRequest) returns (SendEmailResponse) {}
+}
+
+enum NotificationType {
+  SYSTEM = 0;
+  MATCH = 1;
+  APPLICATION = 2;
+  MESSAGE = 3;
+}
+
+enum NotificationPriority {
+  LOW = 0;
+  MEDIUM = 1;
+  HIGH = 2;
+}
+
+message CreateNotificationRequest {
+  string user_id = 1;
+  string title = 2;
+  string message = 3;
+  NotificationType type = 4;
+  NotificationPriority priority = 5;
+  string metadata_json = 6; // JSON string con datos específicos (project_id, etc)
+}
+
+message CreateNotificationResponse {
+  bool success = 1;
+  string notification_id = 2;
+}
+
+message SendEmailRequest {
+  string to = 1;
+  string subject = 2;
+  string body = 3;
+  optional string templateName = 4;
+}
+
+message SendEmailResponse {
+  bool success = 1;
+  string messageId = 2;
+}

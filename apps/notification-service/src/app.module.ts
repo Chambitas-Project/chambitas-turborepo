@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
-import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { EmailProcessor } from './processors/email.processor';
+import { NotificationModule } from './notification/notification.module';
 import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
 
 @Module({
@@ -14,21 +12,18 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
       envFilePath: getEnvFiles(),
     }),
     BullModule.forRootAsync({
-      inject: [ConfigService],
+      imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          url: configService.get('REDIS_URL') || 'redis://localhost:6379',
+          url: configService.get<string>('REDIS_URL') || 'redis://localhost:6379',
         },
       }),
+      inject: [ConfigService],
     }),
-    BullModule.registerQueue({
-      name: 'mail-queue',
-    }),
+    NotificationModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
-    EmailProcessor,
     {
       provide: APP_INTERCEPTOR,
       useClass: CorrelationIdInterceptor,
@@ -39,4 +34,4 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

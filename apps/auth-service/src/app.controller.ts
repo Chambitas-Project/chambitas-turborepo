@@ -1,10 +1,8 @@
-import { Controller, UseFilters } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { AppService } from './app.service';
-import { GlobalRpcExceptionFilter } from '@chambitas/common';
 
 @Controller()
-@UseFilters(GlobalRpcExceptionFilter)
 export class AppController {
   constructor(private readonly appService: AppService) { }
 

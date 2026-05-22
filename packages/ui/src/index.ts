@@ -1,9 +1,10 @@
-/**
- * @chambitas/ui — Barrel export
- * Importa desde aquí en cualquier app del monorepo:
- *   import { Button, cn } from "@chambitas/ui"
- *   import "@chambitas/ui/globals.css"   ← el CSS se importa separado
- */
-
 export { Button, buttonVariants, type ButtonProps } from "./button";
+export * from "./card";
+export * from "./atoms/badge";
+export * from "./atoms/input";
+export * from "./atoms/checkbox";
+export * from "./atoms/alert";
+export * from "./atoms/role-selector";
+export * from "./molecules/role-card";
+export * from "./molecules/ia-optimizer-card";
 export { cn } from "./utils";

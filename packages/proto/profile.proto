@@ -1,0 +1,220 @@
+syntax = "proto3";
+
+package profile;
+
+service ProfileService {
+  rpc CreateStudentProfile (CreateStudentProfileRequest) returns (ProfileResponse);
+  rpc GetStudentProfile (GetProfileRequest) returns (StudentProfileResponse);
+  rpc UpdateStudentProfile (UpdateStudentProfileRequest) returns (ProfileResponse);
+  
+  rpc CreateEmployerProfile (CreateEmployerProfileRequest) returns (ProfileResponse);
+  rpc GetEmployerProfile (GetProfileRequest) returns (EmployerProfileResponse);
+  rpc UpdateEmployerProfile (UpdateEmployerProfileRequest) returns (ProfileResponse);
+  
+  rpc DeleteProfile (DeleteProfileRequest) returns (ProfileResponse);
+  rpc SearchProfiles (SearchProfilesRequest) returns (SearchProfilesResponse);
+  rpc GetProfile (GetProfileRequest) returns (UnifiedProfileResponse);
+  rpc UpdateProfile (CompleteOnboardingRequest) returns (ProfileResponse);
+  rpc CompleteOnboarding (CompleteOnboardingRequest) returns (ProfileResponse);
+  rpc ListSkills (ListSkillsRequest) returns (ListSkillsResponse);
+  rpc ListCareers (ListCareersRequest) returns (ListCareersResponse);
+}
+
+message ListCareersRequest {
+  optional string university_id = 1;
+  optional string area = 2;
+}
+
+message ListCareersResponse {
+  repeated Career careers = 1;
+}
+
+message Career {
+  string id = 1;
+  string name = 2;
+  string area = 3;
+  bool is_active = 4;
+}
+
+message ListSkillsRequest {
+  optional string category = 1;
+}
+
+message ListSkillsResponse {
+  repeated Skill skills = 1;
+}
+
+message Skill {
+  string id = 1;
+  string name = 2;
+  string category = 3;
+  string type = 4;
+}
+
+message SkillInfo {
+  string id = 1;
+  string name = 2;
+  int32 proficiency_level = 3;
+  bool verified = 4;
+}
+
+message ActivityInfo {
+  string id = 1;
+  string title = 2;
+  string status = 3;
+  int32 type = 4;
+  string date = 5;
+}
+
+message SearchProfilesRequest {
+  string query = 1;
+  optional string role = 2;
+  optional int32 limit = 3;
+  optional int32 offset = 4;
+}
+
+message SearchProfilesResponse {
+  repeated UnifiedProfileResponse profiles = 1;
+}
+
+message UnifiedProfileResponse {
+  string id = 1;
+  string role = 2;
+  string full_name = 3;
+  optional string career = 4;
+  optional string university_id = 5;
+  optional string university_name = 6;
+  optional string university_logo = 7;
+  optional string bio = 9;
+  optional int32 academic_cycle = 10;
+  optional float gpa = 11;
+  repeated SkillInfo skills = 12;
+  repeated ActivityInfo activity = 13;
+  bool is_onboarded = 14;
+  optional string availability_blocks = 15;
+  optional string company_name = 16;
+  optional string commercial_name = 17;
+  bool is_gpa_verified = 18;
+  optional string evidence_url = 19;
+}
+
+message GetProfileRequest {
+  string id = 1;
+}
+
+message DeleteProfileRequest {
+  string user_id = 1;
+}
+
+message CreateStudentProfileRequest {
+  string user_id = 1;
+  string full_name = 2;
+  string career = 3;
+  int32 academic_cycle = 4;
+  string university_id = 5;
+  optional string bio = 6;
+  optional string availability_blocks = 7;
+  repeated string skills = 8;
+}
+
+message SkillUpdate {
+  string skill_id = 1;
+  int32 proficiency_level = 2;
+  bool deleted = 3;
+}
+
+message UpdateProfileRequest {
+  string user_id = 1;
+  optional string full_name = 2;
+  optional string career = 3;
+  optional string bio = 4;
+  optional float gpa = 5;
+  optional string availability_blocks = 6;
+  optional int32 academic_cycle = 7;
+}
+
+message UpdateStudentProfileRequest {
+  string user_id = 1;
+  optional string full_name = 2;
+  optional string career = 3;
+  optional int32 academic_cycle = 4;
+  optional string bio = 5;
+  optional string availability_blocks = 6;
+  repeated SkillUpdate skill_updates = 7;
+  optional float gpa = 8;
+  optional bool is_gpa_verified = 9;
+  optional string evidence_url = 10;
+}
+
+message CreateEmployerProfileRequest {
+  string user_id = 1;
+  string company_name = 2;
+  string ruc = 3;
+  string sector = 4;
+  optional string description = 5;
+}
+
+message UpdateEmployerProfileRequest {
+  string user_id = 1;
+  optional string company_name = 2;
+  optional string ruc = 3;
+  optional string sector = 4;
+  optional string description = 5;
+}
+
+message StudentProfileResponse {
+  string id = 1;
+  string full_name = 2;
+  string career = 3;
+  int32 academic_cycle = 4;
+  string university_id = 5;
+  string bio = 6;
+  string availability_blocks = 7;
+  repeated string skills = 8;
+  float gpa = 9;
+  bool is_onboarded = 10;
+  bool is_gpa_verified = 11;
+  optional string evidence_url = 12;
+  string created_at = 13;
+  string updated_at = 14;
+}
+
+message EmployerProfileResponse {
+  string id = 1;
+  string company_name = 2;
+  string ruc = 3;
+  string sector = 4;
+  string description = 5;
+  bool verified = 6;
+  bool is_onboarded = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message SkillInput {
+  string name = 1;              // Nombre o UUID de la skill del catálogo
+  int32 proficiency_level = 2; // Nivel: 1=Básico, 2=Elemental, 3=Intermedio, 4=Avanzado, 5=Experto
+}
+
+message CompleteOnboardingRequest {
+  string user_id = 1;
+  string role = 2;
+  optional string full_name = 3;
+  optional string career_id = 4;
+  optional int32 academic_cycle = 5;
+  repeated SkillInput skill_inputs = 7;
+  optional string company_name = 8;
+  optional string name = 9;
+  optional string description = 10;
+  optional string bio = 11;
+  optional float gpa = 12;
+  optional string availability_blocks = 13;
+  optional bool is_gpa_verified = 14;
+  optional string evidence_url = 15;
+}
+
+message ProfileResponse {
+  bool success = 1;
+  bool is_onboarded = 2;
+  optional string message = 3;
+}

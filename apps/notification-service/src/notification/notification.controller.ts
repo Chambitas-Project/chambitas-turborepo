@@ -1,0 +1,25 @@
+import { Controller } from '@nestjs/common';
+import { GrpcMethod } from '@nestjs/microservices';
+import { NotificationService } from './notification.service';
+import { 
+  SendEmailRequest, 
+  SendEmailResponse, 
+  CreateNotificationRequest, 
+  CreateNotificationResponse 
+} from '@chambitas/proto';
+import { Observable } from 'rxjs';
+
+@Controller()
+export class NotificationController {
+  constructor(private readonly notificationService: NotificationService) {}
+
+  @GrpcMethod('NotificationService', 'CreateNotification')
+  createNotification(data: CreateNotificationRequest): Observable<CreateNotificationResponse> {
+    return this.notificationService.createNotification(data);
+  }
+
+  @GrpcMethod('NotificationService', 'SendEmail')
+  sendEmail(data: SendEmailRequest): Observable<SendEmailResponse> {
+    return this.notificationService.sendEmail(data);
+  }
+}
