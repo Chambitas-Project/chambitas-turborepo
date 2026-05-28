@@ -1,20 +1,24 @@
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AnalyticsAuditModule } from './app.module';
-import { setupSwagger } from '@chambitas/common';
+import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AnalyticsAuditModule);
+  const logger = new Logger('AnalyticsAuditService');
+  const grpcUrl = process.env.ANALYTICS_AUDIT_SERVICE_GRPC_URL || '0.0.0.0:50057';
 
-  setupSwagger(app, {
-    title: 'Analytics & Audit Service',
-    description: 'Seguimiento de eventos y auditoría de acciones del sistema.',
-    version: '1.0.0',
-    tag: 'Analytics',
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AnalyticsAuditModule, {
+    transport: Transport.GRPC,
+    options: {
+      package: PROTO_PACKAGE.ANALYTICS,
+      protoPath: PROTO_PATH.ANALYTICS,
+      url: grpcUrl,
+      loader: { keepCase: true },
+    },
   });
 
-  const httpPort = process.env.ANALYTICS_SERVICE_HTTP_PORT || 3006;
-  await app.listen(httpPort);
-  
-  console.log(`Analytics Service (HTTP/Swagger) is running on port: ${httpPort}`);
+  await app.listen();
+  logger.log(`Analytics Audit Microservice is listening on: ${grpcUrl}`);
 }
 bootstrap();

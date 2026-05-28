@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { BullModule } from '@nestjs/bullmq';
+import { MatchingModule } from './matching/matching.module';
 import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
 
 @Module({
@@ -11,10 +11,18 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
       isGlobal: true,
       envFilePath: getEnvFiles(),
     }),
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          url: configService.get<string>('REDIS_URL', 'redis://localhost:6379'),
+        },
+      }),
+    }),
+    MatchingModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
     {
       provide: APP_INTERCEPTOR,
       useClass: CorrelationIdInterceptor,
@@ -25,4 +33,4 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

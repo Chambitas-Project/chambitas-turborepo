@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ProjectsModule } from './features/projects/projects.module';
+import { ApplicationsModule } from './features/applications/applications.module';
+import { ReviewsModule } from './features/reviews/reviews.module';
 import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
 
 @Module({
@@ -11,10 +12,12 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
       isGlobal: true,
       envFilePath: getEnvFiles(),
     }),
+    ProjectsModule,
+    ApplicationsModule,
+    ReviewsModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
     {
       provide: APP_INTERCEPTOR,
       useClass: CorrelationIdInterceptor,
@@ -25,4 +28,4 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

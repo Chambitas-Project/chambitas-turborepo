@@ -1,53 +1,57 @@
-import { IsString, IsOptional, IsInt, Min, Max, IsJSON } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional, IsInt, Min, Max, IsArray, IsNumber, IsUUID, IsJSON } from 'class-validator';
 
-export class UpdateStudentProfileDto {
-  @ApiPropertyOptional({ description: 'Nombre completo del estudiante' })
-  @IsOptional()
+export class CreateStudentProfileDto {
+  @ApiProperty({ description: 'Nombre completo' })
   @IsString()
-  fullName?: string;
+  full_name!: string;
 
-  @ApiPropertyOptional({ description: 'Carrera que estudia' })
-  @IsOptional()
+  @ApiProperty({ description: 'Carrera' })
   @IsString()
-  career?: string;
+  career!: string;
 
-  @ApiPropertyOptional({ description: 'Ciclo académico (1-12)' })
-  @IsOptional()
+  @ApiProperty({ description: 'Ciclo académico', minimum: 1, maximum: 12 })
   @IsInt()
   @Min(1)
   @Max(12)
-  academicCycle?: number;
+  academic_cycle!: number;
+
+  @ApiProperty({ description: 'ID de la universidad (UUID)' })
+  @IsUUID()
+  university_id!: string;
 
   @ApiPropertyOptional({ description: 'Biografía' })
   @IsOptional()
   @IsString()
   bio?: string;
 
-  @ApiPropertyOptional({ description: 'ID de la universidad' })
-  @IsOptional()
-  @IsString()
-  universityId?: string;
-
-  @ApiPropertyOptional({ description: 'Bloques de disponibilidad en formato JSON string' })
+  @ApiPropertyOptional({ description: 'Bloques de disponibilidad en JSON string' })
   @IsOptional()
   @IsJSON()
-  availabilityBlocks?: string;
+  availability_blocks?: string;
+
+  @ApiPropertyOptional({ description: 'Habilidades', type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  skills?: string[];
 }
 
-export class UpdateEmployerProfileDto {
-  @ApiPropertyOptional({ description: 'Nombre de la empresa' })
-  @IsOptional()
+export class CreateEmployerProfileDto {
+  @ApiProperty({ description: 'Nombre de la empresa' })
   @IsString()
-  companyName?: string;
+  company_name!: string;
 
-  @ApiPropertyOptional({ description: 'RUC de la empresa' })
-  @IsOptional()
+  @ApiProperty({ description: 'RUC' })
   @IsString()
-  ruc?: string;
+  ruc!: string;
 
-  @ApiPropertyOptional({ description: 'Sector de la empresa' })
+  @ApiProperty({ description: 'Sector' })
+  @IsString()
+  sector!: string;
+
+  @ApiPropertyOptional({ description: 'Descripción de la empresa' })
   @IsOptional()
   @IsString()
-  sector?: string;
+  description?: string;
 }

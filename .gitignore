@@ -40,6 +40,7 @@ yarn-error.log*
 # Python
 **/__pycache__/
 **/.venv/
+**/venv/
 **/.env
 *.pyc
 
@@ -51,3 +52,11 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+*.tsbuildinfo.old
+
+# IDEs
+.vscode/
+.idea/

@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package auth;
+
+service AuthService {
+  rpc Register (RegisterRequest) returns (RegisterResponse) {}
+  rpc Login (LoginRequest) returns (LoginResponse) {}
+  rpc UpdateOnboarding (OnboardingRequest) returns (OnboardingResponse) {}
+  rpc ListUniversities (Empty) returns (UniversityListResponse) {}
+  rpc ForgotPassword (ForgotPasswordRequest) returns (AuthResponse) {}
+  rpc ResetPassword (ResetPasswordRequest) returns (AuthResponse) {}
+}
+
+message Empty {}
+
+message University {
+  string id = 1;
+  string name = 2;
+  string email_domain = 3;
+  string slug = 4;
+}
+
+message UniversityListResponse {
+  repeated University universities = 1;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string role = 3;
+  optional string university_id = 4; // Solo requerido para students
+}
+
+message RegisterResponse {
+  string userId = 1;
+  string email = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string userId = 1;
+  string email = 2;
+  string role = 3;
+  string accessToken = 4;
+  bool isOnboarded = 5;
+}
+
+message OnboardingRequest {
+  string user_id = 1;
+  string role = 2;
+  // Student fields
+  optional string full_name = 3;
+  optional string career = 4;
+  optional int32 academic_cycle = 5;
+  // Employer fields
+  optional string company_name = 6;
+  optional string sector = 7;
+  repeated string skills = 8;
+}
+
+message OnboardingResponse {
+  bool success = 1;
+}
+
+message ForgotPasswordRequest {
+  string email = 1;
+}
+
+message ResetPasswordRequest {
+  string password = 1;
+  string access_token = 2; // Opcional si se usa el flujo de sesión actual
+}
+
+message AuthResponse {
+  bool success = 1;
+  string message = 2;
+}
