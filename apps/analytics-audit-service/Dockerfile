@@ -17,6 +17,7 @@ ENV NODE_PATH=/app/apps/analytics-audit-service/node_modules
 
 COPY --from=builder /app/apps/analytics-audit-service/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/apps/analytics-audit-service/node_modules ./apps/analytics-audit-service/node_modules
 
 EXPOSE 3006
