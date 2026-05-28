@@ -32,14 +32,9 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/microservices": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
-    "@react-email/components": "^1.0.12",
-    "@react-email/render": "^2.0.8",
-    "@supabase/supabase-js": "^2.103.3",
     "bullmq": "^5.34.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "@supabase/supabase-js": "^2.103.3",
     "reflect-metadata": "^0.2.2",
-    "resend": "^6.12.3",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {

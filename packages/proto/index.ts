@@ -510,16 +510,16 @@ export interface UploadResponse {
 
 // --- Notification Interfaces ---
 
-export interface SendEmailRequest {
-  to: string;
-  subject: string;
+export interface SendPushNotificationRequest {
+  user_id: string;
+  title: string;
   body: string;
-  templateName?: string;
+  data_json?: string;
 }
 
-export interface SendEmailResponse {
+export interface SendPushNotificationResponse {
   success: boolean;
-  messageId: string;
+  message_id: string;
 }
 
 export enum NotificationType {
@@ -637,7 +637,7 @@ export interface IMediaService {
 
 export interface INotificationService {
   CreateNotification(data: CreateNotificationRequest, metadata?: any): Observable<CreateNotificationResponse>;
-  SendEmail(data: SendEmailRequest, metadata?: any): Observable<SendEmailResponse>;
+  SendPushNotification(data: SendPushNotificationRequest, metadata?: any): Observable<SendPushNotificationResponse>;
 }
 
 export interface IAnalyticsService {

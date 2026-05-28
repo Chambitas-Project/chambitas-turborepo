@@ -2,7 +2,7 @@ import { Controller, Post, Body, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { INotificationService } from '@chambitas/proto';
-import { SendEmailDto } from './dto/send-email.dto';
+import { SendPushNotificationDto } from './dto/send-push-notification.dto';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 
 @ApiTags('Notifications')
@@ -25,9 +25,9 @@ export class NotificationController implements OnModuleInit {
     });
   }
 
-  @Post('send-email')
-  @ApiOperation({ summary: 'Enviar un correo electrónico (Internal/Admin test)' })
-  sendEmail(@Body() data: SendEmailDto) {
-    return this.notificationService.SendEmail(data);
+  @Post('send-push')
+  @ApiOperation({ summary: 'Enviar una notificación push directa (Internal/Admin test)' })
+  sendPushNotification(@Body() data: SendPushNotificationDto) {
+    return this.notificationService.SendPushNotification(data);
   }
 }

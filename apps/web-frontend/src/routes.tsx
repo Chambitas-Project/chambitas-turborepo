@@ -1,18 +1,21 @@
+import React, { Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { EmployerProjectsPage } from "./pages/EmployerProjectsPage";
-import { EmployerProjectDetailsPage } from "./pages/EmployerProjectDetailsPage";
-import { CreateProjectPage } from "./pages/CreateProjectPage";
-import { StudentApplicationsPage } from "./pages/StudentApplicationsPage";
-// Forced refresh to fix HMR sync issues
-import { LandingPage } from "./pages/LandingPage";
-import { LoginPage } from "./pages/LoginPage";
-import { RegisterPage } from "./pages/RegisterPage";
-import { OnboardingPage } from "./pages/OnboardingPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { JobSearchPage } from "./pages/JobSearchPage";
-import { ProjectDetailsPage } from "./pages/ProjectDetailsPage";
 import { useAuth } from "./context/AuthContext";
 import { Loader2 } from "lucide-react";
+
+// Lazy loaded pages
+const EmployerProjectsPage = React.lazy(() => import("./pages/EmployerProjectsPage").then(m => ({ default: m.EmployerProjectsPage })));
+const EmployerProjectDetailsPage = React.lazy(() => import("./pages/EmployerProjectDetailsPage").then(m => ({ default: m.EmployerProjectDetailsPage })));
+const CreateProjectPage = React.lazy(() => import("./pages/CreateProjectPage").then(m => ({ default: m.CreateProjectPage })));
+const StudentApplicationsPage = React.lazy(() => import("./pages/StudentApplicationsPage").then(m => ({ default: m.StudentApplicationsPage })));
+const LandingPage = React.lazy(() => import("./pages/LandingPage").then(m => ({ default: m.LandingPage })));
+const LoginPage = React.lazy(() => import("./pages/LoginPage").then(m => ({ default: m.LoginPage })));
+const RegisterPage = React.lazy(() => import("./pages/RegisterPage").then(m => ({ default: m.RegisterPage })));
+const OnboardingPage = React.lazy(() => import("./pages/OnboardingPage").then(m => ({ default: m.OnboardingPage })));
+const DashboardPage = React.lazy(() => import("./pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
+const JobSearchPage = React.lazy(() => import("./pages/JobSearchPage").then(m => ({ default: m.JobSearchPage })));
+const ProjectDetailsPage = React.lazy(() => import("./pages/ProjectDetailsPage").then(m => ({ default: m.ProjectDetailsPage })));
+
 
 // Componente para proteger rutas privadas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -42,24 +45,34 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Fallback UI for Suspense
+const PageLoader = () => (
+  <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+    <Loader2 className="h-10 w-10 text-emerald-600 animate-spin mb-4" />
+    <p className="text-slate-400 font-bold animate-pulse tracking-tight">Cargando página...</p>
+  </div>
+);
+
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <PublicRoute><LandingPage /></PublicRoute>,
+    element: <Suspense fallback={<PageLoader />}><PublicRoute><LandingPage /></PublicRoute></Suspense>,
   },
   {
     path: "/login",
-    element: <PublicRoute><LoginPage /></PublicRoute>,
+    element: <Suspense fallback={<PageLoader />}><PublicRoute><LoginPage /></PublicRoute></Suspense>,
   },
   {
     path: "/register",
-    element: <PublicRoute><RegisterPage /></PublicRoute>,
+    element: <Suspense fallback={<PageLoader />}><PublicRoute><RegisterPage /></PublicRoute></Suspense>,
   },
   {
     path: "/onboarding",
     element: (
       <ProtectedRoute>
-        <OnboardingPage />
+        <Suspense fallback={<PageLoader />}>
+          <OnboardingPage />
+        </Suspense>
       </ProtectedRoute>
     ),
   },
@@ -67,7 +80,9 @@ export const router = createBrowserRouter([
     path: "/dashboard",
     element: (
       <ProtectedRoute>
-        <DashboardPage />
+        <Suspense fallback={<PageLoader />}>
+          <DashboardPage />
+        </Suspense>
       </ProtectedRoute>
     ),
   },
@@ -75,7 +90,9 @@ export const router = createBrowserRouter([
     path: "/jobs",
     element: (
       <ProtectedRoute>
-        <JobSearchPage />
+        <Suspense fallback={<PageLoader />}>
+          <JobSearchPage />
+        </Suspense>
       </ProtectedRoute>
     ),
   },
@@ -83,7 +100,9 @@ export const router = createBrowserRouter([
     path: "/student/applications",
     element: (
       <ProtectedRoute>
-        <StudentApplicationsPage />
+        <Suspense fallback={<PageLoader />}>
+          <StudentApplicationsPage />
+        </Suspense>
       </ProtectedRoute>
     ),
   },
@@ -91,7 +110,9 @@ export const router = createBrowserRouter([
     path: "/projects/:id",
     element: (
       <ProtectedRoute>
-        <ProjectDetailsPage />
+        <Suspense fallback={<PageLoader />}>
+          <ProjectDetailsPage />
+        </Suspense>
       </ProtectedRoute>
     ),
   },
@@ -99,7 +120,9 @@ export const router = createBrowserRouter([
     path: "/employer/projects",
     element: (
       <ProtectedRoute>
-        <EmployerProjectsPage />
+        <Suspense fallback={<PageLoader />}>
+          <EmployerProjectsPage />
+        </Suspense>
       </ProtectedRoute>
     ),
   },
@@ -107,7 +130,9 @@ export const router = createBrowserRouter([
     path: "/employer/projects/new",
     element: (
       <ProtectedRoute>
-        <CreateProjectPage />
+        <Suspense fallback={<PageLoader />}>
+          <CreateProjectPage />
+        </Suspense>
       </ProtectedRoute>
     ),
   },
@@ -115,7 +140,9 @@ export const router = createBrowserRouter([
     path: "/employer/projects/:id",
     element: (
       <ProtectedRoute>
-        <EmployerProjectDetailsPage />
+        <Suspense fallback={<PageLoader />}>
+          <EmployerProjectDetailsPage />
+        </Suspense>
       </ProtectedRoute>
     ),
   },

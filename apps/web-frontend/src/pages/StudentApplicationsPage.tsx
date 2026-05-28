@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  FileText, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
-  ArrowRight, 
+import {
+  FileText,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
   Search,
   ExternalLink,
   CalendarDays,
@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Button, Badge, cn } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
-import { useAuth } from "../context/AuthContext";
 import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
 
 interface Application {
@@ -26,7 +25,6 @@ interface Application {
 }
 
 export function StudentApplicationsPage() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,28 +50,28 @@ export function StudentApplicationsPage() {
     switch (s) {
       case 'accepted':
       case 'approved':
-        return { 
-          label: 'Aceptada', 
-          icon: <CheckCircle2 className="h-3 w-3" />, 
-          classes: 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+        return {
+          label: 'Aceptada',
+          icon: <CheckCircle2 className="h-3 w-3" />,
+          classes: 'bg-emerald-50 text-emerald-700 border-emerald-200'
         };
       case 'rejected':
       case 'declined':
-        return { 
-          label: 'Rechazada', 
-          icon: <XCircle className="h-3 w-3" />, 
-          classes: 'bg-red-50 text-red-700 border-red-200' 
+        return {
+          label: 'Rechazada',
+          icon: <XCircle className="h-3 w-3" />,
+          classes: 'bg-red-50 text-red-700 border-red-200'
         };
       default:
-        return { 
-          label: 'Pendiente', 
-          icon: <Clock className="h-3 w-3" />, 
-          classes: 'bg-amber-50 text-amber-700 border-amber-200' 
+        return {
+          label: 'Pendiente',
+          icon: <Clock className="h-3 w-3" />,
+          classes: 'bg-amber-50 text-amber-700 border-amber-200'
         };
     }
   };
 
-  const filteredApplications = applications.filter(app => 
+  const filteredApplications = applications.filter(app =>
     (app.project_title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     (app.cover_note || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -83,19 +81,19 @@ export function StudentApplicationsPage() {
       <DashboardNavbar role="student" />
 
       <main className="max-w-5xl mx-auto px-4 py-10 md:py-16 space-y-10">
-        
+
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
             <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">Mis Postulaciones</h1>
             <p className="text-lg text-slate-500 font-medium">Haz seguimiento a todos los empleos a los que te has presentado.</p>
           </div>
-          
+
           <div className="relative w-full md:w-80 group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-            <input 
-              type="text" 
-              placeholder="Buscar postulaciones..." 
+            <input
+              type="text"
+              placeholder="Buscar postulaciones..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border-2 border-slate-100 shadow-sm outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 font-bold text-slate-700 transition-all placeholder:text-slate-300"
@@ -123,7 +121,7 @@ export function StudentApplicationsPage() {
             </Button>
           </div>
         ) : filteredApplications.length === 0 ? (
-          <div className="bg-white rounded-[2rem] p-12 text-center space-y-4 shadow-sm border border-slate-100">
+          <div className="bg-white rounded-4xl p-12 text-center space-y-4 shadow-sm border border-slate-100">
             <Search className="h-12 w-12 text-slate-200 mx-auto" />
             <h3 className="text-xl font-black text-slate-900">Sin coincidencias</h3>
             <p className="text-slate-400 font-medium">No encontramos postulaciones que coincidan con tu búsqueda.</p>
@@ -139,13 +137,13 @@ export function StudentApplicationsPage() {
               });
 
               return (
-                <div 
-                  key={app.id} 
+                <div
+                  key={app.id}
                   onClick={() => navigate(`/projects/${app.project_id}`)}
-                  className="bg-white rounded-[2rem] p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-emerald-900/5 hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden flex flex-col md:flex-row md:items-center gap-6"
+                  className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-emerald-900/5 hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden flex flex-col md:flex-row md:items-center gap-6"
                 >
                   <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500 scale-y-0 group-hover:scale-y-100 origin-top transition-transform duration-300 ease-out" />
-                  
+
                   <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-colors">
                     <FileText className="h-7 w-7 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                   </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Star, MessageSquare, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button, cn } from "@chambitas/ui";
-import { reviewsApi, ReviewData } from "../../api/reviews.api";
+import { reviewsApi, type ReviewData } from "../../api/reviews.api";
 
 interface ReviewsListProps {
   userId: string;
@@ -12,7 +12,7 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
   const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [average, setAverage] = useState(0);
   const [loading, setLoading] = useState(true);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
@@ -27,7 +27,7 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
         // Si role = employer, queremos mostrar reseñas cuyo reviewer_role = 'student'.
         const filtered = res.reviews.filter(r => r.reviewer_role !== role);
         setReviews(filtered);
-        
+
         // Calcular promedio manualmente sobre las reseñas recibidas
         if (filtered.length > 0) {
           const sum = filtered.reduce((acc, curr) => acc + curr.rating, 0);
@@ -59,8 +59,8 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
         </div>
         <h3 className="text-lg font-black text-slate-700">No hay reseñas aún</h3>
         <p className="text-slate-500 font-medium text-sm mt-1">
-          {role === 'student' 
-            ? 'Completa proyectos exitosamente para recibir retroalimentación.' 
+          {role === 'student'
+            ? 'Completa proyectos exitosamente para recibir retroalimentación.'
             : 'Contrata estudiantes y finaliza proyectos para comenzar a recibir reseñas.'}
         </p>
       </div>
@@ -76,7 +76,7 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
           <h2 className="text-xl font-black text-slate-900">Reseñas Recibidas</h2>
           <p className="text-sm font-medium text-slate-500">Lo que dicen otros sobre ti</p>
         </div>
-        
+
         <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
           <div className="flex items-center text-amber-400">
             <Star className="h-5 w-5 fill-current" />
@@ -98,16 +98,16 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
             </div>
             <div className="flex-1 space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <span className="text-sm font-black text-slate-900">Usuario {review.reviewer_id.substring(0,5)}</span>
+                <span className="text-sm font-black text-slate-900">Usuario {review.reviewer_id.substring(0, 5)}</span>
                 <span className="text-xs font-bold text-slate-400">
                   {new Date(review.created_at).toLocaleDateString()}
                 </span>
               </div>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <Star 
-                    key={star} 
-                    className={cn("h-3.5 w-3.5", star <= review.rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200")} 
+                  <Star
+                    key={star}
+                    className={cn("h-3.5 w-3.5", star <= review.rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200")}
                   />
                 ))}
               </div>
@@ -121,15 +121,15 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
 
       {reviews.length > ITEMS_PER_PAGE && (
         <div className="flex items-center justify-center gap-2 pt-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
             className="h-8 w-8 p-0 rounded-xl border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          
+
           <div className="flex items-center gap-1">
             {Array.from({ length: Math.ceil(reviews.length / ITEMS_PER_PAGE) }).map((_, i) => (
               <button
@@ -137,8 +137,8 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
                 onClick={() => setCurrentPage(i + 1)}
                 className={cn(
                   "h-8 w-8 rounded-xl font-bold text-xs transition-colors",
-                  currentPage === i + 1 
-                    ? "bg-slate-900 text-white shadow-sm" 
+                  currentPage === i + 1
+                    ? "bg-slate-900 text-white shadow-sm"
                     : "text-slate-500 hover:bg-slate-100"
                 )}
               >
@@ -147,8 +147,8 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
             ))}
           </div>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setCurrentPage(prev => Math.min(Math.ceil(reviews.length / ITEMS_PER_PAGE), prev + 1))}
             disabled={currentPage === Math.ceil(reviews.length / ITEMS_PER_PAGE)}
             className="h-8 w-8 p-0 rounded-xl border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50"

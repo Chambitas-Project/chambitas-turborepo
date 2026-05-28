@@ -13,7 +13,7 @@ import {
   History,
   X
 } from "lucide-react";
-import { Button, Badge } from "@chambitas/ui";
+import { Button, Badge, cn } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 import { ReviewModal } from "../components/organisms/ReviewModal";
 
@@ -73,12 +73,12 @@ export function ProjectDetailsPage() {
           apiClient.get(`/marketplace/projects/${id}`),
           apiClient.get(`/marketplace/applications/my-applications`)
         ]);
-        
+
         setProject(projectRes.data);
-        
+
         const myApps = Array.isArray(appsRes.data) ? appsRes.data : (appsRes.data?.applications || []);
         const myApp = myApps.find((app: any) => app.project_id === id);
-        
+
         if (myApp) {
           setApplication(myApp);
         }
@@ -192,13 +192,13 @@ export function ProjectDetailsPage() {
                     <div className={cn(
                       "h-3 w-3 rounded-full animate-pulse",
                       project.status === 'active' ? "bg-emerald-500" :
-                      project.status === 'in_progress' ? "bg-indigo-500" :
-                      "bg-slate-400"
+                        project.status === 'in_progress' ? "bg-indigo-500" :
+                          "bg-slate-400"
                     )} />
                     <p className="text-base font-black text-slate-900 uppercase">
                       {project.status === 'active' ? 'Abierto' :
-                       project.status === 'in_progress' ? 'En Progreso' :
-                       project.status === 'pending' ? 'Pendiente' : 'Completado'}
+                        project.status === 'in_progress' ? 'En Progreso' :
+                          project.status === 'pending' ? 'Pendiente' : 'Completado'}
                     </p>
                   </div>
                 </div>
@@ -297,22 +297,22 @@ export function ProjectDetailsPage() {
                   <div className={cn(
                     "rounded-[2.5rem] p-10 text-white text-center space-y-6 shadow-2xl",
                     application.status === 'accepted' ? "bg-indigo-600 shadow-indigo-200" :
-                    application.status === 'rejected' ? "bg-red-500 shadow-red-200" :
-                    "bg-emerald-600 shadow-emerald-200"
+                      application.status === 'rejected' ? "bg-red-500 shadow-red-200" :
+                        "bg-emerald-600 shadow-emerald-200"
                   )}>
                     <div className="h-16 w-16 bg-white/20 rounded-full flex items-center justify-center mx-auto border border-white/30">
                       {application.status === 'rejected' ? <X className="h-8 w-8 text-white" /> : <CheckCircle2 className="h-8 w-8 text-white" />}
                     </div>
                     <div className="space-y-2">
                       <h4 className="text-2xl font-black tracking-tight">
-                        {application.status === 'accepted' ? '¡Fuiste Seleccionado!' : 
-                         application.status === 'rejected' ? 'Postulación Rechazada' :
-                         '¡Enviado!'}
+                        {application.status === 'accepted' ? '¡Fuiste Seleccionado!' :
+                          application.status === 'rejected' ? 'Postulación Rechazada' :
+                            '¡Enviado!'}
                       </h4>
                       <p className="text-white/90 text-sm font-medium">
                         {application.status === 'accepted' ? 'El empleador aceptó tu propuesta y el proyecto está en curso.' :
-                         application.status === 'rejected' ? 'No fuiste seleccionado para este proyecto.' :
-                         `Hemos enviado tu propuesta a ${companyName}.`}
+                          application.status === 'rejected' ? 'No fuiste seleccionado para este proyecto.' :
+                            `Hemos enviado tu propuesta a ${companyName}.`}
                       </p>
                     </div>
 
@@ -334,7 +334,7 @@ export function ProjectDetailsPage() {
                         onChange={(e) => setCoverNote(e.target.value)}
                         placeholder="Escribe por qué eres ideal para este proyecto..."
                         maxLength={500}
-                        className="w-full bg-white border-2 border-slate-100 rounded-[2rem] p-8 text-base font-bold text-slate-900 min-h-[250px] resize-none focus:border-slate-900 outline-none transition-all placeholder:text-slate-300 shadow-sm"
+                        className="w-full bg-white border-2 border-slate-100 rounded-4xl p-8 text-base font-bold text-slate-900 min-h-62.5 resize-none focus:border-slate-900 outline-none transition-all placeholder:text-slate-300 shadow-sm"
                       />
                       <div className="absolute bottom-6 right-8 text-[9px] font-black text-slate-300 uppercase tracking-widest">
                         {coverNote.length}/500
@@ -354,7 +354,7 @@ export function ProjectDetailsPage() {
                     <Button
                       type="submit"
                       disabled={submitting || !coverNote.trim()}
-                      className="w-full bg-slate-900 hover:bg-black text-white font-black py-8 rounded-[2rem] text-lg shadow-xl shadow-slate-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3 group"
+                      className="w-full bg-slate-900 hover:bg-black text-white font-black py-8 rounded-4xl text-lg shadow-xl shadow-slate-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3 group"
                     >
                       {submitting ? (
                         <Loader2 className="h-6 w-6 animate-spin text-white/50" />
@@ -375,7 +375,7 @@ export function ProjectDetailsPage() {
         </div>
       </main>
 
-      <ReviewModal 
+      <ReviewModal
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         applicationId={application?.id}

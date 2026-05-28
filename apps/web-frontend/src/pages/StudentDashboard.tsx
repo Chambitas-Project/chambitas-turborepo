@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiClient } from "../api/api-client";
 import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
@@ -7,8 +6,6 @@ import { ReviewsList } from "../components/organisms/ReviewsList";
 import {
   GraduationCap,
   Calendar,
-  LogOut,
-  User,
   X,
   Loader2,
   Plus,
@@ -64,8 +61,7 @@ const TIME_SLOTS = Array.from({ length: 32 }, (_, i) => {
 });
 
 export function StudentDashboard() {
-  const { logout, user } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -284,13 +280,13 @@ export function StudentDashboard() {
             {/* Header Perfil */}
             <div className="space-y-10">
               <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
-                <div className="shrink-0 h-24 w-24 md:h-28 md:w-28 rounded-[2rem] bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shadow-sm">
+                <div className="shrink-0 h-24 w-24 md:h-28 md:w-28 rounded-4xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shadow-sm">
                   <span className="text-3xl md:text-4xl font-black text-emerald-600">{profile?.fullName?.[0] || "U"}</span>
                 </div>
                 <div className="flex-1 space-y-4 text-center md:text-left w-full">
                   <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-4">
                     <div className="w-full">
-                      <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight break-words">{profile?.fullName || "Usuario"}</h1>
+                      <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight wrap-break-word">{profile?.fullName || "Usuario"}</h1>
                       <div className="flex items-center justify-center md:justify-start gap-2 mt-1 flex-wrap">
                         <Badge variant="outline" className="text-[10px] font-black border-emerald-200 text-emerald-600 uppercase tracking-widest bg-emerald-50/30">Perfil Verificado</Badge>
                         <span className="hidden md:inline text-xs font-bold text-slate-400">|</span>
@@ -347,10 +343,10 @@ export function StudentDashboard() {
                 </div>
               </div>
               <div className="overflow-x-auto pb-6 custom-scrollbar">
-                <div className="grid grid-cols-8 gap-3 min-w-[650px]">
+                <div className="grid grid-cols-8 gap-3 min-w-162.5">
                   <div />
                   {DAYS.map(day => <div key={day.id} className="text-center text-[10px] font-black text-slate-900 uppercase tracking-tighter pb-4">{day.label}</div>)}
-                  <div className="col-span-8 space-y-2 h-[400px] overflow-y-auto pr-4 custom-scrollbar">
+                  <div className="col-span-8 space-y-2 h-100 overflow-y-auto pr-4 custom-scrollbar">
                     {TIME_SLOTS.map((time, idx) => (
                       <div key={time} className="grid grid-cols-8 gap-3 items-center">
                         <div className="text-[10px] font-black text-slate-300 text-right pr-2">{time}</div>
@@ -373,7 +369,7 @@ export function StudentDashboard() {
                 </div>
               </div>
             </div>
-            
+
             <h2 className="text-xl font-black text-slate-900 mt-4 mb-2">Mi Rendimiento</h2>
             {/* Componente de Reseñas */}
             {user?.id && <ReviewsList userId={user.id} role="student" />}
@@ -398,7 +394,7 @@ export function StudentDashboard() {
                 <p className="text-[11px] text-slate-500 font-bold leading-relaxed text-center md:text-left px-4 md:px-0">
                   Tu perfil es altamente demandado para micro-tareas de <span className="text-slate-900">{profile?.career}</span>.
                 </p>
-                <Button className="w-full bg-slate-900 hover:bg-black text-white rounded-2xl h-14 font-black text-sm shadow-xl shadow-slate-200 transition-all hover:translate-y-[-2px]">Explorar Tareas</Button>
+                <Button className="w-full bg-slate-900 hover:bg-black text-white rounded-2xl h-14 font-black text-sm shadow-xl shadow-slate-200 transition-all hover:-translate-y-0.5">Explorar Tareas</Button>
               </div>
             </div>
 
@@ -454,7 +450,7 @@ export function StudentDashboard() {
 
       {/* Modal Añadir Habilidad - High Contrast & Mobile Ready */}
       {showSkillsModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-xl font-black text-slate-900">Añadir Habilidad</h2>
@@ -478,7 +474,7 @@ export function StudentDashboard() {
                     className="w-full pl-12 pr-5 py-4 rounded-2xl border-2 border-slate-100 bg-white font-black text-slate-800 outline-none focus:border-emerald-500 transition-all shadow-sm"
                   />
                   {showSuggestions && skillSearch.length > 0 && (
-                    <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 max-h-[220px] overflow-y-auto py-2 custom-scrollbar">
+                    <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 max-h-55 overflow-y-auto py-2 custom-scrollbar">
                       {filteredCatalogSkills.length > 0 ? (
                         filteredCatalogSkills.map(skill => (
                           <button
@@ -533,7 +529,7 @@ export function StudentDashboard() {
 
       {/* Edit Profile Modal - Mobile Ready */}
       {showEditModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl rounded-none md:rounded-[2.5rem] shadow-2xl overflow-hidden h-full md:h-auto max-h-screen md:max-h-[90vh] flex flex-col border border-slate-200">
             <div className="p-6 md:p-10 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Ajustes de Perfil</h2>
@@ -559,10 +555,10 @@ export function StudentDashboard() {
                 <div className="space-y-4">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Editar Disponibilidad</label>
                   <div className="bg-slate-50 p-4 rounded-2xl overflow-x-auto border border-slate-200">
-                    <div className="grid grid-cols-8 gap-2 min-w-[500px]">
+                    <div className="grid grid-cols-8 gap-2 min-w-125">
                       <div />
                       {DAYS.map(day => <div key={day.id} className="text-[10px] font-black text-center text-slate-900">{day.label}</div>)}
-                      <div className="col-span-8 h-[250px] overflow-y-auto pr-2 space-y-1.5 custom-scrollbar">
+                      <div className="col-span-8 h-62.5 overflow-y-auto pr-2 space-y-1.5 custom-scrollbar">
                         {TIME_SLOTS.map((time, idx) => (
                           <div key={time} className="grid grid-cols-8 gap-2 items-center">
                             <div className="text-[9px] font-black text-slate-400 text-right">{time}</div>
