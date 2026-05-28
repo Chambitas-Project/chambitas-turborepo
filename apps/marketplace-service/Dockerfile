@@ -8,7 +8,7 @@ COPY packages ./packages
 COPY apps/marketplace-service ./apps/marketplace-service
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @chambitas/marketplace build
+RUN npx turbo run build --filter=@chambitas/marketplace
 
 FROM node:22-alpine AS runner
 WORKDIR /app

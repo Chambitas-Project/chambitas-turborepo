@@ -8,7 +8,7 @@ COPY packages ./packages
 COPY apps/notification-service ./apps/notification-service
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @chambitas/notification build
+RUN npx turbo run build --filter=@chambitas/notification
 
 FROM node:22-alpine AS runner
 WORKDIR /app

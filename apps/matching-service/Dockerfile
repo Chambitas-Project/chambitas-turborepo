@@ -8,7 +8,7 @@ COPY packages ./packages
 COPY apps/matching-service ./apps/matching-service
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @chambitas/matching build
+RUN npx turbo run build --filter=@chambitas/matching
 
 FROM node:22-alpine AS runner
 WORKDIR /app
