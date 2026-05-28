@@ -8,7 +8,7 @@ COPY packages ./packages
 COPY apps/auth-service ./apps/auth-service
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @chambitas/auth build
+RUN npx turbo run build --filter=@chambitas/auth
 
 FROM node:22-alpine AS runner
 WORKDIR /app

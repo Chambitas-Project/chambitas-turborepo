@@ -8,7 +8,7 @@ COPY packages ./packages
 COPY apps/analytics-audit-service ./apps/analytics-audit-service
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @chambitas/analytics-audit build
+RUN npx turbo run build --filter=@chambitas/analytics-audit
 
 FROM node:22-alpine AS runner
 WORKDIR /app

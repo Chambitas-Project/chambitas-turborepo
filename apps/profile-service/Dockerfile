@@ -8,7 +8,7 @@ COPY packages ./packages
 COPY apps/profile-service ./apps/profile-service
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @chambitas/profile build
+RUN npx turbo run build --filter=@chambitas/profile
 
 FROM node:22-alpine AS runner
 WORKDIR /app
