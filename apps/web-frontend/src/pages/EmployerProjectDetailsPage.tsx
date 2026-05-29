@@ -211,12 +211,12 @@ export function EmployerProjectDetailsPage() {
 
                 <div className="flex items-start gap-4">
                   <div className="h-12 w-12 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden shrink-0 mt-1 sm:mt-0">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${app.student_name || app.studentName || app.student_id}`} alt="Avatar" />
+                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${app.student_name || app.student_id}`} alt="Avatar" />
                   </div>
                   <div>
                     <div className="flex items-center gap-3">
                       <h4 className="font-bold text-slate-900 text-lg">
-                        {app.student_name || app.studentName || `Estudiante #${(app.student_id || '').substring(0, 5)}`}
+                        {app.student_name || `Estudiante #${(app.student_id || '').substring(0, 5)}`}
                       </h4>
                       {app.match_score !== undefined && app.match_score > 0 && (
                         <Badge className="bg-emerald-100 text-emerald-700 font-black px-2 py-0.5 text-[10px] flex items-center gap-1">
@@ -230,7 +230,7 @@ export function EmployerProjectDetailsPage() {
                     </p>
                     <div className="flex items-center gap-4 mt-2">
                       <span className="text-xs font-bold text-slate-400">
-                        {(app.applied_at || app.appliedAt || app.created_at) ? `Postuló el ${new Date(app.applied_at || app.appliedAt || app.created_at!).toLocaleDateString()}` : ''}
+                        {(app.applied_at || app.created_at) ? `Postuló el ${new Date(app.applied_at || app.created_at!).toLocaleDateString()}` : ''}
                       </span>
                       {app.status === 'accepted' && (
                         <span className="text-xs font-black text-emerald-600 flex items-center gap-1">
@@ -268,7 +268,7 @@ export function EmployerProjectDetailsPage() {
 
                   {project.status === 'completed' && app.status === 'accepted' && (
                     <Button 
-                      onClick={() => handleOpenReview(app.id, app.student_name || app.studentName || '')}
+                      onClick={() => handleOpenReview(app.id, app.student_name || '')}
                       className="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white font-bold cursor-pointer shadow-md shadow-amber-900/20"
                     >
                       Dejar Reseña

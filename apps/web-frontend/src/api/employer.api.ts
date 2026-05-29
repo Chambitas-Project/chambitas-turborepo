@@ -35,14 +35,11 @@ export interface ActivityItemData {
 
 export interface ApplicationData {
   id: string;
-  studentName?: string;
   student_name?: string;
   student_id?: string;
   cover_note?: string;
-  matchScore?: number;
   match_score?: number;
   status: string;
-  appliedAt?: string;
   applied_at?: string;
   created_at?: string;
   student_career?: string;

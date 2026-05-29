@@ -45,8 +45,7 @@ interface Project {
   title: string;
   description: string;
   budget: number;
-  budget_type: "fixed" | "hourly";
-  company_name: string;
+  company_name?: string;
   service_category: string;
   requirements?: string;
   skills: ProjectSkill[];
@@ -136,7 +135,7 @@ export function ProjectDetailsPage() {
   );
 
   const timeAgo = formatTimeAgo(project.created_at);
-  const companyName = project.company_name || (project as any).companyName || "Chambitas Client";
+  const companyName = project.company_name || "Empleador Confidencial";
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
@@ -183,7 +182,7 @@ export function ProjectDetailsPage() {
                 <div className="space-y-1">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Presupuesto Estimado</p>
                   <p className="text-3xl font-black text-slate-900">S/.{project.budget}</p>
-                  <p className="text-[10px] font-bold text-emerald-600 uppercase">{project.budget_type === "hourly" ? "Tarifa por hora" : "Precio por proyecto"}</p>
+                  <p className="text-[10px] font-bold text-emerald-600 uppercase">Precio por proyecto</p>
                 </div>
                 <div className="h-14 w-px bg-slate-100 hidden sm:block" />
                 <div className="space-y-1">

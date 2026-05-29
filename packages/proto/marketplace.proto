@@ -42,6 +42,8 @@ message Project {
   string deleted_at = 14;
   repeated SkillRequirement skills = 15;
   optional string schedule_constraints = 16;
+  optional string company_name = 17;
+  optional double match_score = 18;
 }
 
 message SkillRequirement {

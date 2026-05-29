@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Search,
   Filter,
-  TrendingUp,
   ChevronRight,
   ChevronLeft,
   Zap,
@@ -11,7 +10,7 @@ import {
   X,
   Loader2
 } from "lucide-react";
-import { Button, Badge, cn } from "@chambitas/ui";
+import { Button, cn } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
 
@@ -22,21 +21,24 @@ interface ProjectSkill {
   mandatory: boolean;
 }
 
+interface Recommendation {
+  jobId: string;
+  score: number;
+  reason: string;
+  aiMetadata: string;
+  matchId: string;
+}
+
 interface Project {
   id: string;
   title: string;
   description: string;
   budget: number;
-  budget_type?: "fixed" | "hourly";
-  budgetType?: "fixed" | "hourly";
-  company_name?: string;
-  companyName?: string;
-  match_score?: number;
-  matchScore?: number;
+  company_name?: string; // Por defecto no viene, lo dejamos opcional
   skills: (string | ProjectSkill)[];
   created_at?: string;
   service_category?: string;
-  status?: "open" | "in_progress" | "closed";
+  status?: "open" | "in_progress" | "closed" | "completed" | "pending";
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -44,7 +46,7 @@ const ITEMS_PER_PAGE = 10;
 export function JobSearchPage() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [recommendations, setRecommendations] = useState<Project[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -130,7 +132,7 @@ export function JobSearchPage() {
 
         {recommendations.length > 0 && currentPage === 1 && (
           <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0F172A] p-8 md:p-12 text-white shadow-2xl transition-all hover:shadow-emerald-900/10">
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-linear-to-l from-emerald-500/10 to-transparent pointer-events-none" />
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-600/20 rounded-full blur-[100px]" />
             <div className="relative z-10 max-w-2xl space-y-6">
               <div className="flex items-center gap-2 text-emerald-400">
@@ -164,7 +166,7 @@ export function JobSearchPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <aside className={cn("lg:col-span-3 space-y-8 sticky top-24 transition-all", showFilters ? "block" : "hidden lg:block")}>
-            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm space-y-10">
+            <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm space-y-10">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Filtros Activos</h3>
                 <button onClick={() => { setActiveCategory("Todos"); setMaxPrice(5000); setSearchQuery(""); }} className="text-[10px] font-black text-slate-400 uppercase hover:text-emerald-600 transition-colors cursor-pointer">Limpiar</button>
@@ -258,14 +260,12 @@ function JobCard({ project }: { project: Project }) {
   };
 
   const budget = project.budget || 0;
-  const isHourly = (project.budget_type || project.budgetType) === "hourly";
-  const company = project.company_name || project.companyName || "Chambitas Client";
-  const match = project.match_score || project.matchScore || 85;
+  const company = project.company_name || "Empleador Confidencial";
 
   return (
     <div
       onClick={handleNavigate}
-      className="bg-white rounded-[2rem] p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-emerald-900/5 hover:translate-y-[-4px] transition-all group cursor-pointer relative overflow-hidden"
+      className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-emerald-900/5 hover:translate-y-[-4px] transition-all group cursor-pointer relative overflow-hidden"
     >
       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500 transition-all duration-500" />
       <div className="flex flex-col md:flex-row gap-6">
@@ -286,11 +286,7 @@ function JobCard({ project }: { project: Project }) {
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <Badge className="bg-emerald-50 text-emerald-700 border-none px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-1.5 shadow-sm">
-                <TrendingUp className="h-3 w-3" />
-                {match}% Match
-              </Badge>
-              <p className="text-lg font-black text-slate-900">S/.{budget}{isHourly ? "/hr" : " Fijo"}</p>
+              <p className="text-lg font-black text-slate-900">S/.{budget}</p>
             </div>
           </div>
           <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-2">{project.description}</p>
