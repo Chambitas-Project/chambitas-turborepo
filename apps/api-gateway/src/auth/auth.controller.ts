@@ -26,7 +26,7 @@ import { Metadata } from '@grpc/grpc-js';
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  sameSite: 'none' as const,
   path: '/',
 };
 
@@ -103,7 +103,7 @@ export class AuthController implements OnModuleInit {
   async resetPassword(@Body() dto: ResetPasswordDto, @Req() req: Request): Promise<AuthResponse> {
     // Si no viene token en el body, intentamos sacarlo de la cookie (si el usuario ya fue redirigido)
     const token = dto.access_token || req.cookies?.access_token;
-    
+
     return firstValueFrom(
       this.authService.ResetPassword({
         password: dto.password,
