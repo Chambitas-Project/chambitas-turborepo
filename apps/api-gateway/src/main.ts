@@ -44,7 +44,7 @@ async function bootstrap() {
 
   const port = process.env.API_GATEWAY_PORT || 3000;
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`API Gateway is running on port: ${port}`);
 }
 bootstrap();
