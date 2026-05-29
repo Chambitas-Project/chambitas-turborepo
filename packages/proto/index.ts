@@ -25,7 +25,8 @@ export const PROTO_PATH = {
   MARKETPLACE: join(__dirname, '..', 'marketplace.proto'),
   MATCHING: join(__dirname, '..', 'matching.proto'),
   NOTIFICATION: join(__dirname, '..', 'notification.proto'),
-  ANALYTICS: join(__dirname, '..', 'analytics.proto')
+  ANALYTICS: join(__dirname, '..', 'analytics.proto'),
+  ML_ENGINE: join(__dirname, '..', 'ml-engine.proto')
 };
 
 // --- Auth Interfaces ---
