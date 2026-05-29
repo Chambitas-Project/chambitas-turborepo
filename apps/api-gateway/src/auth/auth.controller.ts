@@ -14,19 +14,15 @@ import { Public } from './decorators/public.decorator';
 import {
   IAuthService,
   RegisterResponse,
-  LoginResponse,
-  OnboardingResponse,
   IProfileService,
   AuthResponse
 } from '@chambitas/proto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { GrpcMetadataForwarder } from '@chambitas/common';
-import { Metadata } from '@grpc/grpc-js';
 
+const isProduction = process.env.NODE_ENV === 'production';
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'none' as const,
+  secure: isProduction,
+  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
   path: '/',
 };
 

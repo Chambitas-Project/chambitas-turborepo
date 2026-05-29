@@ -290,6 +290,8 @@ export interface Project {
   deleted_at: string;
   skills: SkillRequirement[];
   schedule_constraints?: string;
+  company_name?: string;
+  match_score?: number;
 }
 
 export interface SkillRequirement {
