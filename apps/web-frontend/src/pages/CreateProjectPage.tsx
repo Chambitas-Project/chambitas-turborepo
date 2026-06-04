@@ -131,12 +131,12 @@ export function CreateProjectPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-6 py-4 rounded-2xl mb-8 font-medium">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-6 py-4 rounded-md mb-8 font-medium">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-8 lg:p-10 shadow-sm border border-slate-100">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl p-8 lg:p-10 shadow-none border border-slate-100">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-10">
             
             {/* Columna Izquierda: Información Principal */}
@@ -152,7 +152,7 @@ export function CreateProjectPage() {
                   placeholder="Ej. Desarrollo de App Móvil en React Native"
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="bg-slate-50 border-none rounded-xl h-12"
+                  className="bg-white border border-slate-200 rounded-md h-12"
                 />
               </div>
 
@@ -164,7 +164,7 @@ export function CreateProjectPage() {
                   required
                   value={formData.service_category}
                   onChange={(e) => setFormData({...formData, service_category: e.target.value})}
-                  className="w-full bg-slate-50 border-none rounded-xl h-12 px-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-md h-12 px-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/20 outline-none"
                 >
                   <option value="Software Development" className="font-bold text-slate-900">Desarrollo de Software</option>
                   <option value="Design" className="font-bold text-slate-900">Diseño Gráfico / UX</option>
@@ -182,13 +182,16 @@ export function CreateProjectPage() {
                   placeholder="Describe qué necesitas, los objetivos del proyecto y qué esperas del estudiante..."
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none resize-none"
+                  className="w-full bg-white border border-slate-200 rounded-md p-4 text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none resize-none"
                 />
               </div>
 
               <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-700">Fecha límite del proyecto (Opcional)</label>
+                <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                  Fecha límite del proyecto <span className="text-red-500">*</span>
+                </label>
                 <Input 
+                  required
                   type="date"
                   value={formData.deadline}
                   onChange={(e) => setFormData({...formData, deadline: e.target.value})}
@@ -198,7 +201,7 @@ export function CreateProjectPage() {
                       try { target.showPicker(); } catch (err) {}
                     }
                   }}
-                  className="bg-slate-50 border-none rounded-xl h-12 w-full text-sm font-bold text-slate-900 cursor-pointer"
+                  className="bg-white border border-slate-200 rounded-md h-12 w-full text-sm font-bold text-slate-900 cursor-pointer"
                 />
               </div>
             </div>
@@ -219,7 +222,7 @@ export function CreateProjectPage() {
                     placeholder="Ej. 150"
                     value={formData.budget}
                     onChange={(e) => setFormData({...formData, budget: e.target.value})}
-                    className="bg-slate-50 border-none rounded-xl h-12"
+                    className="bg-white border border-slate-200 rounded-md h-12"
                   />
                 </div>
                 <div className="space-y-3">
@@ -232,7 +235,7 @@ export function CreateProjectPage() {
                     placeholder="Opcional (Ej. 20)"
                     value={formData.max_hours_week}
                     onChange={(e) => setFormData({...formData, max_hours_week: e.target.value})}
-                    className="bg-slate-50 border-none rounded-xl h-12"
+                    className="bg-white border border-slate-200 rounded-md h-12"
                   />
                 </div>
               </div>
@@ -256,7 +259,7 @@ export function CreateProjectPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                     <Input 
                       placeholder="Busca una habilidad (Ej: React, Python...)"
-                      className="h-12 pl-12 rounded-xl bg-slate-50 border-none focus:ring-emerald-500/10 text-sm font-bold"
+                      className="h-12 pl-12 rounded-md bg-white border border-slate-200 focus:ring-emerald-500/10 text-sm font-bold"
                       value={skillSearch}
                       onChange={e => {
                         setSkillSearch(e.target.value);
@@ -268,7 +271,7 @@ export function CreateProjectPage() {
                   </div>
 
                   {showSuggestions && skillSearch.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 max-h-[240px] overflow-y-auto py-2 custom-scrollbar">
+                    <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white rounded-xl shadow-md border border-slate-100 max-h-[240px] overflow-y-auto py-2 custom-scrollbar">
                       {filteredSkills.length > 0 ? (
                         <>
                           {filteredSkills.map(skill => (
@@ -300,7 +303,7 @@ export function CreateProjectPage() {
                     </div>
                   ) : (
                     selectedSkills.map((skill) => (
-                      <div key={skill.skill_id} className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:border-emerald-200 transition-all">
+                      <div key={skill.skill_id} className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white border border-slate-100 rounded-md shadow-none hover:border-emerald-200 transition-all">
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
                             <Star className="h-4 w-4 text-emerald-600 fill-emerald-600" />
@@ -309,7 +312,7 @@ export function CreateProjectPage() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100 gap-1">
+                          <div className="flex bg-slate-50 p-1 rounded-md border border-slate-100 gap-1">
                             {[1, 2, 3, 4, 5].map((level) => (
                               <button
                                 key={level}
@@ -318,7 +321,7 @@ export function CreateProjectPage() {
                                 className={cn(
                                   "px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter transition-all flex flex-col items-center min-w-[48px] cursor-pointer",
                                   skill.proficiency_level === level 
-                                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-900/20" 
+                                    ? "bg-emerald-600 text-white shadow-none" 
                                     : "text-slate-400 hover:text-slate-600 hover:bg-white"
                                 )}
                               >
@@ -348,7 +351,7 @@ export function CreateProjectPage() {
               type="button"
               variant="outline"
               onClick={() => navigate("/employer/projects")}
-              className="h-14 px-8 rounded-2xl border-slate-200 text-slate-600 font-bold hover:bg-slate-50 cursor-pointer"
+              className="h-14 px-8 rounded-md border-slate-200 text-slate-600 font-bold hover:bg-slate-50 cursor-pointer"
             >
               Cancelar
             </Button>
@@ -356,8 +359,8 @@ export function CreateProjectPage() {
               type="submit"
               disabled={isLoading || selectedSkills.length === 0}
               className={cn(
-                "h-14 px-8 rounded-2xl font-black text-white shadow-lg cursor-pointer transition-all",
-                isLoading || selectedSkills.length === 0 ? "bg-slate-300 shadow-none cursor-not-allowed" : "bg-[#065f46] hover:bg-[#064e3b] shadow-emerald-900/20"
+                "h-14 px-8 rounded-md font-black text-white shadow-none cursor-pointer transition-all",
+                isLoading || selectedSkills.length === 0 ? "bg-slate-300 shadow-none cursor-not-allowed" : "bg-[#065f46] hover:bg-[#064e3b]"
               )}
             >
               {isLoading ? "Publicando..." : "Publicar Microtrabajo"}

@@ -12,7 +12,7 @@ export interface StatCardProps {
 
 export function StatCard({ title, value, trend, icon: _icon, color }: StatCardProps) {
   return (
-    <Card className="bg-white border-none shadow-sm rounded-3xl overflow-hidden relative group">
+    <Card className="bg-white border border-slate-100 shadow-sm rounded-xl overflow-hidden relative group">
       <div className={cn(
         "absolute top-0 right-0 p-6 opacity-5 transition-transform group-hover:scale-110",
         color === 'emerald' ? 'text-emerald-600' : color === 'blue' ? 'text-blue-600' : 'text-amber-600'

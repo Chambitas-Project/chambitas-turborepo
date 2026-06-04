@@ -57,7 +57,7 @@ export function LoginPage() {
         <div className="relative z-10 w-full max-w-sm space-y-12 text-white">
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl">
+              <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg">
                 <Briefcase className="h-7 w-7" />
               </div>
               <h2 className="text-5xl font-black tracking-tighter">Chambitas</h2>
@@ -118,7 +118,7 @@ export function LoginPage() {
             <Button 
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-14 text-lg font-bold shadow-xl shadow-emerald-900/10 active:scale-[0.98] transition-all rounded-xl" 
+              className="w-full h-12 text-lg font-bold shadow-md shadow-emerald-900/10 active:scale-[0.98] transition-all rounded-md" 
               style={{ backgroundColor: '#064e3b', color: '#ffffff' }}
             >
               {isSubmitting ? "Accediendo..." : "Iniciar sesión"}
