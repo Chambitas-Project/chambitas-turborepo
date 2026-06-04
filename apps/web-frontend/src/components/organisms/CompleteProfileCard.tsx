@@ -52,7 +52,7 @@ export function CompleteProfileCard() {
   }
 
   return (
-    <Card className="bg-emerald-50/50 border-emerald-100/50 border shadow-none rounded-3xl p-8 relative overflow-hidden transition-all duration-300">
+    <Card className="bg-emerald-50/50 border-emerald-100/50 border shadow-none rounded-xl p-8 relative overflow-hidden transition-all duration-300">
        <div className="absolute -bottom-6 -right-6 opacity-10 pointer-events-none">
          <Badge className="h-24 w-24 rounded-full bg-emerald-500" />
        </div>

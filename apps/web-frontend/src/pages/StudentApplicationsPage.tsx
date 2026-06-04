@@ -96,7 +96,7 @@ export function StudentApplicationsPage() {
               placeholder="Buscar postulaciones..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border-2 border-slate-100 shadow-sm outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 font-bold text-slate-700 transition-all placeholder:text-slate-300"
+              className="w-full pl-12 pr-4 py-4 bg-white rounded-md border-2 border-slate-100 shadow-sm outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 font-bold text-slate-700 transition-all placeholder:text-slate-300"
             />
           </div>
         </div>
@@ -108,7 +108,7 @@ export function StudentApplicationsPage() {
             <p className="text-slate-400 font-bold animate-pulse">Cargando tus postulaciones...</p>
           </div>
         ) : applications.length === 0 ? (
-          <div className="bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 p-16 text-center space-y-6">
+          <div className="bg-white rounded-xl border-2 border-dashed border-slate-200 p-16 text-center space-y-6">
             <div className="h-24 w-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto border-4 border-white shadow-sm">
               <FileText className="h-10 w-10 text-slate-300" />
             </div>
@@ -116,12 +116,12 @@ export function StudentApplicationsPage() {
               <h3 className="text-2xl font-black text-slate-900">Aún no hay postulaciones</h3>
               <p className="text-slate-500 font-medium leading-relaxed">No te has presentado a ningún proyecto todavía. ¡El empleo perfecto te está esperando!</p>
             </div>
-            <Button onClick={() => navigate("/jobs")} className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 h-14 rounded-2xl shadow-xl shadow-emerald-900/20 active:scale-95 transition-all">
+            <Button onClick={() => navigate("/jobs")} className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 h-12 rounded-md shadow-md active:scale-95 transition-all">
               Explorar Empleos <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         ) : filteredApplications.length === 0 ? (
-          <div className="bg-white rounded-4xl p-12 text-center space-y-4 shadow-sm border border-slate-100">
+          <div className="bg-white rounded-xl p-12 text-center space-y-4 shadow-sm border border-slate-100">
             <Search className="h-12 w-12 text-slate-200 mx-auto" />
             <h3 className="text-xl font-black text-slate-900">Sin coincidencias</h3>
             <p className="text-slate-400 font-medium">No encontramos postulaciones que coincidan con tu búsqueda.</p>
@@ -140,11 +140,11 @@ export function StudentApplicationsPage() {
                 <div
                   key={app.id}
                   onClick={() => navigate(`/projects/${app.project_id}`)}
-                  className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-emerald-900/5 hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden flex flex-col md:flex-row md:items-center gap-6"
+                  className="bg-white rounded-xl p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden flex flex-col md:flex-row md:items-center gap-6"
                 >
                   <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500 scale-y-0 group-hover:scale-y-100 origin-top transition-transform duration-300 ease-out" />
 
-                  <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center shrink-0 border border-slate-100 group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-colors">
+                  <div className="h-16 w-16 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100 group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-colors">
                     <FileText className="h-7 w-7 text-slate-400 group-hover:text-emerald-600 transition-colors" />
                   </div>
 
@@ -153,7 +153,7 @@ export function StudentApplicationsPage() {
                       <h3 className="text-xl font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors">
                         {app.project_title || "Proyecto sin título"}
                       </h3>
-                      <Badge className={cn("px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 w-fit border", statusConfig.classes)}>
+                      <Badge className={cn("px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 w-fit border", statusConfig.classes)}>
                         {statusConfig.icon}
                         {statusConfig.label}
                       </Badge>
@@ -171,7 +171,7 @@ export function StudentApplicationsPage() {
                     </div>
                   </div>
 
-                  <div className="shrink-0 hidden md:flex h-12 w-12 rounded-full bg-slate-50 items-center justify-center group-hover:bg-emerald-500 transition-colors">
+                  <div className="shrink-0 hidden md:flex h-12 w-12 rounded-md bg-slate-50 items-center justify-center group-hover:bg-emerald-500 transition-colors">
                     <ExternalLink className="h-5 w-5 text-slate-300 group-hover:text-white transition-colors" />
                   </div>
                 </div>

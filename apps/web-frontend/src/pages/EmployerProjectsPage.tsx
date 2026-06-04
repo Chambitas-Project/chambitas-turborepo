@@ -10,6 +10,8 @@ import { ProjectListItem } from "../components/organisms/ProjectListItem";
 export function EmployerProjectsPage() {
   const [projects, setProjects] = useState<EmployerProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,31 +39,44 @@ export function EmployerProjectsPage() {
         <div className="flex gap-3">
           <Button 
             onClick={() => navigate("/employer/projects/new")}
-            className="bg-[#065f46] hover:bg-[#064e3b] text-white font-black h-12 px-6 rounded-xl shadow-lg shadow-emerald-900/10 cursor-pointer"
+            className="bg-[#065f46] hover:bg-[#064e3b] text-white font-black h-12 px-6 rounded-md shadow-none cursor-pointer"
           >
             <Plus className="h-5 w-5 mr-2 border-2 border-white/50 rounded-full" /> Nuevo Microtrabajo
           </Button>
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 mb-8 flex flex-col sm:flex-row gap-4">
+      <div className="mb-8 flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 z-10 pointer-events-none" />
           <Input 
             placeholder="Buscar por título del puesto..." 
-            className="pl-12 h-14 bg-slate-50 border-none rounded-2xl text-base font-medium focus:ring-2 focus:ring-emerald-500/20"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-12 h-14 bg-white border border-slate-200 rounded-md text-base font-medium focus:ring-2 focus:ring-emerald-500/20"
           />
         </div>
-        <Button variant="outline" className="h-14 px-6 rounded-2xl border-slate-200 text-slate-600 font-bold hover:bg-slate-50 shrink-0">
-          <Filter className="h-5 w-5 mr-2" /> Filtrar
-        </Button>
+        <div className="relative shrink-0">
+          <Filter className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 z-10 pointer-events-none" />
+          <select 
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-14 pl-11 pr-10 rounded-md border border-slate-200 bg-white text-slate-600 font-bold hover:bg-slate-50 appearance-none focus:ring-2 focus:ring-emerald-500/20 outline-none cursor-pointer"
+          >
+            <option value="all">Todos los estados</option>
+            <option value="active">Activos</option>
+            <option value="pending">Pendientes</option>
+            <option value="in_progress">En Progreso</option>
+            <option value="completed">Completados</option>
+          </select>
+        </div>
       </div>
 
       <div className="space-y-4">
         {isLoading ? (
           <div className="text-center py-20 text-slate-500 font-medium">Cargando publicaciones...</div>
         ) : projects.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
+          <div className="text-center py-20 bg-white rounded-xl border border-slate-100 shadow-sm">
             <div className="mx-auto w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
               <FileText className="h-10 w-10 text-slate-300" />
             </div>
@@ -69,11 +84,17 @@ export function EmployerProjectsPage() {
             <p className="text-slate-500 font-medium mt-2 max-w-md mx-auto">Cuando publiques nuevos microtrabajos, aparecerán aquí para que puedas gestionarlos y revisar a los postulantes.</p>
           </div>
         ) : (
-          projects.map(project => (
-            <div key={project.id} onClick={() => navigate(`/employer/projects/${project.id}`)} className="cursor-pointer">
-              <ProjectListItem project={project} />
-            </div>
-          ))
+          projects
+            .filter(project => {
+              const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase());
+              const matchesStatus = statusFilter === "all" || project.status === statusFilter;
+              return matchesSearch && matchesStatus;
+            })
+            .map(project => (
+              <div key={project.id} onClick={() => navigate(`/employer/projects/${project.id}`)} className="cursor-pointer">
+                <ProjectListItem project={project} />
+              </div>
+            ))
         )}
       </div>
     </DashboardLayout>

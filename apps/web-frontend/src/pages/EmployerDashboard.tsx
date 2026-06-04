@@ -83,7 +83,7 @@ export function EmployerDashboard() {
 
           <div className="space-y-4">
             {projects.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-3xl border border-slate-100 shadow-sm">
+              <div className="text-center py-12 bg-white rounded-xl border border-slate-100 shadow-sm">
                 <div className="mx-auto w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                   <FileText className="h-8 w-8 text-slate-300" />
                 </div>

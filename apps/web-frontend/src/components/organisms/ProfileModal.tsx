@@ -110,10 +110,10 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         </div>
 
         <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
-          <Button variant="outline" type="button" onClick={onClose} className="h-12 px-6 rounded-xl font-bold text-slate-600 bg-white border-slate-200 cursor-pointer">
+          <Button variant="outline" type="button" onClick={onClose} className="h-12 px-6 rounded-md font-bold text-slate-600 bg-white border-slate-200 cursor-pointer">
             Cancelar
           </Button>
-          <Button type="submit" form="profile-form" disabled={isLoading} className="h-12 px-6 rounded-xl font-black bg-[#065f46] hover:bg-[#064e3b] text-white cursor-pointer shadow-lg shadow-emerald-900/20">
+          <Button type="submit" form="profile-form" disabled={isLoading} className="h-12 px-6 rounded-md font-black bg-[#065f46] hover:bg-[#064e3b] text-white cursor-pointer">
             {isLoading ? "Guardando..." : <><Save className="h-4 w-4 mr-2" /> Guardar Cambios</>}
           </Button>
         </div>

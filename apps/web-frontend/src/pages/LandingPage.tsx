@@ -44,7 +44,7 @@ export function LandingPage() {
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   <div className="flex -space-x-3">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-8 w-8 rounded-full border-2 border-white bg-slate-200 overflow-hidden">
+                      <div key={i} className="h-8 w-8 rounded-md border-2 border-white bg-slate-200 overflow-hidden">
                         <img src={`https://i.pravatar.cc/100?u=${i}`} alt="Student" className="h-full w-full object-cover" />
                       </div>
                     ))}

@@ -56,7 +56,7 @@ export function RegisterForm({ role, setRole }: RegisterFormProps) {
                 {...register("universityId")}
                 disabled={loadingUnis}
                 className={cn(
-                  "flex h-12 w-full rounded-xl border bg-input pl-10 pr-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 transition-all appearance-none font-medium",
+                  "flex h-12 w-full rounded-md border bg-input pl-10 pr-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 transition-all appearance-none font-medium",
                   errors.universityId ? "border-destructive-500 text-destructive-500" : "border-border text-foreground",
                   loadingUnis && "opacity-50 cursor-not-allowed"
                 )}
@@ -101,7 +101,7 @@ export function RegisterForm({ role, setRole }: RegisterFormProps) {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-14 text-lg font-bold shadow-glow-primary active:scale-[0.98] transition-all rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground"
+          className="w-full h-12 text-lg font-bold shadow-sm active:scale-[0.98] transition-all rounded-md bg-primary hover:bg-primary-600 text-primary-foreground"
         >
           {isSubmitting ? "Creando..." : "Crear cuenta"}
           <ArrowRight className="h-5 w-5 ml-2" />

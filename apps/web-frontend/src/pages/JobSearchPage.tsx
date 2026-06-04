@@ -131,7 +131,7 @@ export function JobSearchPage() {
       <main className="max-w-7xl mx-auto px-4 py-8 md:py-10 space-y-10">
 
         {recommendations.length > 0 && currentPage === 1 && (
-          <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0F172A] p-8 md:p-12 text-white shadow-2xl transition-all hover:shadow-emerald-900/10">
+          <section className="relative overflow-hidden rounded-xl bg-[#0F172A] p-8 md:p-12 text-white shadow-xl transition-all hover:shadow-emerald-900/10">
             <div className="absolute top-0 right-0 w-1/2 h-full bg-linear-to-l from-emerald-500/10 to-transparent pointer-events-none" />
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-600/20 rounded-full blur-[100px]" />
             <div className="relative z-10 max-w-2xl space-y-6">
@@ -142,8 +142,8 @@ export function JobSearchPage() {
               <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">Recomendados para ti</h2>
               <p className="text-slate-400 text-lg font-medium leading-relaxed">Basado en tu perfil, hemos encontrado <span className="text-emerald-400">{recommendations.length} proyectos</span> abiertos para postular hoy.</p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 h-14 rounded-2xl shadow-xl shadow-emerald-900/20 group transition-all active:scale-95">Ver coincidencias <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" /></Button>
-                <Button variant="outline" onClick={() => navigate("/dashboard")} className="border-slate-700 text-slate-300 hover:bg-slate-800 h-14 px-8 rounded-2xl font-black">Actualizar Perfil</Button>
+                <Button className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 h-12 rounded-md shadow-md group transition-all active:scale-95">Ver coincidencias <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" /></Button>
+                <Button variant="outline" onClick={() => navigate("/dashboard")} className="border-slate-700 text-slate-300 hover:bg-slate-800 h-12 px-8 rounded-md font-black">Actualizar Perfil</Button>
               </div>
             </div>
           </section>
@@ -157,16 +157,16 @@ export function JobSearchPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por título o descripción..."
-              className="w-full pl-14 pr-6 py-5 bg-white rounded-2xl border-2 border-slate-100 shadow-sm outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 font-bold transition-all text-slate-700 placeholder:text-slate-300"
+              className="w-full pl-14 pr-6 py-4 bg-white rounded-md border-2 border-slate-100 shadow-sm outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 font-bold transition-all text-slate-700 placeholder:text-slate-300"
             />
             {searchQuery && <X className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 hover:text-slate-600 cursor-pointer transition-colors" onClick={() => setSearchQuery("")} />}
           </div>
-          <Button onClick={() => setShowFilters(!showFilters)} className="md:hidden flex items-center justify-center gap-2 bg-white border-2 border-slate-100 text-slate-600 h-14 rounded-2xl font-black"><Filter className="h-5 w-5" /> Filtros</Button>
+          <Button onClick={() => setShowFilters(!showFilters)} className="md:hidden flex items-center justify-center gap-2 bg-white border-2 border-slate-100 text-slate-600 h-12 rounded-md font-black"><Filter className="h-5 w-5" /> Filtros</Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <aside className={cn("lg:col-span-3 space-y-8 sticky top-24 transition-all", showFilters ? "block" : "hidden lg:block")}>
-            <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm space-y-10">
+            <div className="bg-white rounded-xl p-8 border border-slate-100 shadow-sm space-y-10">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Filtros Activos</h3>
                 <button onClick={() => { setActiveCategory("Todos"); setMaxPrice(5000); setSearchQuery(""); }} className="text-[10px] font-black text-slate-400 uppercase hover:text-emerald-600 transition-colors cursor-pointer">Limpiar</button>
@@ -227,21 +227,21 @@ export function JobSearchPage() {
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center gap-3 pt-10">
-                    <Button disabled={currentPage === 1} onClick={() => { setCurrentPage(prev => Math.max(1, prev - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} variant="outline" className="rounded-xl border-slate-100 text-slate-500 h-11 w-11 p-0 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-30"><ChevronLeft className="h-5 w-5" /></Button>
+                    <Button disabled={currentPage === 1} onClick={() => { setCurrentPage(prev => Math.max(1, prev - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} variant="outline" className="rounded-md border-slate-100 text-slate-500 h-11 w-11 p-0 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-30"><ChevronLeft className="h-5 w-5" /></Button>
                     <div className="flex items-center gap-2">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                        <button key={page} onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={cn("h-11 w-11 rounded-xl text-sm font-black transition-all", currentPage === page ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "text-slate-400 hover:bg-slate-50 hover:text-slate-900")}>{page}</button>
+                        <button key={page} onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={cn("h-11 w-11 rounded-md text-sm font-black transition-all", currentPage === page ? "bg-emerald-600 text-white shadow-md shadow-emerald-200" : "text-slate-400 hover:bg-slate-50 hover:text-slate-900")}>{page}</button>
                       ))}
                     </div>
-                    <Button disabled={currentPage === totalPages} onClick={() => { setCurrentPage(prev => Math.min(totalPages, prev + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} variant="outline" className="rounded-xl border-slate-100 text-slate-500 h-11 w-11 p-0 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-30"><ChevronRight className="h-5 w-5" /></Button>
+                    <Button disabled={currentPage === totalPages} onClick={() => { setCurrentPage(prev => Math.min(totalPages, prev + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} variant="outline" className="rounded-md border-slate-100 text-slate-500 h-11 w-11 p-0 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-30"><ChevronRight className="h-5 w-5" /></Button>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 p-16 text-center space-y-4">
+              <div className="bg-white rounded-xl border-2 border-dashed border-slate-100 p-16 text-center space-y-4">
                 <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto"><Search className="h-8 w-8 text-slate-200" /></div>
                 <div className="space-y-1"><h3 className="text-lg font-black text-slate-900">Sin coincidencias</h3><p className="text-sm font-medium text-slate-400">Prueba con otros filtros para ver más opciones.</p></div>
-                <Button onClick={() => { setSearchQuery(""); setActiveCategory("Todos"); setMaxPrice(5000); }} variant="outline" className="rounded-xl font-black">Reiniciar Filtros</Button>
+                <Button onClick={() => { setSearchQuery(""); setActiveCategory("Todos"); setMaxPrice(5000); }} variant="outline" className="rounded-md font-black">Reiniciar Filtros</Button>
               </div>
             )}
           </div>
@@ -265,11 +265,11 @@ function JobCard({ project }: { project: Project }) {
   return (
     <div
       onClick={handleNavigate}
-      className="bg-white rounded-4xl p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-emerald-900/5 hover:translate-y-[-4px] transition-all group cursor-pointer relative overflow-hidden"
+      className="bg-white rounded-xl p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-lg hover:translate-y-[-4px] transition-all group cursor-pointer relative overflow-hidden"
     >
       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500 transition-all duration-500" />
       <div className="flex flex-col md:flex-row gap-6">
-        <div className="shrink-0 h-16 w-16 md:h-20 md:w-20 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg overflow-hidden group-hover:scale-105 transition-transform duration-500">
+        <div className="shrink-0 h-16 w-16 md:h-20 md:w-20 rounded-lg bg-slate-900 flex items-center justify-center shadow-sm overflow-hidden group-hover:scale-105 transition-transform duration-500">
           <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${company}&backgroundColor=0f172a`} alt={company} />
         </div>
         <div className="flex-1 space-y-4">
@@ -311,7 +311,7 @@ function JobCard({ project }: { project: Project }) {
                   console.error("No project ID found", project);
                 }
               }}
-              className="bg-slate-900 hover:bg-emerald-600 text-white font-black px-8 h-12 rounded-xl transition-all active:scale-95 shadow-lg shadow-slate-900/10 hover:shadow-emerald-900/20"
+              className="bg-slate-900 hover:bg-emerald-600 text-white font-black px-8 h-12 rounded-md transition-all active:scale-95 shadow-sm"
             >
               Ver Detalles
             </Button>
