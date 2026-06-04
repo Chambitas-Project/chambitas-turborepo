@@ -4,7 +4,7 @@ import type { ActivityItemData } from "../../api/employer.api";
 
 export function RecentActivityCard({ activities }: { activities: ActivityItemData[] }) {
   return (
-    <Card className="bg-white border-none shadow-sm rounded-3xl">
+    <Card className="bg-white border border-slate-100 shadow-sm rounded-xl">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
         <CardTitle className="text-lg font-black">Actividad Reciente</CardTitle>
         <Bell className="h-5 w-5 text-slate-300" />
