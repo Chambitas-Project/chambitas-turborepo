@@ -12,6 +12,29 @@ service MLEngineService {
   // Administración del motor
   rpc TrainModel (TrainModelRequest) returns (TrainModelResponse) {}
   rpc GetModelStatus (GetModelStatusRequest) returns (GetModelStatusResponse) {}
+
+  // Webhooks asíncronos para reconstrucción relacional
+  rpc GenerateProjectEmbedding (ProjectEmbeddingRequest) returns (EmbeddingResponse) {}
+  rpc GenerateStudentEmbedding (StudentEmbeddingRequest) returns (EmbeddingResponse) {}
+  rpc GenerateSkillEmbedding (SkillEmbeddingRequest) returns (EmbeddingResponse) {}
+}
+
+message ProjectEmbeddingRequest {
+  string project_id = 1;
+}
+
+message StudentEmbeddingRequest {
+  string student_id = 1;
+}
+
+message SkillEmbeddingRequest {
+  string skill_id = 1;
+}
+
+message EmbeddingResponse {
+  bool success = 1;
+  string status = 2;
+  string message = 3;
 }
 
 message StudentMLData {

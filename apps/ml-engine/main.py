@@ -1,4 +1,5 @@
 import grpc
+import threading
 from concurrent import futures
 import time
 import subprocess
@@ -84,6 +85,71 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details(f"Error al consultar Supabase: {str(e)}")
             return ml_engine_pb2.GetModelStatusResponse()
+
+    # ==========================================
+    # LÓGICA DE FONDO (THREADS) PARA WEBHOOKS
+    # ==========================================
+    def _bg_project_embedding(self, project_id):
+        try:
+            p_resp = supabase.table("projects").select("title, description").eq("id", project_id).execute()
+            if not p_resp.data: return
+            p = p_resp.data[0]
+            
+            r_resp = supabase.table("project_required_skills").select("skills(name)").eq("project_id", project_id).execute()
+            skills_text = ", ".join([row['skills']['name'] for row in r_resp.data if row.get('skills')])
+            
+            corpus = f"{p.get('title','')} {p.get('description','')} {skills_text}".strip()
+            vector_300 = engine.get_text_embedding(corpus)
+            supabase.table("projects").update({"embedding": vector_300}).eq("id", project_id).execute()
+            print(f"[THREAD] OK: Proyecto {project_id} re-vectorizado con éxito.")
+        except Exception as e:
+            print(f"[THREAD] ERROR en proyecto {project_id}: {e}")
+
+    def _bg_student_embedding(self, student_id):
+        try:
+            s_resp = supabase.table("student_profiles").select("skills").eq("id", student_id).execute()
+            if not s_resp.data: return
+            
+            r_resp = supabase.table("student_skills").select("skills(name)").eq("student_id", student_id).execute()
+            nm_skills = [row['skills']['name'] for row in r_resp.data if row.get('skills')]
+            legacy_skills = s_resp.data[0].get('skills') or []
+            
+            final_skills = list(set(nm_skills + legacy_skills))
+            corpus = ", ".join(final_skills)
+            
+            vector_300 = engine.get_text_embedding(corpus)
+            supabase.table("student_profiles").update({"embedding": vector_300}).eq("id", student_id).execute()
+            print(f"[THREAD] OK: Estudiante {student_id} re-vectorizado con éxito.")
+        except Exception as e:
+            print(f"[THREAD] ERROR en estudiante {student_id}: {e}")
+
+    def _bg_skill_embedding(self, skill_id):
+        try:
+            s_resp = supabase.table("skills").select("name, category").eq("id", skill_id).execute()
+            if not s_resp.data: return
+            s = s_resp.data[0]
+            
+            corpus = f"{s.get('name','')} {s.get('category','')}".strip()
+            vector_300 = engine.get_text_embedding(corpus)
+            supabase.table("skills").update({"embedding": vector_300}).eq("id", skill_id).execute()
+            print(f"[THREAD] OK: Skill {skill_id} re-vectorizada con éxito.")
+        except Exception as e:
+            print(f"[THREAD] ERROR en skill {skill_id}: {e}")
+
+    # ==========================================
+    # ENDPOINTS gRPC (Retorno Inmediato)
+    # ==========================================
+    def GenerateProjectEmbedding(self, request, context):
+        threading.Thread(target=self._bg_project_embedding, args=(request.project_id,)).start()
+        return ml_engine_pb2.EmbeddingResponse(success=True, status="ACCEPTED", message="Processing in background")
+
+    def GenerateStudentEmbedding(self, request, context):
+        threading.Thread(target=self._bg_student_embedding, args=(request.student_id,)).start()
+        return ml_engine_pb2.EmbeddingResponse(success=True, status="ACCEPTED", message="Processing in background")
+
+    def GenerateSkillEmbedding(self, request, context):
+        threading.Thread(target=self._bg_skill_embedding, args=(request.skill_id,)).start()
+        return ml_engine_pb2.EmbeddingResponse(success=True, status="ACCEPTED", message="Processing in background")
 
 def serve():
     port = os.environ.get("ML_ENGINE_GRPC_PORT", "50058")
