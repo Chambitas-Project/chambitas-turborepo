@@ -6,6 +6,9 @@ interface User {
   email: string;
   role: string;
   isOnboarded: boolean;
+  name?: string;
+  company_name?: string;
+  description?: string;
 }
 
 interface AuthContextType {
@@ -42,6 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (credentials: any) => {
     const response = await apiClient.post('/auth/login', credentials);
     setUser(response.data);
+    await fetchProfile();
   };
 
   const register = async (userData: any) => {

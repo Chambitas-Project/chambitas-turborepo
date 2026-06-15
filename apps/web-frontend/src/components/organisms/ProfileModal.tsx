@@ -52,7 +52,12 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         payload.description = formData.description;
       }
       
-      await apiClient.patch('/profile/me', payload);
+      if (user?.role === "employer" && !user.isOnboarded) {
+        await apiClient.post('/profile/onboarding/employer', payload);
+      } else {
+        await apiClient.patch('/profile/me', payload);
+      }
+      
       await refreshUser();
       onClose();
     } catch (error) {
@@ -63,12 +68,12 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-6 border-b border-slate-100">
-          <h2 className="text-xl font-black text-slate-900">Modificar Perfil</h2>
-          <button onClick={onClose} className="h-8 w-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-500 transition-colors cursor-pointer">
-            <X className="h-4 w-4" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in">
+      <div className="bg-white rounded-md w-full max-w-lg shadow-lg border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between p-6 border-b border-slate-50">
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">Modificar Perfil</h2>
+          <button onClick={onClose} className="h-8 w-8 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer flex items-center justify-center rounded-md hover:bg-slate-50">
+            <X className="h-5 w-5" />
           </button>
         </div>
         
@@ -79,7 +84,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               <Input 
                 value={formData.fullName}
                 onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                className="bg-slate-50 border-none rounded-xl h-12 w-full text-slate-900 font-bold"
+                className="bg-slate-50 border border-slate-100 rounded-md h-12 w-full text-slate-900 font-bold focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-none"
                 placeholder="Tu nombre completo"
               />
             </div>
@@ -90,7 +95,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 <Input 
                   value={formData.companyName}
                   onChange={(e) => setFormData({...formData, companyName: e.target.value})}
-                  className="bg-slate-50 border-none rounded-xl h-12 w-full text-slate-900 font-bold"
+                  className="bg-slate-50 border border-slate-100 rounded-md h-12 w-full text-slate-900 font-bold focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-none"
                   placeholder="Ej. TechCorp SAC"
                 />
               </div>
@@ -102,18 +107,18 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 rows={4}
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                className="bg-slate-50 border-none rounded-xl p-4 w-full text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none resize-none"
+                className="bg-slate-50 border border-slate-100 rounded-md p-4 w-full text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-bold focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none resize-none shadow-none"
                 placeholder="Cuéntanos un poco más..."
               />
             </div>
           </form>
         </div>
 
-        <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
-          <Button variant="outline" type="button" onClick={onClose} className="h-12 px-6 rounded-md font-bold text-slate-600 bg-white border-slate-200 cursor-pointer">
+        <div className="p-6 border-t border-slate-50 flex justify-end gap-3 bg-white">
+          <Button variant="outline" type="button" onClick={onClose} className="h-11 px-6 rounded-md font-bold text-slate-600 bg-white border-slate-200 hover:bg-slate-50 cursor-pointer shadow-none">
             Cancelar
           </Button>
-          <Button type="submit" form="profile-form" disabled={isLoading} className="h-12 px-6 rounded-md font-black bg-[#065f46] hover:bg-[#064e3b] text-white cursor-pointer">
+          <Button type="submit" form="profile-form" disabled={isLoading} className="h-11 px-6 rounded-md font-black bg-[#065f46] hover:bg-[#064e3b] text-white cursor-pointer shadow-none">
             {isLoading ? "Guardando..." : <><Save className="h-4 w-4 mr-2" /> Guardar Cambios</>}
           </Button>
         </div>

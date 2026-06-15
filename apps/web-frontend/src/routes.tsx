@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 const EmployerProjectsPage = React.lazy(() => import("./pages/EmployerProjectsPage").then(m => ({ default: m.EmployerProjectsPage })));
 const EmployerProjectDetailsPage = React.lazy(() => import("./pages/EmployerProjectDetailsPage").then(m => ({ default: m.EmployerProjectDetailsPage })));
 const CreateProjectPage = React.lazy(() => import("./pages/CreateProjectPage").then(m => ({ default: m.CreateProjectPage })));
+const EditProjectPage = React.lazy(() => import("./pages/EditProjectPage").then(m => ({ default: m.EditProjectPage })));
 const StudentApplicationsPage = React.lazy(() => import("./pages/StudentApplicationsPage").then(m => ({ default: m.StudentApplicationsPage })));
 const LandingPage = React.lazy(() => import("./pages/LandingPage").then(m => ({ default: m.LandingPage })));
 const LoginPage = React.lazy(() => import("./pages/LoginPage").then(m => ({ default: m.LoginPage })));
@@ -132,6 +133,16 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <Suspense fallback={<PageLoader />}>
           <CreateProjectPage />
+        </Suspense>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/employer/projects/:id/edit",
+    element: (
+      <ProtectedRoute>
+        <Suspense fallback={<PageLoader />}>
+          <EditProjectPage />
         </Suspense>
       </ProtectedRoute>
     ),

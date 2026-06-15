@@ -61,14 +61,15 @@ export function EmployerProjectsPage() {
           <select 
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-14 pl-11 pr-10 rounded-md border border-slate-200 bg-white text-slate-600 font-bold hover:bg-slate-50 appearance-none focus:ring-2 focus:ring-emerald-500/20 outline-none cursor-pointer"
+            className="h-14 pl-11 pr-10 w-full sm:w-auto rounded-md border border-slate-200 bg-white text-slate-700 font-bold hover:bg-slate-50 appearance-none focus:ring-2 focus:ring-emerald-500/20 outline-none cursor-pointer shadow-sm transition-colors"
           >
-            <option value="all">Todos los estados</option>
-            <option value="active">Activos</option>
-            <option value="pending">Pendientes</option>
-            <option value="in_progress">En Progreso</option>
-            <option value="completed">Completados</option>
+            <option value="all" className="bg-white text-slate-700 font-medium py-2">Todos los estados</option>
+            <option value="open" className="bg-white text-slate-700 font-medium py-2">Activos</option>
+            <option value="draft" className="bg-white text-slate-700 font-medium py-2">Borradores</option>
+            <option value="in_progress" className="bg-white text-slate-700 font-medium py-2">En Progreso</option>
+            <option value="closed" className="bg-white text-slate-700 font-medium py-2">Cerrados</option>
           </select>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"><path d="m6 9 6 6 6-6"/></svg>
         </div>
       </div>
 
@@ -91,8 +92,20 @@ export function EmployerProjectsPage() {
               return matchesSearch && matchesStatus;
             })
             .map(project => (
-              <div key={project.id} onClick={() => navigate(`/employer/projects/${project.id}`)} className="cursor-pointer">
+              <div key={project.id} onClick={() => navigate(`/employer/projects/${project.id}`)} className="cursor-pointer relative group">
                 <ProjectListItem project={project} />
+                {project.status !== 'closed' && (
+                  <Button 
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/employer/projects/${project.id}/edit`);
+                    }}
+                    className="absolute top-1/2 -translate-y-1/2 right-4 bg-white hover:bg-slate-50 text-slate-600 font-bold px-4 h-9 rounded-md border-slate-200 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-sm"
+                  >
+                    Editar
+                  </Button>
+                )}
               </div>
             ))
         )}

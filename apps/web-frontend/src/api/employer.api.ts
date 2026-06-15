@@ -90,6 +90,9 @@ export const employerApi = {
   createProject: async (data: any): Promise<any> => {
     return apiClient.post('/marketplace/projects', data);
   },
+  updateProject: async (projectId: string, data: any): Promise<any> => {
+    return apiClient.patch(`/marketplace/projects/${projectId}`, data);
+  },
   updateApplicationStatus: async (applicationId: string, status: string): Promise<any> => {
     return apiClient.patch(`/marketplace/applications/${applicationId}/status`, { status });
   },
