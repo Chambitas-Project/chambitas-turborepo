@@ -148,7 +148,7 @@ export class ProjectsService {
     };
   }
 
-  private mapToProto(project: Tables<'projects'> & { university_ids: string[]; skills: any[] }): Project {
+  private mapToProto(project: Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string }): Project {
     return {
       id: project.id,
       title: project.title,
@@ -163,6 +163,7 @@ export class ProjectsService {
       max_hours_week: project.max_hours_week || 0,
       skills: project.skills || [],
       schedule_constraints: project.schedule_constraints ? JSON.stringify(project.schedule_constraints) : '',
+      company_name: project.company_name || project.employer_name || '',
       created_at: project.created_at || '',
       updated_at: project.updated_at || '',
       deleted_at: project.deleted_at || '',

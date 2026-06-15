@@ -8,9 +8,11 @@ import {
   Zap,
   CheckCircle2,
   X,
-  Loader2
+  Loader2,
+  ChevronDown,
+  Building2
 } from "lucide-react";
-import { Button, cn } from "@chambitas/ui";
+import { Button, Badge, cn } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
 
@@ -35,10 +37,11 @@ interface Project {
   description: string;
   budget: number;
   company_name?: string; // Por defecto no viene, lo dejamos opcional
+  employer_name?: string;
   skills: (string | ProjectSkill)[];
   created_at?: string;
   service_category?: string;
-  status?: "open" | "in_progress" | "closed" | "completed" | "pending";
+  status?: "active" | "open" | "in_progress" | "closed" | "completed" | "pending" | "draft";
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -47,6 +50,7 @@ export function JobSearchPage() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,15 +62,23 @@ export function JobSearchPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
-  const categories = ["Todos", "Desarrollo", "Diseño", "Marketing", "Escritura", "Traducción"];
+  const categories = [
+    { label: "Todos", value: "Todos" },
+    { label: "Desarrollo de Software", value: "Software Development" },
+    { label: "Diseño Gráfico / UX", value: "Design" },
+    { label: "Marketing Digital", value: "Marketing" },
+    { label: "Redacción y Traducción", value: "Writing" },
+    { label: "Otro", value: "Other" }
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [projRes, recRes] = await Promise.allSettled([
+        const [projRes, recRes, appsRes] = await Promise.allSettled([
           apiClient.get("/marketplace/projects"),
-          apiClient.get("/matching/recommendations/me")
+          apiClient.get("/matching/recommendations/me"),
+          apiClient.get("/marketplace/applications/my-applications")
         ]);
 
         if (projRes.status === "fulfilled") {
@@ -83,6 +95,12 @@ export function JobSearchPage() {
           setRecommendations(recs);
         } else {
           console.warn("Could not fetch recommendations, possibly service is down:", recRes.reason);
+        }
+
+        if (appsRes.status === "fulfilled") {
+          const data = appsRes.value.data;
+          const apps = Array.isArray(data) ? data : (data.applications || []);
+          setApplications(apps);
         }
       } catch (error) {
         console.error("Unexpected error fetching data:", error);
@@ -165,31 +183,36 @@ export function JobSearchPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <aside className={cn("lg:col-span-3 space-y-8 sticky top-24 transition-all", showFilters ? "block" : "hidden lg:block")}>
-            <div className="bg-white rounded-xl p-8 border border-slate-100 shadow-sm space-y-10">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Filtros Activos</h3>
+          <aside className={cn("lg:col-span-3 sticky top-24 transition-all", showFilters ? "block" : "hidden lg:block")}>
+            <div className="space-y-6 px-2">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+                <h3 className="text-xl font-black text-slate-900">Filtra tus resultados</h3>
                 <button onClick={() => { setActiveCategory("Todos"); setMaxPrice(5000); setSearchQuery(""); }} className="text-[10px] font-black text-slate-400 uppercase hover:text-emerald-600 transition-colors cursor-pointer">Limpiar</button>
               </div>
 
               {/* Categorías */}
-              <div className="space-y-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Servicio</p>
+              <div className="space-y-4 pb-6 border-b border-slate-200">
+                <div className="flex items-center justify-between cursor-pointer">
+                  <p className="text-sm font-bold text-slate-900">Categorías</p>
+                  <ChevronDown className="h-4 w-4 text-emerald-600" />
+                </div>
                 <div className="space-y-3">
                   {categories.map(cat => (
-                    <label key={cat} className="flex items-center gap-3 cursor-pointer group">
-                      <div className={cn("h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all", activeCategory === cat ? "border-emerald-500 bg-emerald-500" : "border-slate-100 group-hover:border-emerald-200")}>{activeCategory === cat && <CheckCircle2 className="h-4 w-4 text-white" />}</div>
-                      <input type="checkbox" className="hidden" checked={activeCategory === cat} onChange={() => setActiveCategory(cat)} />
-                      <span className={cn("text-sm font-bold transition-colors", activeCategory === cat ? "text-slate-900" : "text-slate-500 group-hover:text-slate-900")}>{cat}</span>
+                    <label key={cat.value} className="flex items-center justify-between cursor-pointer group">
+                      <span className={cn("text-sm transition-colors", activeCategory === cat.value ? "text-slate-900 font-black" : "text-slate-500 font-medium group-hover:text-slate-900")}>{cat.label}</span>
+                      <input type="checkbox" className="hidden" checked={activeCategory === cat.value} onChange={() => setActiveCategory(cat.value)} />
                     </label>
                   ))}
                 </div>
               </div>
 
               {/* Precio */}
-              <div className="space-y-6">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Precio Máximo (S/.)</p>
-                <div className="space-y-4">
+              <div className="space-y-4 pb-6 border-b border-slate-200">
+                <div className="flex items-center justify-between cursor-pointer">
+                  <p className="text-sm font-bold text-slate-900">Precio Máximo</p>
+                  <ChevronDown className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div className="space-y-4 pt-2">
                   <input
                     type="range"
                     min="0"
@@ -197,11 +220,11 @@ export function JobSearchPage() {
                     step="50"
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(parseInt(e.target.value))}
-                    className="w-full h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                    className="w-full h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer accent-emerald-500"
                   />
-                  <div className="flex justify-between text-[11px] font-black text-slate-900">
+                  <div className="flex justify-between text-xs font-bold text-slate-500">
                     <span>S/0</span>
-                    <span className="bg-emerald-50 px-2 py-1 rounded text-emerald-700 underline underline-offset-4">S/.{maxPrice}</span>
+                    <span className="text-emerald-700">S/.{maxPrice}</span>
                   </div>
                 </div>
               </div>
@@ -222,7 +245,12 @@ export function JobSearchPage() {
               <div className="flex flex-col items-center justify-center py-24 space-y-4"><Loader2 className="h-8 w-8 text-emerald-500 animate-spin" /><p className="text-slate-400 font-bold">Actualizando marketplace...</p></div>
             ) : paginatedProjects.length > 0 ? (
               <div className="space-y-6">
-                {paginatedProjects.map(project => <JobCard key={project.id} project={project} />)}
+                {paginatedProjects.map(project => {
+                  const projectId = project.id || (project as any).project_id || (project as any)._id;
+                  const match = recommendations.find(r => r.jobId === projectId);
+                  const hasApplied = applications.some((app: any) => app.project_id === projectId);
+                  return <JobCard key={projectId} project={project} matchScore={match?.score} hasApplied={hasApplied} />;
+                })}
 
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
@@ -251,7 +279,7 @@ export function JobSearchPage() {
   );
 }
 
-function JobCard({ project }: { project: Project }) {
+function JobCard({ project, matchScore, hasApplied }: { project: Project, matchScore?: number, hasApplied?: boolean }) {
   const navigate = useNavigate();
   const projectId = project.id || (project as any).project_id || (project as any)._id;
 
@@ -260,62 +288,86 @@ function JobCard({ project }: { project: Project }) {
   };
 
   const budget = project.budget || 0;
-  const company = project.company_name || "Empleador Confidencial";
+  const company = project.company_name || project.employer_name || "Empleador Confidencial";
+  
+  const statusText = project.status === 'active' ? 'Abierto' :
+                     project.status === 'in_progress' ? 'En Progreso' :
+                     project.status === 'pending' ? 'Pendiente' : 
+                     project.status === 'completed' ? 'Completado' : 'Abierto';
+
+  const createdDate = project.created_at ? new Date(project.created_at) : new Date();
+  const daysAgo = Math.floor((new Date().getTime() - createdDate.getTime()) / (1000 * 3600 * 24));
+  const timeAgoText = daysAgo === 0 ? 'hace unas horas' : `hace ${daysAgo} día${daysAgo !== 1 ? 's' : ''}`;
 
   return (
     <div
       onClick={handleNavigate}
-      className="bg-white rounded-xl p-6 md:p-8 border border-slate-100 shadow-sm hover:shadow-lg hover:translate-y-[-4px] transition-all group cursor-pointer relative overflow-hidden"
+      className="bg-white rounded-[20px] p-6 border border-slate-200 hover:border-emerald-200 transition-all group cursor-pointer"
     >
-      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500 transition-all duration-500" />
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="shrink-0 h-16 w-16 md:h-20 md:w-20 rounded-lg bg-slate-900 flex items-center justify-center shadow-sm overflow-hidden group-hover:scale-105 transition-transform duration-500">
-          <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${company}&backgroundColor=0f172a`} alt={company} />
-        </div>
-        <div className="flex-1 space-y-4">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h4 className="text-xl font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors duration-300">{project.title}</h4>
-                <div className="h-2 w-2 rounded-full bg-emerald-500" />
-              </div>
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                <span className="text-slate-900">{company}</span>
-                <span>•</span>
-                <span className="text-emerald-600 font-black">Abierto para postular</span>
-              </div>
+      <div className="flex flex-col gap-5">
+        {/* Top Header Row */}
+        <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
+          <div className="flex items-start gap-4">
+            <div className="shrink-0 h-14 w-14 rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-100">
+              <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${company}&backgroundColor=0f172a`} alt={company} className="h-full w-full object-cover" />
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <p className="text-lg font-black text-slate-900">S/.{budget}</p>
+            <div className="space-y-1 mt-0.5">
+              <h4 className="text-[19px] font-bold text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors duration-300">
+                {project.title}
+              </h4>
+              <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
+                <Building2 className="h-4 w-4" />
+                <span>{company}</span>
+                <span>•</span>
+                <span className={cn("font-bold", project.status === 'active' || project.status === 'open' || !project.status ? "text-emerald-600" : "text-slate-500")}>{statusText}</span>
+                <span>•</span>
+                <span>{timeAgoText}</span>
+              </div>
             </div>
           </div>
-          <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-2">{project.description}</p>
-          <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-slate-50">
-            <div className="flex flex-wrap gap-2">
-              {(project.skills || []).slice(0, 4).map((skill, idx) => {
-                const skillName = typeof skill === "string" ? skill : skill.skill_name;
-                return (
-                  <span key={idx} className="px-3 py-1.5 rounded-lg bg-slate-50 text-slate-500 text-[9px] font-black uppercase tracking-widest border border-slate-100 group-hover:border-emerald-100 group-hover:bg-emerald-50/30 transition-colors">
-                    {skillName}
-                  </span>
-                );
-              })}
-            </div>
+          
+          <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
+            {matchScore !== undefined && matchScore > 0 && (
+              <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-none">
+                <CheckCircle2 className="h-3.5 w-3.5" /> {(matchScore * 100).toFixed(0)}% de Coincidencia
+              </Badge>
+            )}
+            <p className="text-[22px] font-black text-slate-900">S/.{budget}</p>
+          </div>
+        </div>
+
+        {/* Description */}
+        <p className="text-[15px] text-slate-500 font-medium leading-relaxed">
+          {project.description}
+        </p>
+
+        {/* Bottom Row */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-1">
+          <div className="flex flex-wrap gap-2">
+            {(project.skills || []).slice(0, 4).map((skill, idx) => {
+              const skillName = typeof skill === "string" ? skill : skill.skill_name;
+              return (
+                <span key={idx} className="px-4 py-1.5 rounded-lg bg-slate-50 text-slate-600 text-sm font-medium border border-slate-200">
+                  {skillName}
+                </span>
+              );
+            })}
+          </div>
+          {hasApplied ? (
+            <span className="w-full sm:w-auto bg-slate-50 text-slate-600 font-bold px-6 h-11 flex items-center justify-center rounded-lg border border-slate-200 cursor-default">
+              Postulaste
+            </span>
+          ) : (
             <Button
               onClick={(e) => {
                 e.stopPropagation();
-                const projectId = project.id || (project as any).project_id || (project as any)._id;
-                if (projectId) {
-                  navigate(`/projects/${projectId}`);
-                } else {
-                  console.error("No project ID found", project);
-                }
+                if (projectId) navigate(`/projects/${projectId}`);
               }}
-              className="bg-slate-900 hover:bg-emerald-600 text-white font-black px-8 h-12 rounded-md transition-all active:scale-95 shadow-sm"
+              className="w-full sm:w-auto bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-6 h-11 rounded-md transition-colors shadow-none hover:shadow-none border-0"
             >
-              Ver Detalles
+              Postular ahora
             </Button>
-          </div>
+          )}
         </div>
       </div>
     </div>
