@@ -1,7 +1,6 @@
-import React from "react";
 import { Users, CheckCircle2, XCircle, Award, Loader2, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { Button, Badge, cn } from "@chambitas/ui";
-import { EmployerProject, ApplicationData } from "../types";
+import type { EmployerProject, ApplicationData } from "../types";
 
 interface ApplicantsListProps {
   project: EmployerProject;
@@ -71,8 +70,8 @@ export function ApplicantsList({
                   app.status === 'accepted'
                     ? "bg-emerald-50 border-emerald-200"
                     : app.status === 'rejected'
-                    ? "bg-red-50 border-red-100 opacity-60"
-                    : "bg-white border-slate-100 hover:border-emerald-200 shadow-sm group"
+                      ? "bg-red-50 border-red-100 opacity-60"
+                      : "bg-white border-slate-100 hover:border-emerald-200 shadow-sm group"
                 )}
               >
                 {app.status === 'accepted' && (
