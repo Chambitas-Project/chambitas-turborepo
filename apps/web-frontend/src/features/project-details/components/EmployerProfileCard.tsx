@@ -1,0 +1,60 @@
+import { CheckCircle2 } from "lucide-react";
+
+interface EmployerProfileCardProps {
+  companyName: string;
+  employerName: string;
+  employerProfile: any;
+  employerProjectsCount: number;
+  employerReviews: any[];
+}
+
+export function EmployerProfileCard({
+  companyName,
+  employerName,
+  employerProfile,
+  employerProjectsCount,
+  employerReviews,
+}: EmployerProfileCardProps) {
+  return (
+    <div className="space-y-8">
+      <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Acerca del Empleador</h3>
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="h-14 w-14 rounded-lg bg-slate-900 flex items-center justify-center text-white font-black text-xl shadow-sm">
+            <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${companyName}&backgroundColor=0f172a`} alt="Avatar" className="rounded-lg" />
+          </div>
+          <div className="space-y-0.5">
+            <h4 className="text-sm font-bold text-slate-900">{employerProfile?.full_name || employerName}</h4>
+            <div className="flex items-center gap-1.5 text-emerald-600">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{employerProfile?.company_name || companyName}</span>
+              <CheckCircle2 className="h-3 w-3" />
+              <span className="text-[9px] font-black uppercase tracking-widest">Verificado</span>
+            </div>
+          </div>
+        </div>
+
+        {(employerProfile?.bio || employerProfile?.description) && (
+          <p className="text-xs text-slate-600 font-medium leading-relaxed line-clamp-3">
+            {employerProfile.bio || employerProfile.description}
+          </p>
+        )}
+
+        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+          <div className="text-center p-2 rounded-md bg-slate-50">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Proyectos</p>
+            <p className="text-lg font-black text-slate-900">{employerProjectsCount}</p>
+          </div>
+          <div className="text-center p-2 rounded-md bg-slate-50">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Reseñas</p>
+            <p className="text-lg font-black text-slate-900">
+              {employerReviews.length > 0
+                ? (employerReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / employerReviews.length).toFixed(1)
+                : 'N/A'}
+              <span className="text-[10px] text-slate-500 font-medium ml-1">({employerReviews.length})</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
