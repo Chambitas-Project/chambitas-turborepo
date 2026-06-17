@@ -378,6 +378,13 @@ export class ProfileService implements OnModuleInit {
           }
         }
 
+        let resolvedSkills: any[] | null = null;
+        if (data.skill_inputs && Array.isArray(data.skill_inputs)) {
+          this.logger.log(`[UpdateProfile] Resolving skills for student ${userId}`);
+          resolvedSkills = await this.resolveSkillInputs(data.skill_inputs);
+          updateData.skills = resolvedSkills.map((s: any) => s.id);
+        }
+
         const { error } = await supabase
           .from('student_profiles')
           .update(updateData)
@@ -386,10 +393,7 @@ export class ProfileService implements OnModuleInit {
         if (error) throw new RpcException({ code: status.INTERNAL, message: error.message });
 
         // Update skills if provided
-        if (data.skill_inputs && Array.isArray(data.skill_inputs)) {
-          this.logger.log(`[UpdateProfile] Updating skills for student ${userId}`);
-          const resolvedSkills = await this.resolveSkillInputs(data.skill_inputs);
-          
+        if (resolvedSkills) {
           // Delete existing skills
           const { error: deleteError } = await supabase
             .from('student_skills')
