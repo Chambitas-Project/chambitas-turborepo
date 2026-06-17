@@ -8,7 +8,7 @@ COPY packages ./packages
 COPY apps/api-gateway ./apps/api-gateway
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @chambitas/gateway build
+RUN npx turbo run build --filter=@chambitas/gateway
 
 FROM node:22-alpine AS runner
 WORKDIR /app
@@ -17,6 +17,7 @@ ENV NODE_PATH=/app/apps/api-gateway/node_modules
 
 COPY --from=builder /app/apps/api-gateway/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/apps/api-gateway/node_modules ./apps/api-gateway/node_modules
 
 EXPOSE 3000

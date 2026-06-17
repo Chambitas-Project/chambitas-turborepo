@@ -1,27 +1,45 @@
 import { Controller, Post, Body, Res, Inject, OnModuleInit, UseGuards, Req } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { ApiTags, ApiOperation, ApiBody, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBody,
+  ApiResponse,
+  ApiBearerAuth
+} from '@nestjs/swagger';
 import { Response, Request } from 'express';
-import { RegisterDto, LoginDto, UpdateOnboardingDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from './dto/auth.dto';
 import { firstValueFrom } from 'rxjs';
 import { Public } from './decorators/public.decorator';
+import {
+  IAuthService,
+  RegisterResponse,
+  IProfileService,
+  AuthResponse
+} from '@chambitas/proto';
 
+const isProduction = process.env.NODE_ENV === 'production';
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  secure: isProduction,
+  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
   path: '/',
 };
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController implements OnModuleInit {
-  private authService: any;
+  private authService!: IAuthService;
+  private profileService!: IProfileService;
 
-  constructor(@Inject('AUTH_PACKAGE') private client: ClientGrpc) {}
+  constructor(
+    @Inject('AUTH_PACKAGE') private client: ClientGrpc,
+    @Inject('PROFILE_PACKAGE') private profileClient: ClientGrpc,
+  ) { }
 
   onModuleInit() {
-    this.authService = this.client.getService('AuthService');
+    this.authService = this.client.getService<IAuthService>('AuthService');
+    this.profileService = this.profileClient.getService<IProfileService>('ProfileService');
   }
 
   @Public()
@@ -29,8 +47,8 @@ export class AuthController implements OnModuleInit {
   @ApiOperation({ summary: 'Registrar un nuevo usuario' })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente' })
-  async register(@Body() registerDto: RegisterDto) {
-    const response: any = await firstValueFrom(this.authService.Register(registerDto));
+  async register(@Body() registerDto: RegisterDto): Promise<RegisterResponse> {
+    const response = await firstValueFrom(this.authService.Register(registerDto));
     return response;
   }
 
@@ -40,8 +58,8 @@ export class AuthController implements OnModuleInit {
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'Sesión iniciada exitosamente' })
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const response: any = await firstValueFrom(this.authService.Login(loginDto));
-    
+    const response = await firstValueFrom(this.authService.Login(loginDto));
+
     // Extraer access_token y configurar cookie
     if (response.accessToken) {
       res.cookie('access_token', response.accessToken, COOKIE_OPTIONS);
@@ -55,8 +73,8 @@ export class AuthController implements OnModuleInit {
     };
   }
 
+  @Public()
   @Post('logout')
-  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Cerrar sesión' })
   @ApiResponse({ status: 200, description: 'Sesión cerrada exitosamente' })
   async logout(@Res({ passthrough: true }) res: Response) {
@@ -64,31 +82,29 @@ export class AuthController implements OnModuleInit {
     return { success: true };
   }
 
-  @Post('onboarding')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Actualizar perfil de onboarding' })
-  @ApiBody({ type: UpdateOnboardingDto })
-  @ApiResponse({ status: 200, description: 'Perfil actualizado exitosamente' })
-  async updateOnboarding(@Body() dto: UpdateOnboardingDto, @Req() req: Request) {
-    // El Gateway debe extraer el user_id e inyectarlo
-    // Suponiendo que JwtAuthGuard inyecta el usuario en req.user
-    const user = (req as any).user;
-    const userId = user?.id; // Ajustar según cómo JwtAuthGuard inyecta el usuario
-    const role = user?.role;
+  @Public()
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiResponse({ status: 200, description: 'Correo de recuperación enviado' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<AuthResponse> {
+    return firstValueFrom(this.authService.ForgotPassword(dto));
+  }
 
-    if (!userId) {
-      throw new Error('Usuario no autenticado');
-    }
+  @Public()
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Restablecer contraseña' })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiResponse({ status: 200, description: 'Contraseña actualizada' })
+  async resetPassword(@Body() dto: ResetPasswordDto, @Req() req: Request): Promise<AuthResponse> {
+    // Si no viene token en el body, intentamos sacarlo de la cookie (si el usuario ya fue redirigido)
+    const token = dto.access_token || req.cookies?.access_token;
 
-    const requestPayload = {
-      ...dto,
-      userId,
-      role,
-    };
-
-    const response: any = await firstValueFrom(
-      this.authService.UpdateOnboarding(requestPayload)
+    return firstValueFrom(
+      this.authService.ResetPassword({
+        password: dto.password,
+        access_token: token,
+      })
     );
-    return response;
   }
 }

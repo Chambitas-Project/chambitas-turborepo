@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package ml_engine;
+
+service MLEngineService {
+  // Predicción técnica (Solo matemáticas e IA)
+  rpc PredictMatch (PredictMatchRequest) returns (PredictMatchResponse) {}
+  
+  // Predicción por lotes (Optimizado para rendimiento)
+  rpc PredictBatch (PredictBatchRequest) returns (PredictBatchResponse) {}
+
+  // Administración del motor
+  rpc TrainModel (TrainModelRequest) returns (TrainModelResponse) {}
+  rpc GetModelStatus (GetModelStatusRequest) returns (GetModelStatusResponse) {}
+
+  // Webhooks asíncronos para reconstrucción relacional
+  rpc GenerateProjectEmbedding (ProjectEmbeddingRequest) returns (EmbeddingResponse) {}
+  rpc GenerateStudentEmbedding (StudentEmbeddingRequest) returns (EmbeddingResponse) {}
+  rpc GenerateSkillEmbedding (SkillEmbeddingRequest) returns (EmbeddingResponse) {}
+}
+
+message ProjectEmbeddingRequest {
+  string project_id = 1;
+}
+
+message StudentEmbeddingRequest {
+  string student_id = 1;
+}
+
+message SkillEmbeddingRequest {
+  string skill_id = 1;
+}
+
+message EmbeddingResponse {
+  bool success = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message StudentMLData {
+  int32 ciclo = 1;
+  double gpa = 2;
+  bool isGpaVerified = 3;
+  string hSkills = 4;
+  string sSkills = 5;
+  int32 hoursAvailable = 6;
+  string availabilityJson = 7;
+  string career = 8;
+  string id = 9;
+}
+
+message ProjectMLData {
+  string category = 1;
+  int32 maxHours = 2;
+  string scheduleJson = 3;
+  string reqHSkills = 4;
+  string complexity = 5;
+  string reqJson = 6;
+  string id = 7;
+  string title = 8;
+}
+
+message PredictMatchRequest {
+  StudentMLData student = 1;
+  ProjectMLData project = 2;
+}
+
+message PredictBatchRequest {
+  StudentMLData student = 1;
+  repeated ProjectMLData projects = 2;
+}
+
+message PredictBatchResponse {
+  repeated PredictMatchResponse results = 1;
+}
+
+message PredictMatchResponse {
+  double score = 1;         // Probabilidad del Random Forest
+  int32 cluster = 2;       // Clúster de K-Means
+  double skillMatchRatio = 3;
+  bool mandatoryMatch = 4;
+}
+
+message TrainModelRequest {
+  int32 samples = 1;
+  string scenario = 2;
+  string baseVersion = 3;
+}
+
+message TrainModelResponse {
+  bool success = 1;
+  string versionTag = 2;
+  string message = 3;
+}
+
+message GetModelStatusRequest {}
+
+message GetModelStatusResponse {
+  string versionTag = 1;
+  double f1Score = 2;
+  double precision = 3;
+  double recall = 4;
+  string scenario = 5;
+  string trainedAt = 6;
+}

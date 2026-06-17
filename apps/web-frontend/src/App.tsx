@@ -1,13 +1,13 @@
-import { MainLayout } from './layouts/MainLayout'
-import { LandingPage } from './pages/LandingPage'
-import './index.css'
+import { RouterProvider } from "react-router-dom";
+import { router } from "./routes";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
-    <MainLayout>
-      <LandingPage />
-    </MainLayout>
-  )
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

@@ -52,3 +52,14 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+*.tsbuildinfo.old
+
+# IDEs
+.vscode/
+.idea/
+
+# Supabase CLI (local config/migrations)
+/supabase/

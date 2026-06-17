@@ -1,26 +1,40 @@
-import { Controller, UseFilters } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common';
+import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
-import { GlobalRpcExceptionFilter } from '@chambitas/common';
+import { CurrentUser, IUserContext } from '@chambitas/common';
 
 @Controller()
-@UseFilters(GlobalRpcExceptionFilter)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @GrpcMethod('AuthService', 'Register')
-  async register(data: any, metadata: any, call: any) {
+  async register(@Payload() data: any, @CurrentUser() user: IUserContext) {
     return this.authService.register(data);
   }
 
   @GrpcMethod('AuthService', 'Login')
-  async login(data: any, metadata: any, call: any) {
+  async login(@Payload() data: any) {
+    // El Login es público, no requiere CurrentUser
     return this.authService.login(data);
   }
 
   @GrpcMethod('AuthService', 'UpdateOnboarding')
-  async updateOnboarding(data: any, metadata: any, call: any) {
-    // correlationId and other metadata can be found in data if GrpcContextInterceptor is used
-    return this.authService.updateOnboarding(data);
+  async updateOnboarding(@Payload() data: any, @CurrentUser() user: IUserContext) {
+    return this.authService.updateOnboarding({ ...data, userId: user.id });
+  }
+
+  @GrpcMethod('AuthService', 'ListUniversities')
+  async listUniversities() {
+    return this.authService.listUniversities();
+  }
+
+  @GrpcMethod('AuthService', 'ForgotPassword')
+  async forgotPassword(@Payload() data: any) {
+    return this.authService.forgotPassword(data);
+  }
+
+  @GrpcMethod('AuthService', 'ResetPassword')
+  async resetPassword(@Payload() data: any) {
+    return this.authService.resetPassword(data);
   }
 }

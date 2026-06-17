@@ -3,20 +3,17 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { lastValueFrom } from 'rxjs';
-
-interface MediaService {
-  uploadFile(data: { fileBuffer: any, mimeType: string, folder: string }): any;
-}
+import { IMediaService } from '@chambitas/proto';
 
 @ApiTags('Media')
 @Controller('media')
 export class MediaController implements OnModuleInit {
-  private mediaService!: MediaService;
+  private mediaService!: IMediaService;
 
   constructor(@Inject('MEDIA_PACKAGE') private client: ClientGrpc) {}
 
   onModuleInit() {
-    this.mediaService = this.client.getService<MediaService>('MediaService');
+    this.mediaService = this.client.getService<IMediaService>('MediaService');
   }
 
   @Post('upload')
@@ -67,9 +64,9 @@ export class MediaController implements OnModuleInit {
 
     try {
       const response = await lastValueFrom(
-        this.mediaService.uploadFile({
-          fileBuffer: file.buffer,
-          mimeType: file.mimetype,
+        this.mediaService.UploadFile({
+          file_buffer: file.buffer,
+          mime_type: file.mimetype,
           folder,
         })
       );

@@ -1,0 +1,244 @@
+syntax = "proto3";
+
+package marketplace;
+
+service MarketplaceService {
+  // Projects
+  rpc CreateProject (CreateProjectRequest) returns (Project) {}
+  rpc GetProject (GetProjectRequest) returns (Project) {}
+  rpc ListProjects (ListProjectsRequest) returns (ListProjectsResponse) {}
+  rpc UpdateProject (UpdateProjectRequest) returns (Project) {}
+  rpc DeleteProject (DeleteProjectRequest) returns (DeleteProjectResponse) {}
+  rpc CompleteProject (CompleteProjectRequest) returns (CompleteProjectResponse) {}
+
+  // Applications
+  rpc CreateApplication (CreateApplicationRequest) returns (Application) {}
+  rpc GetApplication (GetApplicationRequest) returns (Application) {}
+  rpc ListStudentApplications (ListStudentApplicationsRequest) returns (ListApplicationsResponse) {}
+  rpc ListProjectApplications (ListProjectApplicationsRequest) returns (ListApplicationsResponse) {}
+  rpc UpdateApplicationStatus (UpdateApplicationStatusRequest) returns (Application) {}
+  rpc DeleteApplication (DeleteApplicationRequest) returns (DeleteApplicationResponse) {}
+  // Reviews
+  rpc CreateReview (CreateReviewRequest) returns (Review) {}
+  rpc ListReviews (ListReviewsRequest) returns (ListReviewsResponse) {}
+  rpc UpdateReview (UpdateReviewRequest) returns (Review) {}
+  rpc DeleteReview (DeleteReviewRequest) returns (Review) {}
+}
+
+message Project {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string employer_id = 4;
+  double budget = 5;
+  repeated string requirements = 6;
+  string status = 7;
+  string service_category = 8;
+  repeated string university_ids = 9;
+  string deadline = 10;
+  int32 max_hours_week = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  string deleted_at = 14;
+  repeated SkillRequirement skills = 15;
+  optional string schedule_constraints = 16;
+  optional string company_name = 17;
+  optional double match_score = 18;
+}
+
+message SkillRequirement {
+  string skill_id = 1;
+  optional string skill_name = 2;
+  int32 min_proficiency = 3;
+  bool mandatory = 4;
+}
+
+message CreateProjectRequest {
+  string title = 1;
+  string description = 2;
+  string employer_id = 3;
+  double budget = 4;
+  repeated string requirements = 5;
+  string service_category = 6;
+  repeated string university_ids = 7;
+  string deadline = 8;
+  int32 max_hours_week = 9;
+  repeated SkillRequirement skills = 10;
+  optional string schedule_constraints = 11;
+}
+
+message GetProjectRequest {
+  string id = 1;
+}
+
+message ListProjectsRequest {
+  optional string employer_id = 1;
+  optional string status = 2;
+  optional string service_category = 3;
+  optional string university_id = 4;
+  optional int32 limit = 5;
+  optional int32 offset = 6;
+}
+
+message ListProjectsResponse {
+  repeated Project projects = 1;
+  int32 total = 2;
+}
+
+message UpdateProjectRequest {
+  string id = 1;
+  optional string title = 2;
+  optional string description = 3;
+  optional double budget = 4;
+  repeated string requirements = 5;
+  optional string status = 6;
+  optional string service_category = 7;
+  repeated string university_ids = 8;
+  optional string deadline = 9;
+  optional int32 max_hours_week = 10;
+  repeated SkillRequirement skills = 11;
+  optional string schedule_constraints = 12;
+}
+
+message DeleteProjectRequest {
+  string id = 1;
+}
+
+message DeleteProjectResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Applications
+
+message Application {
+  string id = 1;
+  string project_id = 2;
+  string student_id = 3;
+  string status = 4;
+  string cover_note = 5;
+  optional string match_id = 6;
+  string applied_at = 7;
+  string created_at = 8;
+  string updated_at = 9;
+  string deleted_at = 10;
+  
+  // Extended info for lists
+  optional string student_name = 11;
+  optional string student_career = 12;
+  optional int32 student_academic_cycle = 13;
+  optional double match_score = 14;
+  optional string project_title = 15;
+  repeated SkillInfo student_skills = 16;
+}
+
+message SkillInfo {
+  string id = 1;
+  string name = 2;
+  int32 proficiency_level = 3;
+  bool verified = 4;
+}
+
+message CreateApplicationRequest {
+  string project_id = 1;
+  string student_id = 2;
+  string cover_note = 3;
+  optional string match_id = 4;
+}
+
+message GetApplicationRequest {
+  string id = 1;
+}
+
+message ListStudentApplicationsRequest {
+  string student_id = 1;
+  optional int32 limit = 2;
+  optional int32 offset = 3;
+}
+
+message ListProjectApplicationsRequest {
+  string project_id = 1;
+  optional int32 limit = 2;
+  optional int32 offset = 3;
+}
+
+message ListApplicationsResponse {
+  repeated Application applications = 1;
+  int32 total = 2;
+}
+
+message UpdateApplicationStatusRequest {
+  string id = 1;
+  string status = 2;
+}
+
+message DeleteApplicationRequest {
+  string id = 1;
+}
+
+message DeleteApplicationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CompleteProjectRequest {
+  string id = 1;
+}
+
+message CompleteProjectResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Reviews
+
+message Review {
+  string id = 1;
+  string application_id = 2;
+  string reviewer_id = 3;
+  string reviewer_role = 4;
+  int32 rating = 5;
+  string comment = 6;
+  string created_at = 7;
+  optional string reviewer_name = 8;
+}
+
+message CreateReviewRequest {
+  string application_id = 1;
+  string reviewer_id = 2;
+  int32 rating = 3;
+  string comment = 4;
+}
+
+message ListReviewsRequest {
+  optional string student_id = 1;
+  optional string employer_id = 2;
+  optional string project_id = 3;
+}
+
+message ListReviewsResponse {
+  repeated Review reviews = 1;
+  float average_rating = 2;
+}
+
+message UpdateReviewRequest {
+  string id = 1;
+  string reviewer_id = 2; // Proveniente del metadata
+  optional int32 rating = 3;
+  optional string comment = 4;
+}
+
+message DeleteReviewRequest {
+  string id = 1;
+  string reviewer_id = 2; // Proveniente del metadata
+}
+
+message University {
+  string id = 1;
+  string name = 2;
+  string email_domain = 3;
+  string slug = 4;
+  bool is_active = 5;
+  optional string logo_url = 6;
+}
+
