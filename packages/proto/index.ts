@@ -475,6 +475,7 @@ export interface DeleteReviewRequest {
 export interface GetRecommendationsRequest {
   userId: string;
   limit?: number;
+  page?: number;
 }
 
 export interface Recommendation {
@@ -645,4 +646,16 @@ export interface INotificationService {
 
 export interface IAnalyticsService {
   TrackEvent(data: TrackEventRequest, metadata?: any): Observable<TrackEventResponse>;
+}
+
+export interface EmbeddingResponse {
+  success: boolean;
+  status: string;
+  message: string;
+}
+
+export interface IMLEngineService {
+  GenerateProjectEmbedding(request: { project_id: string }, metadata?: any): Observable<EmbeddingResponse>;
+  GenerateStudentEmbedding(request: { student_id: string }, metadata?: any): Observable<EmbeddingResponse>;
+  GenerateSkillEmbedding(request: { skill_id: string }, metadata?: any): Observable<EmbeddingResponse>;
 }

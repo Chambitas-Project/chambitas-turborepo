@@ -44,9 +44,18 @@ export interface PredictBatchResponse {
   results: PredictMatchResponse[];
 }
 
+export interface EmbeddingResponse {
+  success: boolean;
+  status: string;
+  message: string;
+}
+
 export interface MLEngineServiceClient {
   predictMatch(request: PredictMatchRequest): Observable<PredictMatchResponse>;
   predictBatch(request: PredictBatchRequest): Observable<PredictBatchResponse>;
   trainModel(request: any): Observable<any>;
   getModelStatus(request: any): Observable<any>;
+  generateProjectEmbedding(request: { project_id: string }): Observable<EmbeddingResponse>;
+  generateStudentEmbedding(request: { student_id: string }): Observable<EmbeddingResponse>;
+  generateSkillEmbedding(request: { skill_id: string }): Observable<EmbeddingResponse>;
 }

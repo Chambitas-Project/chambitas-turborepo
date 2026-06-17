@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException, Inject, OnModuleInit } from '@nestjs/common';
 import { 
   CreateProjectRequest, 
   Project, 
@@ -9,21 +9,30 @@ import {
   DeleteProjectRequest, 
   DeleteProjectResponse,
   CompleteProjectRequest,
-  CompleteProjectResponse
+  CompleteProjectResponse,
+  IMLEngineService
 } from '@chambitas/proto';
+import { firstValueFrom } from 'rxjs';
+import { ClientGrpc } from '@nestjs/microservices';
 import { ProjectsRepository } from './projects.repository';
 import { ApplicationsRepository } from '../applications/applications.repository';
 import { Tables, SupabaseService, Database } from '@chambitas/supabase';
 
 @Injectable()
-export class ProjectsService {
+export class ProjectsService implements OnModuleInit {
   private readonly logger = new Logger(ProjectsService.name);
+  private mlEngine!: IMLEngineService;
 
   constructor(
     private readonly projectsRepository: ProjectsRepository,
     private readonly applicationsRepository: ApplicationsRepository,
     private readonly supabaseService: SupabaseService,
+    @Inject('ML_ENGINE_PACKAGE') private readonly mlClient: ClientGrpc,
   ) {}
+
+  onModuleInit() {
+    this.mlEngine = this.mlClient.getService<IMLEngineService>('MLEngineService');
+  }
 
   private get supabase() {
     return this.supabaseService.getClient<Database>();
@@ -64,6 +73,10 @@ export class ProjectsService {
       max_hours_week: request.max_hours_week,
       schedule_constraints: request.schedule_constraints ? JSON.parse(request.schedule_constraints) : undefined,
     }, request.university_ids, request.skills);
+
+    firstValueFrom(this.mlEngine.GenerateProjectEmbedding({ project_id: project.id }))
+      .then(() => this.logger.log(`[Webhook] Vectorización disparada para el nuevo proyecto ${project.id}`))
+      .catch(e => this.logger.error(`[Webhook] Fallo al alertar al ML Engine: ${e.message}`));
 
     return this.mapToProto(project);
   }
@@ -112,6 +125,10 @@ export class ProjectsService {
       schedule_constraints: request.schedule_constraints ? JSON.parse(request.schedule_constraints) : undefined,
     }, request.university_ids, request.skills);
 
+    firstValueFrom(this.mlEngine.GenerateProjectEmbedding({ project_id: project.id }))
+      .then(() => this.logger.log(`[Webhook] Re-vectorización disparada para proyecto editado ${project.id}`))
+      .catch(e => this.logger.error(`[Webhook] Fallo al alertar al ML Engine: ${e.message}`));
+
     return this.mapToProto(project);
   }
 
@@ -148,7 +165,7 @@ export class ProjectsService {
     };
   }
 
-  private mapToProto(project: Tables<'projects'> & { university_ids: string[]; skills: any[] }): Project {
+  private mapToProto(project: Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string }): Project {
     return {
       id: project.id,
       title: project.title,
@@ -163,6 +180,7 @@ export class ProjectsService {
       max_hours_week: project.max_hours_week || 0,
       skills: project.skills || [],
       schedule_constraints: project.schedule_constraints ? JSON.stringify(project.schedule_constraints) : '',
+      company_name: project.company_name || project.employer_name || '',
       created_at: project.created_at || '',
       updated_at: project.updated_at || '',
       deleted_at: project.deleted_at || '',

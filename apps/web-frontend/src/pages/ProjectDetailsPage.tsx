@@ -58,22 +58,28 @@ export function ProjectDetailsPage() {
   const navigate = useNavigate();
 
   const [project, setProject] = useState<Project | null>(null);
+  const [employerProfile, setEmployerProfile] = useState<any>(null);
+  const [employerProjectsCount, setEmployerProjectsCount] = useState<number>(0);
+  const [employerReviews, setEmployerReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [isSubmitting, setSubmitting] = useState(false);
   const [application, setApplication] = useState<any>(null);
+  const [matchScore, setMatchScore] = useState<number | undefined>(undefined);
   const [coverNote, setCoverNote] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProjectAndApplication = async () => {
       try {
-        const [projectRes, appsRes] = await Promise.all([
+        const [projectRes, appsRes, recsRes] = await Promise.all([
           apiClient.get(`/marketplace/projects/${id}`),
-          apiClient.get(`/marketplace/applications/my-applications`)
+          apiClient.get(`/marketplace/applications/my-applications`).catch(() => ({ data: [] })),
+          apiClient.get(`/matching/recommendations/me`).catch(() => ({ data: [] }))
         ]);
 
-        setProject(projectRes.data);
+        const projData = projectRes.data;
+        setProject(projData);
 
         const myApps = Array.isArray(appsRes.data) ? appsRes.data : (appsRes.data?.applications || []);
         const myApp = myApps.find((app: any) => app.project_id === id);
@@ -81,6 +87,30 @@ export function ProjectDetailsPage() {
         if (myApp) {
           setApplication(myApp);
         }
+
+        const recs = Array.isArray(recsRes.data) ? recsRes.data : (recsRes.data?.recommendations || []);
+        const currentMatch = recs.find((r: any) => r.jobId === id);
+        if (currentMatch) {
+          setMatchScore(currentMatch.score);
+        }
+
+        // Fetch employer profile and stats
+        if (projData.employer_id) {
+          try {
+            const [profileRes, projectsRes, reviewsRes] = await Promise.all([
+              apiClient.get(`/profile/id/${projData.employer_id}`).catch(() => ({ data: null })),
+              apiClient.get(`/marketplace/projects?employerId=${projData.employer_id}`).catch(() => ({ data: { projects: [] } })),
+              apiClient.get(`/marketplace/reviews?employer_id=${projData.employer_id}`).catch(() => ({ data: { reviews: [] } }))
+            ]);
+            
+            setEmployerProfile(profileRes.data);
+            setEmployerProjectsCount(Array.isArray(projectsRes.data?.projects) ? projectsRes.data.projects.length : (Array.isArray(projectsRes.data) ? projectsRes.data.length : 0));
+            setEmployerReviews(Array.isArray(reviewsRes.data?.reviews) ? reviewsRes.data.reviews : (Array.isArray(reviewsRes.data) ? reviewsRes.data : []));
+          } catch (err) {
+            console.error("No se pudo cargar la información completa del empleador");
+          }
+        }
+
       } catch (err) {
         console.error("Error fetching project or applications:", err);
         setError("No pudimos cargar los detalles del proyecto.");
@@ -135,7 +165,7 @@ export function ProjectDetailsPage() {
   );
 
   const timeAgo = formatTimeAgo(project.created_at);
-  const companyName = project.company_name || "Empleador Confidencial";
+  const companyName = project.company_name || project.employer_name || "Empleador Confidencial";
   const employerName = project.employer_name || "Usuario Anónimo";
 
   return (
@@ -173,9 +203,17 @@ export function ProjectDetailsPage() {
                     <Clock className="h-4 w-4" />
                     <span className="text-xs font-black uppercase tracking-[0.2em]">Publicado {timeAgo}</span>
                   </div>
-                  <h1 className="text-2xl md:text-3xl font-black leading-tight tracking-tight text-slate-900">
+                  <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">
                     {project.title}
                   </h1>
+                  
+                  {matchScore !== undefined && matchScore > 0 && (
+                    <div className="flex items-center mt-2">
+                      <Badge className="bg-emerald-100 text-emerald-700 font-black px-3 py-1 text-xs flex items-center gap-1.5 rounded-md">
+                        <Zap className="h-3.5 w-3.5" /> MATCH {(matchScore * 100).toFixed(0)}%
+                      </Badge>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-8 shrink-0">
@@ -265,17 +303,41 @@ export function ProjectDetailsPage() {
           <div className="lg:col-span-4 2xl:col-span-3 bg-slate-50/50 border-l border-slate-100">
             <div className="sticky top-20 p-6 md:p-10 lg:pr-16 space-y-10">
               <div className="space-y-8">
-                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Publicado por</h3>
-                <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-900 font-black text-xl shadow-sm">
-                    {companyName[0]}
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Acerca del Empleador</h3>
+                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-lg bg-slate-900 flex items-center justify-center text-white font-black text-xl shadow-sm">
+                      <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${companyName}&backgroundColor=0f172a`} alt="Avatar" className="rounded-lg" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <h4 className="text-sm font-bold text-slate-900">{employerProfile?.full_name || employerName}</h4>
+                      <div className="flex items-center gap-1.5 text-emerald-600">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{employerProfile?.company_name || companyName}</span>
+                        <CheckCircle2 className="h-3 w-3" />
+                        <span className="text-[9px] font-black uppercase tracking-widest">Verificado</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-0.5">
-                    <h4 className="text-sm font-bold text-slate-900">{employerName}</h4>
-                    <div className="flex items-center gap-1.5 text-emerald-600">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{companyName}</span>
-                      <CheckCircle2 className="h-3 w-3" />
-                      <span className="text-[9px] font-black uppercase tracking-widest">Verificado</span>
+                  
+                  {(employerProfile?.bio || employerProfile?.description) && (
+                    <p className="text-xs text-slate-600 font-medium leading-relaxed line-clamp-3">
+                      {employerProfile.bio || employerProfile.description}
+                    </p>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                    <div className="text-center p-2 rounded-md bg-slate-50">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Proyectos</p>
+                      <p className="text-lg font-black text-slate-900">{employerProjectsCount}</p>
+                    </div>
+                    <div className="text-center p-2 rounded-md bg-slate-50">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Reseñas</p>
+                      <p className="text-lg font-black text-slate-900">
+                        {employerReviews.length > 0 
+                          ? (employerReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / employerReviews.length).toFixed(1) 
+                          : 'N/A'}
+                        <span className="text-[10px] text-slate-500 font-medium ml-1">({employerReviews.length})</span>
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -344,10 +406,10 @@ export function ProjectDetailsPage() {
 
                     <Button
                       type="submit"
-                      disabled={submitting || !coverNote.trim()}
+                      disabled={isSubmitting || !coverNote.trim()}
                       className="w-full bg-slate-900 hover:bg-black text-white font-bold py-4 rounded-md shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 group disabled:bg-slate-400 disabled:text-white"
                     >
-                      {submitting ? (
+                      {isSubmitting ? (
                         <Loader2 className="h-6 w-6 animate-spin text-white/50" />
                       ) : (
                         <>

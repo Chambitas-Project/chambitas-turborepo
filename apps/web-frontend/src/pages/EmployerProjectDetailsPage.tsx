@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Clock, Users, CheckCircle2, XCircle, Award, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Clock, Users, CheckCircle2, XCircle, Award, Loader2, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { Button, Badge, cn } from "@chambitas/ui";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { employerApi } from "../api/employer.api";
@@ -13,6 +13,7 @@ export function EmployerProjectDetailsPage() {
   const navigate = useNavigate();
   const [project, setProject] = useState<EmployerProject | null>(null);
   const [applicants, setApplicants] = useState<ApplicationData[]>([]);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessingId, setIsProcessingId] = useState<string | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
@@ -147,14 +148,14 @@ export function EmployerProjectDetailsPage() {
               <div className="flex items-center gap-2 pt-1">
                 <div className={cn(
                   "h-3 w-3 rounded-full animate-pulse",
-                  project.status === 'active' ? "bg-emerald-500" :
+                  project.status === 'open' ? "bg-emerald-500" :
                     project.status === 'in_progress' ? "bg-indigo-500" :
                       "bg-slate-400"
                 )} />
                 <p className="text-base font-black text-slate-900 uppercase">
-                  {project.status === 'active' ? 'Abierto' :
+                  {project.status === 'open' ? 'Activo' :
                     project.status === 'in_progress' ? 'En Progreso' :
-                      project.status === 'pending' ? 'Pendiente' : 'Completado'}
+                      project.status === 'draft' ? 'Borrador' : 'Completado'}
                 </p>
               </div>
             </div>
@@ -184,10 +185,10 @@ export function EmployerProjectDetailsPage() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-black text-slate-900">
-              {project.status === 'in_progress' || project.status === 'completed' ? 'Estudiante Seleccionado' : 'Postulantes'}
+              {project.status === 'in_progress' || project.status === 'closed' ? 'Estudiante Seleccionado' : 'Postulantes'}
             </h2>
             <Badge className="bg-emerald-50 text-emerald-700 font-black px-2.5 py-0.5 rounded-md">
-              {project.status === 'in_progress' || project.status === 'completed' ? '1' : applicants.length}
+              {project.status === 'in_progress' || project.status === 'closed' ? '1' : applicants.length}
             </Badge>
           </div>
         </div>
@@ -203,18 +204,18 @@ export function EmployerProjectDetailsPage() {
         ) : (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4">
-              {(project.status === 'in_progress' || project.status === 'completed' 
+              {(project.status === 'in_progress' || project.status === 'closed' 
                 ? applicants.filter(a => a.status === 'accepted') 
                 : applicants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
               ).map(app => (
               <div key={app.id} className={cn(
-                "p-6 rounded-md border transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden",
+                "p-6 rounded-md border transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative",
                 app.status === 'accepted' ? "bg-emerald-50 border-emerald-200" :
                 app.status === 'rejected' ? "bg-red-50 border-red-100 opacity-60" :
                 "bg-white border-slate-100 hover:border-emerald-200 shadow-sm group"
               )}>
                 {app.status === 'accepted' && (
-                  <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-500" />
+                  <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-500 rounded-l-md" />
                 )}
 
                 <div className="flex items-start gap-4">
@@ -222,15 +223,15 @@ export function EmployerProjectDetailsPage() {
                     <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${app.student_name || app.student_id}`} alt="Avatar" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                       <h4 className="font-bold text-slate-900 text-lg">
                         {app.student_name || `Estudiante #${(app.student_id || '').substring(0, 5)}`}
                       </h4>
-                      {app.match_score !== undefined && app.match_score > 0 && (
-                        <Badge className="bg-emerald-100 text-emerald-700 font-black px-2 py-0.5 text-[10px] flex items-center gap-1 rounded-md">
-                          <Award className="h-3 w-3" /> MATCH {(app.match_score * 100).toFixed(0)}%
+                      {(app.matchScore || app.match_score) ? (
+                        <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> {((app.matchScore || app.match_score) * 100).toFixed(0)}% de Coincidencia
                         </Badge>
-                      )}
+                      ) : null}
                     </div>
                     
                     <p className="text-sm font-medium text-slate-600 mt-1 line-clamp-3 leading-relaxed">
@@ -254,20 +255,27 @@ export function EmployerProjectDetailsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 pt-4 sm:pt-0 shrink-0">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handleViewProfile(app.student_id || '')}
-                    className="flex-1 sm:flex-none border-slate-200 text-slate-600 font-bold hover:bg-slate-50 hover:text-slate-900 cursor-pointer rounded-md"
-                  >
-                    Ver Perfil
-                  </Button>
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 pt-4 sm:pt-0 shrink-0">
+                  {app.match_score !== undefined && app.match_score > 0 && (
+                    <Badge className="bg-emerald-100 text-emerald-700 font-black px-3 py-1 text-xs flex items-center gap-1.5 rounded-md self-start sm:self-center">
+                      <Award className="h-4 w-4" /> MATCH {(app.match_score * 100).toFixed(0)}%
+                    </Badge>
+                  )}
+                  
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleViewProfile(app.student_id || '')}
+                      className="flex-1 sm:flex-none bg-slate-50 text-slate-600 font-bold hover:bg-slate-100 hover:text-slate-900 cursor-pointer rounded-md shadow-none border-none"
+                    >
+                      Ver Perfil
+                    </Button>
                   
                   {project.status === 'in_progress' && app.status === 'accepted' && (
                     <Button 
                       onClick={handleCompleteProject}
                       disabled={isCompleting}
-                      className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white font-bold cursor-pointer shadow-sm rounded-md"
+                      className="flex-1 sm:flex-none bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold cursor-pointer rounded-md shadow-none border-none"
                     >
                       {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
                       Finalizar Proyecto
@@ -277,32 +285,51 @@ export function EmployerProjectDetailsPage() {
                   {project.status === 'completed' && app.status === 'accepted' && (
                     <Button 
                       onClick={() => handleOpenReview(app.id, app.student_name || '')}
-                      className="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white font-bold cursor-pointer shadow-sm rounded-md"
+                      className="flex-1 sm:flex-none bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold cursor-pointer rounded-md shadow-none border-none"
                     >
                       Dejar Reseña
                     </Button>
                   )}
 
                   {project.status !== 'in_progress' && project.status !== 'completed' && app.status === 'pending' && (
-                    <>
+                    <div className="relative">
                       <Button 
-                        onClick={() => handleUpdateStatus(app.id, 'rejected')}
-                        disabled={isProcessingId === app.id}
-                        className="flex-1 sm:flex-none bg-red-50 hover:bg-red-100 text-red-600 font-bold cursor-pointer rounded-md"
+                        variant="ghost"
+                        onClick={() => setOpenMenuId(openMenuId === app.id ? null : app.id)}
+                        className="p-2 h-10 w-10 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full flex items-center justify-center border-none shadow-none bg-transparent"
                       >
-                        {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4 mr-1.5" />}
-                        Rechazar
+                        <MoreHorizontal className="h-5 w-5" />
                       </Button>
-                      <Button 
-                        onClick={() => handleUpdateStatus(app.id, 'accepted')}
-                        disabled={isProcessingId === app.id}
-                        className="flex-1 sm:flex-none bg-[#065f46] hover:bg-[#064e3b] text-white font-bold cursor-pointer shadow-sm rounded-md"
-                      >
-                        {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
-                        Aceptar
-                      </Button>
-                    </>
+                      
+                      {openMenuId === app.id && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-40" 
+                            onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}
+                          />
+                          <div className="absolute right-0 top-full mt-2 min-w-max bg-white rounded-md shadow-md border border-slate-100 py-1.5 z-50 flex flex-col overflow-hidden">
+                            <button
+                              onClick={() => { setOpenMenuId(null); handleUpdateStatus(app.id, 'accepted'); }}
+                              disabled={isProcessingId === app.id}
+                              className="w-full text-left px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}
+                              Aceptar Postulante
+                            </button>
+                            <button
+                              onClick={() => { setOpenMenuId(null); handleUpdateStatus(app.id, 'rejected'); }}
+                              disabled={isProcessingId === app.id}
+                              className="w-full text-left px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}
+                              Rechazar Postulante
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   )}
+                  </div>
                 </div>
               </div>
             ))}

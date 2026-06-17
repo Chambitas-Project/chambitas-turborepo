@@ -316,7 +316,7 @@ export function StudentDashboard() {
                     <div className="space-y-1">
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Promedio General</p>
                       <p className="text-sm font-bold text-slate-700 flex items-center justify-center md:justify-start gap-2">
-                        <Trophy className="h-4 w-4 text-emerald-500 shrink-0" /> {profile?.gpa ? profile.gpa.toFixed(2) : "0.00"} GPA Académico
+                        <Trophy className="h-4 w-4 text-emerald-500 shrink-0" /> {profile?.gpa ? profile.gpa.toFixed(2) : "0.00"} Promedio Ponderado
                       </p>
                     </div>
                   </div>
@@ -601,7 +601,7 @@ export function StudentDashboard() {
                     <input type="number" value={editForm.academicCycle} onChange={(e) => setEditForm({ ...editForm, academicCycle: e.target.value })} className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-medium text-slate-800 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600">GPA Académico</label>
+                    <label className="text-xs font-semibold text-slate-600">Promedio Ponderado</label>
                     <input type="number" step="0.1" value={editForm.gpa} onChange={(e) => setEditForm({ ...editForm, gpa: e.target.value })} className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-medium text-slate-800 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" />
                   </div>
                 </div>
