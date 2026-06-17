@@ -165,20 +165,22 @@ export function CreateProjectPage() {
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
                   <LayoutGrid className="h-4 w-4 text-emerald-600" /> Categoría <span className="text-red-500">*</span>
                 </label>
-                <select 
+                <Input 
                   required
+                  list="category-options"
                   value={formData.service_category}
                   onChange={(e) => setFormData({...formData, service_category: e.target.value})}
-                  className="w-full bg-white border border-slate-200 rounded-md h-12 px-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/20 outline-none"
-                >
-                  <option value="" disabled>Selecciona una categoría</option>
+                  placeholder="Escribe o selecciona una categoría"
+                  className="w-full bg-white border border-slate-200 rounded-md h-12"
+                />
+                <datalist id="category-options">
                   {dynamicCategories.map(cat => (
-                    <option key={cat} value={cat} className="font-bold text-slate-900">{cat}</option>
+                    <option key={cat} value={cat} />
                   ))}
                   {dynamicCategories.length === 0 && (
-                    <option value="Software Development" className="font-bold text-slate-900">Desarrollo de Software</option>
+                    <option value="Software Development" />
                   )}
-                </select>
+                </datalist>
               </div>
 
               <div className="space-y-3">

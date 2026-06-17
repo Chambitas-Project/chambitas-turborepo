@@ -33,6 +33,7 @@ interface CatalogSkill {
   id: string;
   name: string;
   type?: string;
+  category?: string;
 }
 
 const PROFICIENCY_LABELS: Record<number, string> = {
@@ -266,12 +267,12 @@ export function StudentDashboard() {
     });
   };
 
-  const filteredCatalogSkills = availableSkills.filter(skill => {
-    const matchesSearch = skill.name.toLowerCase().includes(skillSearch.toLowerCase());
-    const notAlreadyAdded = !(profile?.skills || []).some(s => s.name === skill.name);
-    const matchesType = addingSkillType === 'soft' ? skill.type === 'soft' : (addingSkillType === 'hard' ? skill.type !== 'soft' : true);
-    return matchesSearch && notAlreadyAdded && matchesType;
-  });
+  const filteredCatalogSkills = availableSkills.filter(s =>
+    (addingSkillType === 'soft' ? s.type === 'soft' : (addingSkillType === 'hard' ? s.type !== 'soft' : true)) &&
+    (s.name.toLowerCase().includes(skillSearch.toLowerCase()) || 
+     (s.category && s.category.toLowerCase().includes(skillSearch.toLowerCase()))) &&
+    !profile?.skills?.some((ps: any) => ps.name === s.name)
+  );
 
   const strength = (() => {
     if (!profile) return 0;
@@ -560,7 +561,17 @@ export function StudentDashboard() {
                               addingSkillType === 'soft' ? "hover:bg-indigo-50 text-indigo-900" : "hover:bg-emerald-50 text-emerald-900"
                             )}
                           >
-                            <span className="font-medium text-sm">{skill.name}</span>
+                            <div className="flex flex-col text-left">
+                              <span className="font-medium text-sm">{skill.name}</span>
+                              {skill.category && (
+                                <span className={cn(
+                                  "text-[10px] font-bold opacity-70",
+                                  addingSkillType === 'soft' ? "text-indigo-600" : "text-emerald-600"
+                                )}>
+                                  {skill.category}
+                                </span>
+                              )}
+                            </div>
                             <Plus className={cn(
                               "h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity",
                               addingSkillType === 'soft' ? "text-indigo-600" : "text-emerald-600"
