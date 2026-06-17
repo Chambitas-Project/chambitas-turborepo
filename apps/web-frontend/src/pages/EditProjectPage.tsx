@@ -1,30 +1,25 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { ArrowLeft, Briefcase, Clock, LayoutGrid, CheckCircle2, X, Search, Plus, Star, AlertCircle, Banknote } from "lucide-react";
-import { Button, Input, cn, Badge } from "@chambitas/ui";
+import { ArrowLeft } from "lucide-react";
+import { Button, cn } from "@chambitas/ui";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { employerApi } from "../api/employer.api";
 import { apiClient } from "../api/api-client";
 import { useNavigate, useParams } from "react-router-dom";
+import React from "react";
 
-interface Skill {
-  id: string;
-  name: string;
-  category: string;
-}
+// Types
+import type { Skill, SelectedSkill, ProjectFormData } from "../features/edit-project/types";
 
-interface SelectedSkill {
-  skill_id: string;
-  name: string;
-  proficiency_level: number;
-}
-
+// Components
+import { ProjectMainDetailsForm } from "../features/edit-project/components/ProjectMainDetailsForm";
+import { ProjectSkillsSelector } from "../features/edit-project/components/ProjectSkillsSelector";
 
 export function EditProjectPage() {
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProjectFormData>({
     title: "",
     description: "",
     budget: "",
@@ -176,216 +171,29 @@ export function EditProjectPage() {
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl p-8 lg:p-10 shadow-none border border-slate-100">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-10">
-
             {/* Columna Izquierda: Información Principal */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-black text-slate-900 border-b border-slate-100 pb-3">Detalles Principales</h3>
-
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-emerald-600" /> Título del proyecto <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  required
-                  placeholder="Ej. Desarrollo de App Móvil en React Native"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="bg-white border border-slate-200 rounded-md h-12"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <LayoutGrid className="h-4 w-4 text-emerald-600" /> Categoría <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  required
-                  list="category-options-edit"
-                  value={formData.service_category}
-                  onChange={(e) => setFormData({ ...formData, service_category: e.target.value })}
-                  placeholder="Escribe o selecciona una categoría"
-                  className="w-full bg-white border border-slate-200 rounded-md h-12"
-                />
-                <datalist id="category-options-edit">
-                  {dynamicCategories.map(cat => (
-                    <option key={cat} value={cat} />
-                  ))}
-                  {dynamicCategories.length === 0 && (
-                    <option value="Software Development" />
-                  )}
-                </datalist>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-700">Descripción detallada <span className="text-red-500">*</span></label>
-                <textarea
-                  required
-                  rows={5}
-                  placeholder="Describe qué necesitas, los objetivos del proyecto y qué esperas del estudiante..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-md p-4 text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none resize-none"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  Fecha límite del proyecto <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  required
-                  type="date"
-                  value={formData.deadline}
-                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  onClick={(e) => {
-                    const target = e.target as HTMLInputElement;
-                    if ('showPicker' in target) {
-                      try { target.showPicker(); } catch (err) { }
-                    }
-                  }}
-                  className="bg-white border border-slate-200 rounded-md h-12 w-full text-sm font-bold text-slate-900 cursor-pointer"
-                />
-              </div>
-            </div>
+            <ProjectMainDetailsForm
+              formData={formData}
+              setFormData={setFormData}
+              dynamicCategories={dynamicCategories}
+            />
 
             {/* Columna Derecha: Presupuesto y Requisitos */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-black text-slate-900 border-b border-slate-100 pb-3">Presupuesto y Habilidades</h3>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <Banknote className="h-4 w-4 text-emerald-600" /> Presupuesto (S/) <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    required
-                    type="number"
-                    min="0"
-                    placeholder="Ej. 150"
-                    value={formData.budget}
-                    onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                    className="bg-white border border-slate-200 rounded-md h-12"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-emerald-600" /> Horas / Semana
-                  </label>
-                  <Input
-                    type="number"
-                    min="1"
-                    placeholder="Opcional (Ej. 20)"
-                    value={formData.max_hours_week}
-                    onChange={(e) => setFormData({ ...formData, max_hours_week: e.target.value })}
-                    className="bg-white border border-slate-200 rounded-md h-12"
-                  />
-                </div>
-              </div>
-
-              {/* Selector de Habilidades */}
-              <div className="space-y-4 pt-2">
-                <div className="flex flex-col gap-1 relative" ref={suggestionRef}>
-                  <label className="text-sm font-bold text-slate-700 flex items-center justify-between">
-                    <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Requisitos / Habilidades <span className="text-red-500">*</span></span>
-                    <Badge className="bg-emerald-100 text-emerald-700 font-black text-[10px]">{selectedSkills.length}/10</Badge>
-                  </label>
-
-                  {skillsError && (
-                    <span className="text-[10px] font-bold text-amber-600 flex items-center gap-1 mt-1">
-                      <AlertCircle className="h-3 w-3" />
-                      No se pudo cargar el catálogo de habilidades.
-                    </span>
-                  )}
-
-                  <div className="relative mt-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <Input
-                      placeholder="Busca una habilidad (Ej: React, Python...)"
-                      className="h-12 pl-12 rounded-md bg-white border border-slate-200 focus:ring-emerald-500/10 text-sm font-bold"
-                      value={skillSearch}
-                      onChange={e => {
-                        setSkillSearch(e.target.value);
-                        setShowSuggestions(true);
-                      }}
-                      onFocus={() => setShowSuggestions(true)}
-                      autoComplete="off"
-                    />
-                  </div>
-
-                  {showSuggestions && skillSearch.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white rounded-xl shadow-md border border-slate-100 max-h-[240px] overflow-y-auto py-2 custom-scrollbar">
-                      {filteredSkills.length > 0 ? (
-                        <>
-                          {filteredSkills.map(skill => (
-                            <button
-                              key={skill.id}
-                              type="button"
-                              onClick={() => addSkill(skill)}
-                              className="w-full px-5 py-3 text-left hover:bg-emerald-50 hover:text-emerald-700 font-bold transition-colors text-sm flex items-center justify-between group cursor-pointer"
-                            >
-                              <span>{skill.name}</span>
-                              <Plus className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </button>
-                          ))}
-                        </>
-                      ) : (
-                        <div className="px-5 py-3 text-slate-400 font-bold text-sm italic">
-                          No se encontraron resultados.
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Lista de Seleccionados */}
-                <div className="space-y-3 mt-4">
-                  {selectedSkills.length === 0 ? (
-                    <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl p-6 text-center">
-                      <p className="text-slate-400 font-bold text-sm">Selecciona al menos 1 habilidad requerida.</p>
-                    </div>
-                  ) : (
-                    selectedSkills.map((skill) => (
-                      <div key={skill.skill_id} className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white border border-slate-100 rounded-md shadow-none hover:border-emerald-200 transition-all">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
-                            <Star className="h-4 w-4 text-emerald-600 fill-emerald-600" />
-                          </div>
-                          <span className="font-bold text-slate-800 text-sm wrap-break-word">{skill.name}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <div className="flex bg-slate-50 p-1 rounded-md border border-slate-100 gap-1">
-                            {[1, 2, 3, 4, 5].map((level) => (
-                              <button
-                                key={level}
-                                type="button"
-                                onClick={() => updateProficiency(skill.skill_id, level)}
-                                className={cn(
-                                  "px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter transition-all flex flex-col items-center min-w-[48px] cursor-pointer",
-                                  skill.proficiency_level === level
-                                    ? "bg-emerald-600 text-white shadow-none"
-                                    : "text-slate-400 hover:text-slate-600 hover:bg-white"
-                                )}
-                              >
-                                <span>Nvl {level}</span>
-                              </button>
-                            ))}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeSkill(skill.skill_id)}
-                            className="p-1.5 text-slate-300 hover:text-red-500 transition-colors shrink-0 cursor-pointer"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-            </div>
+            <ProjectSkillsSelector
+              formData={formData}
+              setFormData={setFormData}
+              skillsError={skillsError}
+              selectedSkills={selectedSkills}
+              skillSearch={skillSearch}
+              setSkillSearch={setSkillSearch}
+              showSuggestions={showSuggestions}
+              setShowSuggestions={setShowSuggestions}
+              filteredSkills={filteredSkills}
+              suggestionRef={suggestionRef}
+              addSkill={addSkill}
+              updateProficiency={updateProficiency}
+              removeSkill={removeSkill}
+            />
           </div>
 
           <div className="mt-12 pt-8 border-t border-slate-100 flex items-center justify-end gap-4">
@@ -408,7 +216,6 @@ export function EditProjectPage() {
               {isLoading ? "Guardando..." : "Guardar Cambios"}
             </Button>
           </div>
-
         </form>
       </div>
     </DashboardLayout>
