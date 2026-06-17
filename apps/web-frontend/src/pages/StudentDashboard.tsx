@@ -149,6 +149,21 @@ export function StudentDashboard() {
     }
   };
 
+  const fetchRecommendations = async () => {
+    try {
+      const response = await apiClient.get("/matching/recommendations/me");
+      const recs = Array.isArray(response.data) ? response.data : (response.data?.recommendations || []);
+      if (recs.length > 0) {
+        const max = Math.max(...recs.map((r: any) => r.score || 0));
+        setMaxMatchScore(Math.round(max * 100));
+      } else {
+        setMaxMatchScore(0);
+      }
+    } catch (err) {
+      console.error("Error fetching recommendations", err);
+    }
+  };
+
   useEffect(() => {
     fetchProfile();
     const fetchSkills = async () => {
@@ -158,20 +173,6 @@ export function StudentDashboard() {
         setAvailableSkills(data);
       } catch (err) {
         console.error("Error fetching catalog skills", err);
-      }
-    };
-    const fetchRecommendations = async () => {
-      try {
-        const response = await apiClient.get("/matching/recommendations/me");
-        const recs = Array.isArray(response.data) ? response.data : (response.data?.recommendations || []);
-        if (recs.length > 0) {
-          const max = Math.max(...recs.map((r: any) => r.score || 0));
-          setMaxMatchScore(Math.round(max * 100));
-        } else {
-          setMaxMatchScore(0);
-        }
-      } catch (err) {
-        console.error("Error fetching recommendations", err);
       }
     };
     fetchSkills();
@@ -200,6 +201,7 @@ export function StudentDashboard() {
         availability_blocks: editForm.availability
       });
       await fetchProfile();
+      setTimeout(() => { fetchRecommendations(); }, 1500);
       setTimeout(() => { setShowEditModal(false); }, 1000);
     } catch {
       alert("Error al actualizar el perfil.");
@@ -233,6 +235,7 @@ export function StudentDashboard() {
       setShowSkillsModal(false);
       setAddingSkillType(null);
       await fetchProfile();
+      setTimeout(() => { fetchRecommendations(); }, 1500);
     } catch (err) {
       alert("Error al añadir habilidad.");
     } finally {
@@ -254,6 +257,7 @@ export function StudentDashboard() {
         skill_inputs: updatedSkills
       });
       await fetchProfile();
+      setTimeout(() => { fetchRecommendations(); }, 1500);
     } catch {
       alert("Error al eliminar habilidad.");
     }
