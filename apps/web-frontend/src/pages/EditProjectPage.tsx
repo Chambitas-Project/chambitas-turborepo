@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { ArrowLeft, Briefcase, Clock, LayoutGrid, CheckCircle2, X, Search, Plus, Star, AlertCircle, Banknote } from "lucide-react";
 import { Button, Input, cn, Badge } from "@chambitas/ui";
 import { DashboardLayout } from "../layouts/DashboardLayout";
@@ -23,7 +23,7 @@ export function EditProjectPage() {
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -32,7 +32,7 @@ export function EditProjectPage() {
     deadline: "",
     max_hours_week: ""
   });
-  
+
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
   const [skillsError, setSkillsError] = useState(false);
   const [skillSearch, setSkillSearch] = useState("");
@@ -40,6 +40,11 @@ export function EditProjectPage() {
   const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>([]);
   const suggestionRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const dynamicCategories = useMemo(() => {
+    const uniqueCategories = new Set(availableSkills.map(s => s.category).filter(Boolean));
+    return Array.from(uniqueCategories);
+  }, [availableSkills]);
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -98,7 +103,7 @@ export function EditProjectPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredSkills = availableSkills.filter(skill => 
+  const filteredSkills = availableSkills.filter(skill =>
     skill.name.toLowerCase().includes(skillSearch.toLowerCase()) &&
     !selectedSkills.some(s => s.skill_id === skill.id)
   );
@@ -115,7 +120,7 @@ export function EditProjectPage() {
   };
 
   const updateProficiency = (skillId: string, level: number) => {
-    setSelectedSkills(prev => prev.map(s => 
+    setSelectedSkills(prev => prev.map(s =>
       s.skill_id === skillId ? { ...s, proficiency_level: level } : s
     ));
   };
@@ -150,8 +155,8 @@ export function EditProjectPage() {
 
   return (
     <DashboardLayout role="employer">
-      <button 
-        onClick={() => navigate("/employer/projects")} 
+      <button
+        onClick={() => navigate("/employer/projects")}
         className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 mb-8 transition-colors cursor-pointer"
       >
         <ArrowLeft className="h-4 w-4" /> Volver a mis publicaciones
@@ -171,20 +176,20 @@ export function EditProjectPage() {
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl p-8 lg:p-10 shadow-none border border-slate-100">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-10">
-            
+
             {/* Columna Izquierda: Información Principal */}
             <div className="space-y-6">
               <h3 className="text-lg font-black text-slate-900 border-b border-slate-100 pb-3">Detalles Principales</h3>
-              
+
               <div className="space-y-3">
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-emerald-600" /> Título del proyecto <span className="text-red-500">*</span>
                 </label>
-                <Input 
+                <Input
                   required
                   placeholder="Ej. Desarrollo de App Móvil en React Native"
                   value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="bg-white border border-slate-200 rounded-md h-12"
                 />
               </div>
@@ -193,28 +198,30 @@ export function EditProjectPage() {
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
                   <LayoutGrid className="h-4 w-4 text-emerald-600" /> Categoría <span className="text-red-500">*</span>
                 </label>
-                <select 
+                <select
                   required
                   value={formData.service_category}
-                  onChange={(e) => setFormData({...formData, service_category: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, service_category: e.target.value })}
                   className="w-full bg-white border border-slate-200 rounded-md h-12 px-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/20 outline-none"
                 >
-                  <option value="Software Development" className="font-bold text-slate-900">Desarrollo de Software</option>
-                  <option value="Design" className="font-bold text-slate-900">Diseño Gráfico / UX</option>
-                  <option value="Marketing" className="font-bold text-slate-900">Marketing Digital</option>
-                  <option value="Writing" className="font-bold text-slate-900">Redacción y Traducción</option>
-                  <option value="Other" className="font-bold text-slate-900">Otro</option>
+                  <option value="" disabled>Selecciona una categoría</option>
+                  {dynamicCategories.map(cat => (
+                    <option key={cat} value={cat} className="font-bold text-slate-900">{cat}</option>
+                  ))}
+                  {dynamicCategories.length === 0 && (
+                    <option value="Software Development" className="font-bold text-slate-900">Desarrollo de Software</option>
+                  )}
                 </select>
               </div>
 
               <div className="space-y-3">
                 <label className="text-sm font-bold text-slate-700">Descripción detallada <span className="text-red-500">*</span></label>
-                <textarea 
+                <textarea
                   required
                   rows={5}
                   placeholder="Describe qué necesitas, los objetivos del proyecto y qué esperas del estudiante..."
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full bg-white border border-slate-200 rounded-md p-4 text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-bold focus:ring-2 focus:ring-emerald-500/20 outline-none resize-none"
                 />
               </div>
@@ -223,15 +230,15 @@ export function EditProjectPage() {
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
                   Fecha límite del proyecto <span className="text-red-500">*</span>
                 </label>
-                <Input 
+                <Input
                   required
                   type="date"
                   value={formData.deadline}
-                  onChange={(e) => setFormData({...formData, deadline: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                   onClick={(e) => {
                     const target = e.target as HTMLInputElement;
                     if ('showPicker' in target) {
-                      try { target.showPicker(); } catch (err) {}
+                      try { target.showPicker(); } catch (err) { }
                     }
                   }}
                   className="bg-white border border-slate-200 rounded-md h-12 w-full text-sm font-bold text-slate-900 cursor-pointer"
@@ -242,19 +249,19 @@ export function EditProjectPage() {
             {/* Columna Derecha: Presupuesto y Requisitos */}
             <div className="space-y-6">
               <h3 className="text-lg font-black text-slate-900 border-b border-slate-100 pb-3">Presupuesto y Habilidades</h3>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
                     <Banknote className="h-4 w-4 text-emerald-600" /> Presupuesto (S/) <span className="text-red-500">*</span>
                   </label>
-                  <Input 
+                  <Input
                     required
                     type="number"
                     min="0"
                     placeholder="Ej. 150"
                     value={formData.budget}
-                    onChange={(e) => setFormData({...formData, budget: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                     className="bg-white border border-slate-200 rounded-md h-12"
                   />
                 </div>
@@ -262,12 +269,12 @@ export function EditProjectPage() {
                   <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
                     <Clock className="h-4 w-4 text-emerald-600" /> Horas / Semana
                   </label>
-                  <Input 
+                  <Input
                     type="number"
                     min="1"
                     placeholder="Opcional (Ej. 20)"
                     value={formData.max_hours_week}
-                    onChange={(e) => setFormData({...formData, max_hours_week: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, max_hours_week: e.target.value })}
                     className="bg-white border border-slate-200 rounded-md h-12"
                   />
                 </div>
@@ -280,17 +287,17 @@ export function EditProjectPage() {
                     <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Requisitos / Habilidades <span className="text-red-500">*</span></span>
                     <Badge className="bg-emerald-100 text-emerald-700 font-black text-[10px]">{selectedSkills.length}/10</Badge>
                   </label>
-                  
+
                   {skillsError && (
-                      <span className="text-[10px] font-bold text-amber-600 flex items-center gap-1 mt-1">
-                          <AlertCircle className="h-3 w-3" />
-                          No se pudo cargar el catálogo de habilidades.
-                      </span>
+                    <span className="text-[10px] font-bold text-amber-600 flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" />
+                      No se pudo cargar el catálogo de habilidades.
+                    </span>
                   )}
-                  
+
                   <div className="relative mt-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <Input 
+                    <Input
                       placeholder="Busca una habilidad (Ej: React, Python...)"
                       className="h-12 pl-12 rounded-md bg-white border border-slate-200 focus:ring-emerald-500/10 text-sm font-bold"
                       value={skillSearch}
@@ -341,7 +348,7 @@ export function EditProjectPage() {
                           <div className="h-8 w-8 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
                             <Star className="h-4 w-4 text-emerald-600 fill-emerald-600" />
                           </div>
-                          <span className="font-bold text-slate-800 text-sm break-words">{skill.name}</span>
+                          <span className="font-bold text-slate-800 text-sm wrap-break-word">{skill.name}</span>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -353,8 +360,8 @@ export function EditProjectPage() {
                                 onClick={() => updateProficiency(skill.skill_id, level)}
                                 className={cn(
                                   "px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter transition-all flex flex-col items-center min-w-[48px] cursor-pointer",
-                                  skill.proficiency_level === level 
-                                    ? "bg-emerald-600 text-white shadow-none" 
+                                  skill.proficiency_level === level
+                                    ? "bg-emerald-600 text-white shadow-none"
                                     : "text-slate-400 hover:text-slate-600 hover:bg-white"
                                 )}
                               >
@@ -362,7 +369,7 @@ export function EditProjectPage() {
                               </button>
                             ))}
                           </div>
-                          <button 
+                          <button
                             type="button"
                             onClick={() => removeSkill(skill.skill_id)}
                             className="p-1.5 text-slate-300 hover:text-red-500 transition-colors shrink-0 cursor-pointer"
@@ -380,7 +387,7 @@ export function EditProjectPage() {
           </div>
 
           <div className="mt-12 pt-8 border-t border-slate-100 flex items-center justify-end gap-4">
-            <Button 
+            <Button
               type="button"
               variant="outline"
               onClick={() => navigate("/employer/projects")}
@@ -388,7 +395,7 @@ export function EditProjectPage() {
             >
               Cancelar
             </Button>
-            <Button 
+            <Button
               type="submit"
               disabled={isLoading || selectedSkills.length === 0}
               className={cn(

@@ -67,7 +67,36 @@ export const employerApi = {
     }
   },
   getRecentActivity: async (): Promise<ActivityItemData[]> => {
-    return [];
+    try {
+      const projects = await employerApi.getRecentProjects();
+      if (!projects || projects.length === 0) return [];
+
+      const recentProjects = projects.slice(0, 3);
+      const allApps: any[] = [];
+      for (const p of recentProjects) {
+        const apps = await employerApi.getProjectApplicants(p.id);
+        allApps.push(...apps.map(a => ({ ...a, projectName: p.title })));
+      }
+
+      const sortedApps = allApps.sort((a, b) => new Date(b.created_at || b.applied_at || 0).getTime() - new Date(a.created_at || a.applied_at || 0).getTime()).slice(0, 5);
+      
+      return sortedApps.map(app => {
+        const dateStr = app.created_at || app.applied_at || new Date().toISOString();
+        const daysAgo = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / (1000 * 3600 * 24));
+        const timeStr = daysAgo === 0 ? 'hoy' : `hace ${daysAgo} día${daysAgo !== 1 ? 's' : ''}`;
+        return {
+          id: app.id,
+          user: app.student_name || 'Un estudiante',
+          action: app.status === 'accepted' ? 'fue aceptado en' : 'postuló a',
+          target: app.projectName,
+          time: timeStr,
+          color: app.status === 'accepted' ? 'emerald' : 'blue'
+        };
+      });
+    } catch (err) {
+      console.error("Error fetching recent activity:", err);
+      return [];
+    }
   },
   getProject: async (id: string): Promise<EmployerProject | null> => {
     try {

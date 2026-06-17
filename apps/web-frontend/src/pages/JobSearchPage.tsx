@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -62,14 +62,14 @@ export function JobSearchPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
-  const categories = [
-    { label: "Todos", value: "Todos" },
-    { label: "Desarrollo de Software", value: "Software Development" },
-    { label: "Diseño Gráfico / UX", value: "Design" },
-    { label: "Marketing Digital", value: "Marketing" },
-    { label: "Redacción y Traducción", value: "Writing" },
-    { label: "Otro", value: "Other" }
-  ];
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set(projects.map(p => p.service_category).filter(Boolean));
+    const dynamicCats = Array.from(uniqueCategories).map(cat => ({
+      label: cat as string,
+      value: cat as string
+    }));
+    return [{ label: "Todos", value: "Todos" }, ...dynamicCats];
+  }, [projects]);
 
   useEffect(() => {
     const fetchData = async () => {

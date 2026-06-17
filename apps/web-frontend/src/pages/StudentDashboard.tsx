@@ -71,6 +71,7 @@ export function StudentDashboard() {
   const [skillSearch, setSkillSearch] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionRef = useRef<HTMLDivElement>(null);
+  const [maxMatchScore, setMaxMatchScore] = useState<number | null>(null);
 
   const [editForm, setEditForm] = useState({
     bio: "",
@@ -158,7 +159,22 @@ export function StudentDashboard() {
         console.error("Error fetching catalog skills", err);
       }
     };
+    const fetchRecommendations = async () => {
+      try {
+        const response = await apiClient.get("/matching/recommendations/me");
+        const recs = Array.isArray(response.data) ? response.data : (response.data?.recommendations || []);
+        if (recs.length > 0) {
+          const max = Math.max(...recs.map((r: any) => r.score || 0));
+          setMaxMatchScore(Math.round(max * 100));
+        } else {
+          setMaxMatchScore(0);
+        }
+      } catch (err) {
+        console.error("Error fetching recommendations", err);
+      }
+    };
     fetchSkills();
+    fetchRecommendations();
   }, []);
 
   useEffect(() => {
@@ -383,19 +399,29 @@ export function StudentDashboard() {
             {/* Match de Mercado */}
             <div className="space-y-8">
               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center md:text-left">Match de Mercado</h3>
-              <div className="space-y-6">
-                <div className="flex justify-between items-end">
-                  <div className="space-y-1 w-full text-center md:text-left">
-                    <span className="text-5xl font-black text-slate-900 tracking-tighter">88%</span>
-                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Nivel de Compatibilidad</p>
+              {maxMatchScore !== null && maxMatchScore > 0 ? (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-end">
+                    <div className="space-y-1 w-full text-center md:text-left">
+                      <span className="text-5xl font-black text-slate-900 tracking-tighter">{maxMatchScore}%</span>
+                      <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Nivel de Compatibilidad</p>
+                    </div>
                   </div>
+                  <div className="h-2.5 w-full bg-slate-100 rounded-md overflow-hidden p-0.5"><div className="h-full bg-emerald-600 rounded-sm shadow-sm" style={{ width: `${maxMatchScore}%` }} /></div>
+                  <p className="text-[11px] text-slate-500 font-bold leading-relaxed text-center md:text-left px-4 md:px-0">
+                    Tu perfil es altamente demandado para micro-tareas de <span className="text-slate-900">{profile?.career}</span>.
+                  </p>
+                  <Button onClick={() => window.location.href = "/student/jobs"} className="w-full bg-slate-900 hover:bg-black text-white rounded-md h-12 font-bold text-sm shadow-sm shadow-slate-200 transition-all">Explorar Tareas</Button>
                 </div>
-                <div className="h-2.5 w-full bg-slate-100 rounded-md overflow-hidden p-0.5"><div className="h-full bg-emerald-600 rounded-sm w-[88%] shadow-sm" /></div>
-                <p className="text-[11px] text-slate-500 font-bold leading-relaxed text-center md:text-left px-4 md:px-0">
-                  Tu perfil es altamente demandado para micro-tareas de <span className="text-slate-900">{profile?.career}</span>.
-                </p>
-                <Button className="w-full bg-slate-900 hover:bg-black text-white rounded-md h-12 font-bold text-sm shadow-sm shadow-slate-200 transition-all">Explorar Tareas</Button>
-              </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="text-center py-6 bg-slate-50 rounded-xl border border-slate-100">
+                    <p className="text-xs font-bold text-slate-400">Sin datos de coincidencia aún.</p>
+                    <p className="text-[10px] font-medium text-slate-500 mt-1">Sigue mejorando tu perfil.</p>
+                  </div>
+                  <Button onClick={() => window.location.href = "/student/jobs"} variant="outline" className="w-full border-slate-200 text-slate-600 rounded-md h-12 font-bold text-sm transition-all hover:bg-slate-50">Ver Catálogo</Button>
+                </div>
+              )}
             </div>
 
             {/* Habilidades - Dividido en Soft y Hard */}
