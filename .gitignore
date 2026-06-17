@@ -60,3 +60,6 @@ Thumbs.db
 # IDEs
 .vscode/
 .idea/
+
+# Supabase CLI (local config/migrations)
+/supabase/

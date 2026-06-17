@@ -30,7 +30,8 @@ export class MatchingController implements OnModuleInit {
     
     return this.matchingService.GetRecommendations({ 
       userId, 
-      limit: query.limit || 10 
+      limit: query.limit || 10,
+      page: query.page || 1
     });
   }
 

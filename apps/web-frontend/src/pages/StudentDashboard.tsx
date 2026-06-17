@@ -316,14 +316,14 @@ export function StudentDashboard() {
                     <div className="space-y-1">
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Promedio General</p>
                       <p className="text-sm font-bold text-slate-700 flex items-center justify-center md:justify-start gap-2">
-                        <Trophy className="h-4 w-4 text-emerald-500 shrink-0" /> {profile?.gpa || "0.0"} GPA Académico
+                        <Trophy className="h-4 w-4 text-emerald-500 shrink-0" /> {profile?.gpa ? profile.gpa.toFixed(2) : "0.00"} Promedio Ponderado
                       </p>
                     </div>
                   </div>
 
                   {profile?.bio && (
                     <div className="pt-6 space-y-2 border-t border-slate-50 mt-6">
-                      <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.1em]">Biografía</h4>
+                      <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Biografía</h4>
                       <p className="text-slate-600 text-sm font-medium leading-relaxed max-w-2xl mx-auto md:mx-0">
                         {profile.bio}
                       </p>
@@ -403,7 +403,7 @@ export function StudentDashboard() {
               {/* Habilidades Técnicas */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-50 pb-2">
-                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.1em]">Habilidades Técnicas</h4>
+                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Habilidades Técnicas</h4>
                   <Plus onClick={() => { setAddingSkillType('hard'); setShowSkillsModal(true); }} className="h-5 w-5 text-emerald-600 cursor-pointer hover:scale-110 transition-transform bg-emerald-50 p-1 rounded-md" />
                 </div>
                 <div className="grid grid-cols-1 gap-6">
@@ -435,7 +435,7 @@ export function StudentDashboard() {
               {/* Habilidades Blandas */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-50 pb-2">
-                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.1em]">Habilidades Blandas</h4>
+                  <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Habilidades Blandas</h4>
                   <Plus onClick={() => { setAddingSkillType('soft'); setShowSkillsModal(true); }} className="h-5 w-5 text-indigo-600 cursor-pointer hover:scale-110 transition-transform bg-indigo-50 p-1 rounded-md" />
                 </div>
                 <div className="grid grid-cols-1 gap-6">
@@ -560,9 +560,9 @@ export function StudentDashboard() {
                       className={cn(
                         "flex-1 min-w-[30%] px-2 py-2 rounded-md font-medium text-[11px] transition-colors text-center border",
                         skillForm.level === lvl
-                          ? (addingSkillType === 'soft' 
-                              ? "bg-indigo-50 border-indigo-200 text-indigo-700" 
-                              : "bg-emerald-50 border-emerald-200 text-emerald-700")
+                          ? (addingSkillType === 'soft'
+                            ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                            : "bg-emerald-50 border-emerald-200 text-emerald-700")
                           : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                       )}
                     >
@@ -574,8 +574,8 @@ export function StudentDashboard() {
 
               <Button onClick={handleAddSkill} disabled={updating || !skillForm.name} className={cn(
                 "w-full text-white font-semibold py-2.5 rounded-md text-sm transition-colors mt-2",
-                addingSkillType === 'soft' 
-                  ? "bg-indigo-600 hover:bg-indigo-700" 
+                addingSkillType === 'soft'
+                  ? "bg-indigo-600 hover:bg-indigo-700"
                   : "bg-emerald-600 hover:bg-emerald-700"
               )}>
                 {updating ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Confirmar"}
@@ -601,7 +601,7 @@ export function StudentDashboard() {
                     <input type="number" value={editForm.academicCycle} onChange={(e) => setEditForm({ ...editForm, academicCycle: e.target.value })} className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-medium text-slate-800 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600">GPA Académico</label>
+                    <label className="text-xs font-semibold text-slate-600">Promedio Ponderado</label>
                     <input type="number" step="0.1" value={editForm.gpa} onChange={(e) => setEditForm({ ...editForm, gpa: e.target.value })} className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-medium text-slate-800 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors" />
                   </div>
                 </div>

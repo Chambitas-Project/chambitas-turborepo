@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, OnModuleInit } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { status } from '@grpc/grpc-js';
 import { SupabaseService } from '@chambitas/supabase';
@@ -8,23 +8,32 @@ import {
   UnifiedProfileResponse,
   ListCareersRequest,
   ListCareersResponse,
-  Career
+  Career,
+  IMLEngineService
 } from '@chambitas/proto';
+import { firstValueFrom } from 'rxjs';
+import { ClientGrpc } from '@nestjs/microservices';
 import { StudentRepository } from './repositories/student.repository';
 import { EmployerRepository } from './repositories/employer.repository';
 import { CareersRepository } from './repositories/careers.repository';
 import { Database } from '@chambitas/supabase';
 
 @Injectable()
-export class ProfileService {
+export class ProfileService implements OnModuleInit {
   private readonly logger = new Logger(ProfileService.name);
+  private mlEngine!: IMLEngineService;
 
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly studentRepo: StudentRepository,
     private readonly employerRepo: EmployerRepository,
     private readonly careersRepo: CareersRepository,
+    @Inject('ML_ENGINE_PACKAGE') private readonly mlClient: ClientGrpc,
   ) { }
+
+  onModuleInit() {
+    this.mlEngine = this.mlClient.getService<IMLEngineService>('MLEngineService');
+  }
 
   async listCareers(request: ListCareersRequest): Promise<ListCareersResponse> {
     this.logger.log(`Listing careers with filters: ${JSON.stringify(request)}`);
@@ -170,6 +179,10 @@ export class ProfileService {
         // 7. Sincronizar estado de onboarding (Centralizado)
         await this.checkAndUpdateOnboarding(data.user_id, 'student');
         this.logger.log(`[Onboarding] Student onboarding state synced`);
+
+        firstValueFrom(this.mlEngine.GenerateStudentEmbedding({ student_id: data.user_id }))
+          .then(() => this.logger.log(`[Webhook] Vectorización disparada para estudiante ${data.user_id}`))
+          .catch(e => this.logger.error(`[Webhook] Fallo al alertar al ML Engine: ${e.message}`));
 
       } else if (data.role === 'employer') {
         // 1. Validar campos mandatorios
@@ -401,6 +414,11 @@ export class ProfileService {
             }
           }
         }
+        
+        firstValueFrom(this.mlEngine.GenerateStudentEmbedding({ student_id: userId }))
+          .then(() => this.logger.log(`[Webhook] Re-vectorización disparada para estudiante ${userId}`))
+          .catch(e => this.logger.error(`[Webhook] Fallo al alertar al ML Engine: ${e.message}`));
+          
       } else {
         const updateData: any = {};
         if (data.company_name) updateData.company_name = data.company_name;

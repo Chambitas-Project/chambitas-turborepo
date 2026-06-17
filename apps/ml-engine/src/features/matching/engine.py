@@ -3,23 +3,60 @@ import json
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
+import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import SnowballStemmer
+
+# Asegurar recursos de NLTK
+nltk.download('stopwords', quiet=True)
 
 class MatchingEngine:
     def __init__(self):
         self.base_path = os.path.join(os.path.dirname(__file__), '../../../data')
+        self.stemmer = SnowballStemmer('spanish')
+        self.stop_words = set(stopwords.words('spanish'))
         self.load_models()
 
     def load_models(self):
         try:
             self.rf = joblib.load(os.path.join(self.base_path, 'model_rf_tesis.pkl'))
             self.vectorizer = joblib.load(os.path.join(self.base_path, 'vectorizer_tesis.pkl'))
+            self.svd = joblib.load(os.path.join(self.base_path, 'svd_tesis.pkl'))
             self.kmeans = joblib.load(os.path.join(self.base_path, 'model_kmeans_tesis.pkl'))
             self.cat_cols = joblib.load(os.path.join(self.base_path, 'model_cat_cols_tesis.pkl'))
-            print("[OK] Matching Engine: Modelos V11 cargados correctamente.")
+            print(f"[OK] Matching Engine: Modelos V12 (SVD {self.svd.components_.shape[0]}D) cargados correctamente.")
         except Exception as e:
             print(f"[ERROR] No se pudieron cargar los modelos ML: {e}")
             self.rf = None
+
+    def clean_and_lemmatize(self, text):
+        if not text:
+            return ""
+        # Minúsculas
+        text = str(text).lower()
+        # Eliminar números y caracteres especiales
+        text = re.sub(r'[^a-záéíóúñ\s]', '', text)
+        # Tokenización, stopwords y stemming
+        words = text.split()
+        words = [self.stemmer.stem(w) for w in words if w not in self.stop_words]
+        return " ".join(words)
+
+    def get_text_embedding(self, text):
+        """
+        Devuelve un array nativo de Python correspondiente a la representación SVD del texto,
+        rellenado con ceros (padding) para cumplir estrictamente con pgvector(300).
+        """
+        if not self.svd or not self.vectorizer:
+            return [0.0] * 300
+        cleaned_text = self.clean_and_lemmatize(text)
+        vector_denso = self.svd.transform(self.vectorizer.transform([cleaned_text]))[0].tolist()
+        
+        # Zero-Padding hasta llegar a 300
+        if len(vector_denso) < 300:
+            vector_denso.extend([0.0] * (300 - len(vector_denso)))
+            
+        return vector_denso
 
     def check_schedule_overlap(self, est_avail, pub_sched):
         try:
@@ -40,22 +77,22 @@ class MatchingEngine:
         if not self.rf:
             return {"score": 0.0, "cluster": -1, "error": "Modelos no cargados"}
 
-        # 1. FEATURE ENGINEERING (Similitud Semántica)
+        # 1. NLP PIPELINE Y FEATURE ENGINEERING (SVD 300D)
         combined_est = f"{student_data.hSkills} {student_data.sSkills}"
-        combined_pub = f"{project_data.reqHSkills}" # Podríamos añadir soft si existieran en el proto
+        combined_pub = f"{project_data.reqHSkills}"
         
-        v_est = self.vectorizer.transform([combined_est])
-        v_pub = self.vectorizer.transform([combined_pub])
-        cosine_sim = float(cosine_similarity(v_est, v_pub)[0][0])
+        # Generar las representaciones densas
+        v_est = self.get_text_embedding(combined_est)
+        v_pub = self.get_text_embedding(combined_pub)
+        
+        # Matriz densa comprimida como diferencia absoluta
+        svd_diff = np.abs(np.array(v_est) - np.array(v_pub)).tolist()
 
         # 2. FEATURE ENGINEERING (Filtros y Negocio)
         schedule_overlap = self.check_schedule_overlap(student_data.availabilityJson, project_data.scheduleJson)
         
-        # Calcular mandatory_match y skill_match_ratio (Lógica de Negocio V11)
-        # Nota: Aquí asumimos que el orquestador ya filtró lo básico, 
-        # pero recalculamos para el Random Forest.
         req_data = json.loads(project_data.reqJson)
-        est_skills = student_data.hSkills.split(", ") # Simplificación para el prototipo
+        est_skills = student_data.hSkills.split(", ")
         
         match_score = 0
         mandatory_fail = False
@@ -70,20 +107,21 @@ class MatchingEngine:
         skill_match_ratio = match_score / len(req_data) if req_data else 0
         mandatory_match = 0 if mandatory_fail else 1
 
-        # 3. K-MEANS (Clustering de Perfil)
-        # Usamos DataFrame con los nombres exactos del entrenamiento
-        kmeans_df = pd.DataFrame(
-            [[student_data.gpa, student_data.ciclo, cosine_sim]], 
-            columns=['est_gpa', 'est_ciclo', 'cosine_sim']
-        )
-        cluster = int(self.kmeans.predict(kmeans_df)[0])
+        # 3. K-MEANS (Clustering de Perfil usando la matriz densa de 300D)
+        # Features base + 300D vector
+        kmeans_features = [student_data.gpa, student_data.ciclo] + v_est
+        
+        # Generamos nombres de columnas dinámicos (fijos a 300 por el padding)
+        kmeans_cols = ['est_gpa', 'est_ciclo'] + [f'svd_{i}' for i in range(300)]
+        kmeans_df = pd.DataFrame([kmeans_features]) 
+        cluster = int(self.kmeans.predict(kmeans_df.values)[0])
 
         # 4. PREDICCIÓN RANDOM FOREST
-        X_numeric = [
+        X_numeric_base = [
             student_data.ciclo, student_data.gpa, int(student_data.isGpaVerified),
             mandatory_match, skill_match_ratio,
             student_data.hoursAvailable, project_data.maxHours,
-            cosine_sim, schedule_overlap, cluster
+            schedule_overlap, cluster
         ]
         
         # One-Hot Encoding dinámico basado en lo guardado en el entrenamiento
@@ -94,17 +132,11 @@ class MatchingEngine:
         
         X_cat = [current_features.get(col, 0) for col in self.cat_cols]
         
-        # Combinar todo en un DataFrame con nombres de columnas del entrenamiento
-        numeric_cols = [
-            'est_ciclo', 'est_gpa', 'est_is_gpa_verified', 'mandatory_match', 
-            'skill_match_ratio', 'est_hours_available', 'pub_max_hours', 
-            'cosine_sim', 'schedule_overlap', 'cluster'
-        ]
-        X_final_df = pd.DataFrame([X_numeric + X_cat], columns=numeric_cols + list(self.cat_cols))
+        # Combinar todo: Numéricas Base + Matriz de 300D (SVD Diff) + Categóricas OHE
+        X_final = X_numeric_base + svd_diff + X_cat
 
         # Obtener probabilidad de clase 1 (Apto)
-        # Usamos .values para pasar solo la matriz y evitar el Warning si RF se entrenó sin nombres
-        proba = self.rf.predict_proba(X_final_df.values)[0][1]
+        proba = self.rf.predict_proba([X_final])[0][1]
 
         return {
             "score": round(float(proba), 4),
