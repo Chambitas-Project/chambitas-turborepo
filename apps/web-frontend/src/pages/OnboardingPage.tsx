@@ -3,15 +3,15 @@ import { useAuth } from "../context/AuthContext";
 import { apiClient } from "../api/api-client";
 import { Button, Input, Badge, cn } from "@chambitas/ui";
 import { useNavigate } from "react-router-dom";
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  Sparkles, 
-  GraduationCap, 
-  Building2, 
-  CheckCircle2, 
-  Search, 
-  X, 
+import {
+  ChevronRight,
+  ChevronLeft,
+  Sparkles,
+  GraduationCap,
+  Building2,
+  CheckCircle2,
+  Search,
+  X,
   Star,
   Clock,
   Info,
@@ -142,7 +142,7 @@ export function OnboardingPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredSkills = availableSkills.filter(skill => 
+  const filteredSkills = availableSkills.filter(skill =>
     skill.name.toLowerCase().includes(skillSearch.toLowerCase()) &&
     !studentData.skills.some(s => s.name === skill.name)
   );
@@ -197,7 +197,7 @@ export function OnboardingPage() {
     setError(null);
     const payload = {
       full_name: studentData.fullName,
-      career_id: studentData.careerId, 
+      career_id: studentData.careerId,
       academic_cycle: Number(studentData.academicCycle),
       gpa: Number(studentData.gpa),
       weekly_availability: Math.round(calculateTotalHours()),
@@ -213,14 +213,14 @@ export function OnboardingPage() {
     } catch (err: any) {
       console.error("Submission error details:", err.response?.data || err);
       if (err.response?.status === 500) {
-          setError("Error interno del servidor (500). Verifica que tu carrera y habilidades sean válidas.");
+        setError("Error interno del servidor (500). Verifica que tu carrera y habilidades sean válidas.");
       } else if (err.response?.status === 503) {
-          setError("El servicio de perfiles está temporalmente inactivo (Circuit Open). Por favor, espera un minuto e inténtalo de nuevo.");
+        setError("El servicio de perfiles está temporalmente inactivo (Circuit Open). Por favor, espera un minuto e inténtalo de nuevo.");
       } else if (err.response?.status === 400) {
-          const details = Array.isArray(err.response.data.message) 
-            ? err.response.data.message.join(", ") 
-            : err.response.data.message;
-          setError(`Error de validación: ${details}`);
+        const details = Array.isArray(err.response.data.message)
+          ? err.response.data.message.join(", ")
+          : err.response.data.message;
+        setError(`Error de validación: ${details}`);
       } else if (err.response?.status === 401) {
         setError("Error de autenticación: Tu sesión ha expirado. Por favor, re-loguea.");
       } else {
@@ -236,8 +236,8 @@ export function OnboardingPage() {
     setError(null);
     try {
       await apiClient.post("/profile/onboarding/employer", {
-        name: employerData.name, 
-        company_name: employerData.companyName, 
+        name: employerData.name,
+        company_name: employerData.companyName,
         description: employerData.description
       });
 
@@ -273,16 +273,16 @@ export function OnboardingPage() {
     const trimmed = skillName.trim();
     if (!trimmed) return;
     if (studentData.skills.length >= 10) return;
-    
+
     // Solo permitir si está en el catálogo
     const exists = availableSkills.some(s => s.name.toLowerCase() === trimmed.toLowerCase());
     if (!exists) return;
 
     // Check if skill already added
     if (studentData.skills.some(s => s.name.toLowerCase() === trimmed.toLowerCase())) {
-        setSkillSearch("");
-        setShowSuggestions(false);
-        return;
+      setSkillSearch("");
+      setShowSuggestions(false);
+      return;
     }
 
     setStudentData(prev => ({
@@ -303,7 +303,7 @@ export function OnboardingPage() {
   const updateProficiency = (skillName: string, level: number) => {
     setStudentData(prev => ({
       ...prev,
-      skills: prev.skills.map(s => 
+      skills: prev.skills.map(s =>
         s.name === skillName ? { ...s, proficiency_level: level } : s
       )
     }));
@@ -343,7 +343,7 @@ export function OnboardingPage() {
                   <div className="hidden md:flex flex-col">
                     <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-50">Paso {i}</span>
                     <span className="text-xs font-bold">
-                      {user?.role === "student" 
+                      {user?.role === "student"
                         ? (i === 1 ? "Identidad" : i === 2 ? "Disponibilidad" : "Skills")
                         : "Completar Perfil"
                       }
@@ -353,7 +353,7 @@ export function OnboardingPage() {
               ))}
             </nav>
           </div>
-          
+
           <button onClick={logout} className="hidden lg:block text-white/40 hover:text-white text-[9px] font-black uppercase tracking-widest transition-colors">
             Cerrar Sesión
           </button>
@@ -374,8 +374,8 @@ export function OnboardingPage() {
                 )}
               </h1>
               <p className="mt-3 text-slate-500 font-medium text-base">
-                {step === 2 && user.role === "student" 
-                  ? "Define tus bloques de disponibilidad para que la IA te asigne los mejores microtrabajos." 
+                {step === 2 && user.role === "student"
+                  ? "Define tus bloques de disponibilidad para que la IA te asigne los mejores microtrabajos."
                   : "Completa esta información para empezar."}
               </p>
             </header>
@@ -396,11 +396,11 @@ export function OnboardingPage() {
                     <div className="space-y-6">
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
-                        <Input 
-                          placeholder="Tu nombre y apellidos" 
+                        <Input
+                          placeholder="Tu nombre y apellidos"
                           className="h-12 rounded-xl border-slate-200 focus:ring-emerald-500/10 text-base font-medium"
                           value={studentData.fullName}
-                          onChange={e => setStudentData({...studentData, fullName: e.target.value})}
+                          onChange={e => setStudentData({ ...studentData, fullName: e.target.value })}
                         />
                       </div>
 
@@ -408,13 +408,13 @@ export function OnboardingPage() {
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Carrera Académica</label>
                         <div className="relative">
                           <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 z-10" />
-                          <select 
+                          <select
                             className={cn(
                               "w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 bg-white text-base font-black appearance-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all",
                               studentData.careerId === "" ? "text-slate-300" : "text-slate-900"
                             )}
                             value={studentData.careerId}
-                            onChange={e => setStudentData({...studentData, careerId: e.target.value})}
+                            onChange={e => setStudentData({ ...studentData, careerId: e.target.value })}
                           >
                             <option value="">{careersError ? "No se pudo cargar el catálogo" : "Selecciona tu carrera..."}</option>
                             {availableCareers.map(career => (
@@ -436,7 +436,7 @@ export function OnboardingPage() {
                       {/* Sección de Promedio Ponderado (GPA) */}
                       <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 relative overflow-hidden group hover:border-emerald-200 transition-all">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 blur-3xl opacity-50 group-hover:bg-emerald-100 transition-colors" />
-                        
+
                         <div className="flex flex-col md:flex-row gap-8 items-center relative z-10">
                           <div className="flex-1 space-y-4">
                             <div className="flex items-center gap-3">
@@ -445,10 +445,10 @@ export function OnboardingPage() {
                               </div>
                               <h3 className="text-xl font-black text-slate-900 tracking-tight">Tu Rendimiento Académico</h3>
                             </div>
-                            
+
                             <div className="space-y-3">
                               <p className="text-sm font-bold text-slate-600 leading-relaxed">
-                                El <span className="text-emerald-700">Promedio Ponderado (GPA)</span> refleja tu desempeño general. 
+                                El <span className="text-emerald-700">Promedio Ponderado (GPA)</span> refleja tu desempeño general.
                                 Las empresas utilizan este dato para validar tu compromiso y excelencia en tus estudios.
                               </p>
                               <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 w-fit px-3 py-1.5 rounded-lg border border-slate-100">
@@ -460,14 +460,14 @@ export function OnboardingPage() {
 
                           <div className="shrink-0 flex flex-col items-center gap-3">
                             <div className="relative group/input">
-                              <input 
-                                type="number" 
-                                step="0.1" 
-                                min="0" 
+                              <input
+                                type="number"
+                                step="0.1"
+                                min="0"
                                 max="20"
                                 className="h-24 w-40 rounded-3xl border-4 border-slate-100 bg-slate-50/50 text-center font-black text-4xl text-emerald-700 focus:border-emerald-500 focus:bg-white outline-none transition-all hover:border-slate-200"
                                 value={studentData.gpa}
-                                onChange={e => setStudentData({...studentData, gpa: Number(e.target.value)})}
+                                onChange={e => setStudentData({ ...studentData, gpa: Number(e.target.value) })}
                               />
                               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg opacity-0 group-focus-within/input:opacity-100 transition-opacity whitespace-nowrap">
                                 PUNTAJE ACTUAL
@@ -488,12 +488,12 @@ export function OnboardingPage() {
                             {studentData.bio.length}/500
                           </span>
                         </div>
-                        <textarea 
+                        <textarea
                           maxLength={500}
                           className="w-full min-h-[120px] rounded-xl border border-slate-200 p-4 text-base font-medium focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
                           placeholder="Cuéntanos un poco sobre tus intereses..."
                           value={studentData.bio}
-                          onChange={e => setStudentData({...studentData, bio: e.target.value})}
+                          onChange={e => setStudentData({ ...studentData, bio: e.target.value })}
                         />
                       </div>
                     </div>
@@ -512,14 +512,14 @@ export function OnboardingPage() {
                           </div>
                         </div>
                         <div className="flex flex-col gap-2">
-                           <div className="flex items-center gap-2">
-                              <div className="h-3 w-3 rounded-full bg-emerald-600" />
-                              <span className="text-[9px] font-black text-emerald-800 uppercase tracking-widest">Horas disponibles a trabajar</span>
-                           </div>
-                           <div className="flex items-center gap-2">
-                              <div className="h-3 w-3 rounded-full bg-slate-100" />
-                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ocupado / Clases</span>
-                           </div>
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-emerald-600" />
+                            <span className="text-[9px] font-black text-emerald-800 uppercase tracking-widest">Horas disponibles a trabajar</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-slate-100" />
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ocupado / Clases</span>
+                          </div>
                         </div>
                       </div>
 
@@ -544,8 +544,8 @@ export function OnboardingPage() {
                                       onClick={() => toggleAvailability(day.id, idx)}
                                       className={cn(
                                         "h-8 rounded-lg border-2 transition-all duration-200",
-                                        isSelected 
-                                          ? "bg-emerald-600 border-emerald-600 shadow-lg shadow-emerald-900/20 scale-105" 
+                                        isSelected
+                                          ? "bg-emerald-600 border-emerald-600 shadow-lg shadow-emerald-900/20 scale-105"
                                           : "bg-slate-50 border-transparent hover:border-emerald-200"
                                       )}
                                     />
@@ -566,19 +566,19 @@ export function OnboardingPage() {
                           <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Busca tus Habilidades</label>
                             {skillsError && (
-                                <span className="text-[9px] font-bold text-amber-600 flex items-center gap-1">
-                                    <AlertCircle className="h-3 w-3" />
-                                    No se pudo cargar el catálogo. Por favor, re-loguea.
-                                </span>
+                              <span className="text-[9px] font-bold text-amber-600 flex items-center gap-1">
+                                <AlertCircle className="h-3 w-3" />
+                                No se pudo cargar el catálogo. Por favor, re-loguea.
+                              </span>
                             )}
                           </div>
                           <Badge className="bg-emerald-100 text-emerald-700 font-black text-[10px]">{studentData.skills.length}/10</Badge>
                         </div>
-                        
+
                         <div className="relative" ref={suggestionRef}>
                           <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
-                            <Input 
+                            <Input
                               placeholder="Ej: React, Python, Diseño..."
                               className="h-14 pl-12 rounded-2xl border-slate-200 shadow-sm focus:ring-emerald-500/10 text-base font-black"
                               value={skillSearch}
@@ -631,7 +631,7 @@ export function OnboardingPage() {
                                   <div className="h-10 w-10 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
                                     <Star className="h-5 w-5 text-emerald-600 fill-emerald-600" />
                                   </div>
-                                  <span className="font-black text-slate-800 break-words">{skill.name}</span>
+                                  <span className="font-black text-slate-800 wrap-break-word">{skill.name}</span>
                                 </div>
 
                                 <div className="flex items-center gap-4">
@@ -642,8 +642,8 @@ export function OnboardingPage() {
                                         onClick={() => updateProficiency(skill.name, level)}
                                         className={cn(
                                           "px-2.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tighter transition-all flex flex-col items-center min-w-[56px]",
-                                          skill.proficiency_level === level 
-                                            ? "bg-emerald-600 text-white shadow-md shadow-emerald-900/20" 
+                                          skill.proficiency_level === level
+                                            ? "bg-emerald-600 text-white shadow-md shadow-emerald-900/20"
                                             : "text-slate-400 hover:text-slate-600 hover:bg-white"
                                         )}
                                       >
@@ -652,7 +652,7 @@ export function OnboardingPage() {
                                       </button>
                                     ))}
                                   </div>
-                                  <button 
+                                  <button
                                     onClick={() => removeSkill(skill.name)}
                                     className="p-2 text-slate-300 hover:text-red-500 transition-colors"
                                   >
@@ -675,20 +675,20 @@ export function OnboardingPage() {
                     <div className="space-y-5">
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tu Nombre Completo</label>
-                        <Input 
-                          placeholder="Ej: Juan Pérez" 
+                        <Input
+                          placeholder="Ej: Juan Pérez"
                           className="h-12 rounded-xl border-slate-200 text-base font-medium"
                           value={employerData.name}
-                          onChange={e => setEmployerData({...employerData, name: e.target.value})}
+                          onChange={e => setEmployerData({ ...employerData, name: e.target.value })}
                         />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre de la Empresa</label>
-                        <Input 
-                          placeholder="Ej: Chambitas S.A.C." 
+                        <Input
+                          placeholder="Ej: Chambitas S.A.C."
                           className="h-12 rounded-xl border-slate-200 text-base font-medium"
                           value={employerData.companyName}
-                          onChange={e => setEmployerData({...employerData, companyName: e.target.value})}
+                          onChange={e => setEmployerData({ ...employerData, companyName: e.target.value })}
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -701,12 +701,12 @@ export function OnboardingPage() {
                             {employerData.description.length}/500
                           </span>
                         </div>
-                        <textarea 
+                        <textarea
                           maxLength={500}
                           className="w-full min-h-[140px] rounded-xl border border-slate-200 p-4 text-base font-medium focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all"
                           placeholder="Cuéntanos sobre tu empresa..."
                           value={employerData.description}
-                          onChange={e => setEmployerData({...employerData, description: e.target.value})}
+                          onChange={e => setEmployerData({ ...employerData, description: e.target.value })}
                         />
                       </div>
                     </div>
@@ -716,13 +716,13 @@ export function OnboardingPage() {
             </div>
 
             <footer className="mt-12 flex flex-col sm:flex-row-reverse items-center justify-between gap-4 border-t border-slate-100 pt-8 pb-12">
-              <Button 
+              <Button
                 onClick={handleNext}
                 disabled={loading}
                 className={cn(
                   "w-full sm:w-auto px-10 h-14 rounded-2xl font-black text-sm tracking-widest transition-all flex items-center justify-center gap-1.5",
-                  isStepValid() 
-                    ? "bg-[#065f46] text-white shadow-xl shadow-emerald-900/20 hover:scale-[1.02]" 
+                  isStepValid()
+                    ? "bg-[#065f46] text-white shadow-xl shadow-emerald-900/20 hover:scale-[1.02]"
                     : "bg-slate-100 text-slate-400 cursor-not-allowed"
                 )}
               >
@@ -731,7 +731,7 @@ export function OnboardingPage() {
               </Button>
 
               {step > 1 ? (
-                <button 
+                <button
                   onClick={() => setStep(s => s - 1)}
                   className="w-full sm:w-auto h-14 px-8 text-slate-400 font-bold hover:text-slate-600 transition-colors flex items-center justify-center gap-2 text-sm"
                 >
