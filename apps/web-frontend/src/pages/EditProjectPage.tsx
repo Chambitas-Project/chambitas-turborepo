@@ -8,11 +8,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import React from "react";
 
 // Types
-import type { Skill, SelectedSkill, ProjectFormData } from "../features/edit-project/types";
+import type { Skill, SelectedSkill, ProjectFormData } from "../features/project-form/types";
 
 // Components
-import { ProjectMainDetailsForm } from "../features/edit-project/components/ProjectMainDetailsForm";
-import { ProjectSkillsSelector } from "../features/edit-project/components/ProjectSkillsSelector";
+import { ProjectMainDetailsForm } from "../features/project-form/components/ProjectMainDetailsForm";
+import { ProjectSkillsSelector } from "../features/project-form/components/ProjectSkillsSelector";
 
 export function EditProjectPage() {
   const { id } = useParams();
