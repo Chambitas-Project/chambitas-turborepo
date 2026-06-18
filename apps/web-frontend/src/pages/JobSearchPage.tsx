@@ -24,6 +24,7 @@ export function JobSearchPage() {
 
   // States for dynamic filtering
   const [activeCategory, setActiveCategory] = useState("Todos");
+  const [activeSkill, setActiveSkill] = useState("");
   const [maxPrice, setMaxPrice] = useState(5000);
 
   // Pagination state
@@ -76,7 +77,7 @@ export function JobSearchPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, activeCategory, maxPrice]);
+  }, [searchQuery, activeCategory, maxPrice, activeSkill]);
 
   const filteredProjects = projects.filter(project => {
     const isProjectOpen = (project.status || "open").toLowerCase() === "open";
@@ -92,7 +93,12 @@ export function JobSearchPage() {
 
     const matchesPrice = project.budget <= maxPrice;
 
-    return matchesSearch && matchesCategory && matchesPrice;
+    const matchesSkill = !activeSkill || (project.skills && project.skills.some(skill => {
+      if (typeof skill === 'string') return skill.toLowerCase().includes(activeSkill.toLowerCase());
+      return skill.skill_name?.toLowerCase().includes(activeSkill.toLowerCase());
+    }));
+
+    return matchesSearch && matchesCategory && matchesPrice && matchesSkill;
   });
 
   const totalPages = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE);
@@ -141,10 +147,13 @@ export function JobSearchPage() {
             categories={categories}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
+            activeSkill={activeSkill}
+            setActiveSkill={setActiveSkill}
             maxPrice={maxPrice}
             setMaxPrice={setMaxPrice}
             onClearFilters={() => {
               setActiveCategory("Todos");
+              setActiveSkill("");
               setMaxPrice(5000);
               setSearchQuery("");
             }}

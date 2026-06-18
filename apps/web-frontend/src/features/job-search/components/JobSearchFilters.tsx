@@ -6,6 +6,8 @@ interface JobSearchFiltersProps {
   categories: { label: string; value: string }[];
   activeCategory: string;
   setActiveCategory: (cat: string) => void;
+  activeSkill: string;
+  setActiveSkill: (skill: string) => void;
   maxPrice: number;
   setMaxPrice: (price: number) => void;
   onClearFilters: () => void;
@@ -16,6 +18,8 @@ export function JobSearchFilters({
   categories,
   activeCategory,
   setActiveCategory,
+  activeSkill,
+  setActiveSkill,
   maxPrice,
   setMaxPrice,
   onClearFilters,
@@ -39,7 +43,7 @@ export function JobSearchFilters({
             <p className="text-sm font-bold text-slate-900">Categorías</p>
             <ChevronDown className="h-4 w-4 text-emerald-600" />
           </div>
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
             {categories.map(cat => (
               <label key={cat.value} className="flex items-center justify-between cursor-pointer group">
                 <span className={cn("text-sm transition-colors", activeCategory === cat.value ? "text-slate-900 font-black" : "text-slate-500 font-medium group-hover:text-slate-900")}>
@@ -53,6 +57,23 @@ export function JobSearchFilters({
                 />
               </label>
             ))}
+          </div>
+        </div>
+
+        {/* Habilidad */}
+        <div className="space-y-4 pb-6 border-b border-slate-200">
+          <div className="flex items-center justify-between cursor-pointer">
+            <p className="text-sm font-bold text-slate-900">Habilidad</p>
+            <ChevronDown className="h-4 w-4 text-emerald-600" />
+          </div>
+          <div className="pt-2">
+            <input
+              type="text"
+              value={activeSkill}
+              onChange={(e) => setActiveSkill(e.target.value)}
+              placeholder="Ej. React, Node.js..."
+              className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-md outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-700 placeholder:text-slate-400 font-medium"
+            />
           </div>
         </div>
 

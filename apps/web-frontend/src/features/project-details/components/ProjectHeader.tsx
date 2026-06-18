@@ -42,12 +42,12 @@ export function ProjectHeader({ project, timeAgo, matchScore }: ProjectHeaderPro
             <div className="flex items-center gap-2 pt-1">
               <div className={cn(
                 "h-3 w-3 rounded-full animate-pulse",
-                project.status === 'active' ? "bg-emerald-500" :
+                (project.status === 'active' || project.status === 'open') ? "bg-emerald-500" :
                   project.status === 'in_progress' ? "bg-indigo-500" :
                     "bg-slate-400"
               )} />
               <p className="text-base font-black text-slate-900 uppercase">
-                {project.status === 'active' ? 'Abierto' :
+                {(project.status === 'active' || project.status === 'open') ? 'Abierto' :
                   project.status === 'in_progress' ? 'En Progreso' :
                     project.status === 'pending' ? 'Pendiente' : 'Completado'}
               </p>
