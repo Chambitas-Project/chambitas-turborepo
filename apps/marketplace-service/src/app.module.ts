@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { BullModule } from '@nestjs/bullmq';
 import { ProjectsModule } from './features/projects/projects.module';
 import { ApplicationsModule } from './features/applications/applications.module';
 import { ReviewsModule } from './features/reviews/reviews.module';
@@ -11,6 +12,14 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: getEnvFiles(),
+    }),
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          url: configService.get<string>('REDIS_URL', 'redis://localhost:6379'),
+        },
+      }),
     }),
     ProjectsModule,
     ApplicationsModule,
