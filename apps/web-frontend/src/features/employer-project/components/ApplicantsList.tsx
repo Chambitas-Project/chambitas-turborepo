@@ -91,7 +91,11 @@ export function ApplicantsList({
                         <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
                           <CheckCircle2 className="h-3.5 w-3.5" /> {(app.match_score * 100).toFixed(0)}% de Coincidencia
                         </Badge>
-                      ) : null}
+                      ) : (
+                        <Badge className="bg-slate-50 text-slate-500 border border-slate-200 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculando Coincidencia IA...
+                        </Badge>
+                      )}
                     </div>
 
                     <p className="text-sm font-medium text-slate-600 mt-1 line-clamp-3 leading-relaxed">

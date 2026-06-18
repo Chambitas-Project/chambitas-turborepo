@@ -15,8 +15,9 @@ export interface EmployerProject {
   description?: string;
   budget?: string | number;
   status: string;
-  applicantCount: number;
+  applicantCount?: number;
   applicantsCount?: number;
+  applicant_count?: number;
   contracted?: string | number;
   createdAt: string;
 }

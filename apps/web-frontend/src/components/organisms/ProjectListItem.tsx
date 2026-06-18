@@ -61,7 +61,7 @@ export function ProjectListItem({ project }: { project: EmployerProject }) {
             {isCompleted && project.contracted ? (
                <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> Contratado: {project.contracted}</span>
             ) : (
-               <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> {project.applicantsCount || project.applicantCount || 0} Postulantes</span>
+               <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5" /> {project.applicantsCount || project.applicantCount || project.applicant_count || 0} Postulantes</span>
             )}
           </div>
         </div>
