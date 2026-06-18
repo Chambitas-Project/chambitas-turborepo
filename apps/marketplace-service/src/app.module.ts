@@ -15,13 +15,27 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
     }),
     BullModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        connection: {
-          host: configService.get<string>('REDISHOST', 'localhost'),
-          port: configService.get<number>('REDISPORT', 6379),
-          password: configService.get<string>('REDISPASSWORD'),
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const redisUrl = configService.get<string>('REDIS_URL');
+        let host = configService.get<string>('REDISHOST', 'localhost');
+        let port = configService.get<number>('REDISPORT', 6379);
+        let password = configService.get<string>('REDISPASSWORD');
+
+        if (redisUrl) {
+          try {
+            const url = new URL(redisUrl);
+            host = url.hostname;
+            port = parseInt(url.port, 10) || 6379;
+            password = url.password || password;
+          } catch (e) {
+            // Ignore parse errors
+          }
+        }
+
+        return {
+          connection: { host, port, password },
+        };
+      },
     }),
     ProjectsModule,
     ApplicationsModule,

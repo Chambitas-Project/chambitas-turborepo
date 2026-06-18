@@ -6,14 +6,16 @@ import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const logger = new Logger('MatchingService');
-  const grpcUrl = process.env.MATCHING_SERVICE_GRPC_URL || '0.0.0.0:50053';
+  let grpcUrl = process.env.MATCHING_SERVICE_GRPC_URL || '0.0.0.0:50053';
+  const portMatch = grpcUrl.match(/:(\d+)$/);
+  const bindUrl = portMatch ? `0.0.0.0:${portMatch[1]}` : '0.0.0.0:50053';
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
     transport: Transport.GRPC,
     options: {
       package: PROTO_PACKAGE.MATCHING,
       protoPath: PROTO_PATH.MATCHING,
-      url: grpcUrl,
+      url: bindUrl,
       loader: { keepCase: true },
     },
   });
