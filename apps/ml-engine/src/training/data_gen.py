@@ -152,6 +152,7 @@ def generate_data_tesis_v8(n_samples=5000):
         projects_pool.append({
             'pub_id': str(uuid.uuid4()),
             'title': f"Proyecto para {base_career['name']}",
+            'description': f"Buscamos talento para colaborar en un proyecto relacionado con {base_career['name']}. El objetivo principal será desarrollar soluciones innovadoras aplicando habilidades clave en el área.",
             'university_id': base_career.get('university_id', UPC_UNIVERSITY_ID),
             'category': np.random.choice(SERVICE_CATEGORIES),
             'max_hours': np.random.choice([10, 20, 30]),
@@ -211,6 +212,8 @@ def generate_data_tesis_v8(n_samples=5000):
             'est_s_skills': est['s_skills_str'],
             'pub_req_h_skills': pub['req_h_str'],
             'pub_req_s_skills': "",
+            'pub_title': pub['title'],
+            'pub_description': pub['description'],
             'pub_complexity': pub['complexity']
         })
 

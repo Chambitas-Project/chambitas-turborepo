@@ -47,6 +47,7 @@ message StudentMLData {
   string availabilityJson = 7;
   string career = 8;
   string id = 9;
+  repeated double embedding = 10;
 }
 
 message ProjectMLData {
@@ -58,6 +59,7 @@ message ProjectMLData {
   string reqJson = 6;
   string id = 7;
   string title = 8;
+  repeated double embedding = 9;
 }
 
 message PredictMatchRequest {

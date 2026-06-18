@@ -58,7 +58,7 @@ def train_tesis_v10_hybrid():
 
     # 1. NLP PIPELINE: LIMPIEZA, LEMATIZACIÓN, TF-IDF Y SVD
     df['combined_est'] = (df['est_h_skills'].fillna('') + " " + df['est_s_skills'].fillna('')).apply(clean_and_lemmatize)
-    df['combined_pub'] = (df['pub_req_h_skills'].fillna('') + " " + df['pub_req_s_skills'].fillna('')).apply(clean_and_lemmatize)
+    df['combined_pub'] = (df['pub_title'].fillna('') + " " + df['pub_description'].fillna('') + " " + df['pub_req_h_skills'].fillna('') + " " + df['pub_req_s_skills'].fillna('')).apply(clean_and_lemmatize)
     
     # TF-IDF
     vectorizer = TfidfVectorizer()
@@ -93,8 +93,11 @@ def train_tesis_v10_hybrid():
         X_svd_est = X_svd_est_raw
         X_svd_pub = X_svd_pub_raw
     
-    # Para el modelo predictivo de Match usaremos la diferencia absoluta de los vectores (siempre de 300D)
-    X_svd_diff = np.abs(X_svd_est - X_svd_pub)
+    # Para el modelo predictivo de Match usaremos la Similitud Coseno (como dicta la Fase 2 del paper)
+    from sklearn.metrics.pairwise import paired_cosine_distances
+    # paired_cosine_distances devuelve 1 - sim(u, v). Para obtener similitud: 1 - dist
+    cosine_sims = 1.0 - paired_cosine_distances(X_svd_est, X_svd_pub)
+    X_cosine_sim = cosine_sims.reshape(-1, 1)
 
     # Variables adicionales
     overlaps = [check_schedule_overlap(df['est_availability'][i], df['pub_schedule'][i]) for i in range(len(df))]
@@ -116,7 +119,7 @@ def train_tesis_v10_hybrid():
     joblib.dump(knn, os.path.join(base_data_path, 'model_knn_tesis.pkl'))
     print("[OK] KNN: Modelo de cercanía entrenado con matriz densa.")
 
-    # 5. RANDOM FOREST (Clasificación Híbrida usando la matriz de 300D en lugar de cosine_sim)
+    # 5. RANDOM FOREST (Clasificación Híbrida usando Similitud Coseno)
     X_numeric_base = df[[
         'est_ciclo', 'est_gpa', 'est_is_gpa_verified', 
         'est_mandatory_match', 'est_skill_match_ratio',
@@ -124,8 +127,8 @@ def train_tesis_v10_hybrid():
         'schedule_overlap', 'profile_cluster'
     ]].values
     
-    # Concatenamos las características numéricas base con la matriz de 300 dimensiones (diferencia de vectores)
-    X_numeric = np.hstack([X_numeric_base, X_svd_diff])
+    # Concatenamos las características numéricas base con la Similitud Coseno
+    X_numeric = np.hstack([X_numeric_base, X_cosine_sim])
     
     df_cat = pd.get_dummies(df[['est_carrera', 'pub_complexity']])
     X = np.hstack([X_numeric, df_cat.values])

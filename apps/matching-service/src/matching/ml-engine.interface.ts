@@ -15,6 +15,7 @@ export interface StudentMLData {
   availabilityJson: string;
   hSkills: string;
   sSkills: string;
+  embedding?: number[];
 }
 
 export interface ProjectMLData {
@@ -26,6 +27,7 @@ export interface ProjectMLData {
   reqJson: string;
   reqHSkills: string;
   complexity: string;
+  embedding?: number[];
 }
 
 export interface PredictMatchResponse {

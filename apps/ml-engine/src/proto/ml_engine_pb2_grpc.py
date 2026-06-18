@@ -5,7 +5,7 @@ import warnings
 
 import ml_engine_pb2 as ml__engine__pb2
 
-GRPC_GENERATED_VERSION = '1.80.0'
+GRPC_GENERATED_VERSION = '1.81.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -25,7 +25,7 @@ if _version_not_supported:
     )
 
 
-class MLEngineServiceStub(object):
+class MLEngineServiceStub:
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -54,9 +54,24 @@ class MLEngineServiceStub(object):
                 request_serializer=ml__engine__pb2.GetModelStatusRequest.SerializeToString,
                 response_deserializer=ml__engine__pb2.GetModelStatusResponse.FromString,
                 _registered_method=True)
+        self.GenerateProjectEmbedding = channel.unary_unary(
+                '/ml_engine.MLEngineService/GenerateProjectEmbedding',
+                request_serializer=ml__engine__pb2.ProjectEmbeddingRequest.SerializeToString,
+                response_deserializer=ml__engine__pb2.EmbeddingResponse.FromString,
+                _registered_method=True)
+        self.GenerateStudentEmbedding = channel.unary_unary(
+                '/ml_engine.MLEngineService/GenerateStudentEmbedding',
+                request_serializer=ml__engine__pb2.StudentEmbeddingRequest.SerializeToString,
+                response_deserializer=ml__engine__pb2.EmbeddingResponse.FromString,
+                _registered_method=True)
+        self.GenerateSkillEmbedding = channel.unary_unary(
+                '/ml_engine.MLEngineService/GenerateSkillEmbedding',
+                request_serializer=ml__engine__pb2.SkillEmbeddingRequest.SerializeToString,
+                response_deserializer=ml__engine__pb2.EmbeddingResponse.FromString,
+                _registered_method=True)
 
 
-class MLEngineServiceServicer(object):
+class MLEngineServiceServicer:
     """Missing associated documentation comment in .proto file."""
 
     def PredictMatch(self, request, context):
@@ -86,6 +101,25 @@ class MLEngineServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GenerateProjectEmbedding(self, request, context):
+        """Webhooks asíncronos para reconstrucción relacional
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GenerateStudentEmbedding(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GenerateSkillEmbedding(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_MLEngineServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -109,6 +143,21 @@ def add_MLEngineServiceServicer_to_server(servicer, server):
                     request_deserializer=ml__engine__pb2.GetModelStatusRequest.FromString,
                     response_serializer=ml__engine__pb2.GetModelStatusResponse.SerializeToString,
             ),
+            'GenerateProjectEmbedding': grpc.unary_unary_rpc_method_handler(
+                    servicer.GenerateProjectEmbedding,
+                    request_deserializer=ml__engine__pb2.ProjectEmbeddingRequest.FromString,
+                    response_serializer=ml__engine__pb2.EmbeddingResponse.SerializeToString,
+            ),
+            'GenerateStudentEmbedding': grpc.unary_unary_rpc_method_handler(
+                    servicer.GenerateStudentEmbedding,
+                    request_deserializer=ml__engine__pb2.StudentEmbeddingRequest.FromString,
+                    response_serializer=ml__engine__pb2.EmbeddingResponse.SerializeToString,
+            ),
+            'GenerateSkillEmbedding': grpc.unary_unary_rpc_method_handler(
+                    servicer.GenerateSkillEmbedding,
+                    request_deserializer=ml__engine__pb2.SkillEmbeddingRequest.FromString,
+                    response_serializer=ml__engine__pb2.EmbeddingResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'ml_engine.MLEngineService', rpc_method_handlers)
@@ -117,7 +166,7 @@ def add_MLEngineServiceServicer_to_server(servicer, server):
 
 
  # This class is part of an EXPERIMENTAL API.
-class MLEngineService(object):
+class MLEngineService:
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -218,6 +267,87 @@ class MLEngineService(object):
             '/ml_engine.MLEngineService/GetModelStatus',
             ml__engine__pb2.GetModelStatusRequest.SerializeToString,
             ml__engine__pb2.GetModelStatusResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GenerateProjectEmbedding(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ml_engine.MLEngineService/GenerateProjectEmbedding',
+            ml__engine__pb2.ProjectEmbeddingRequest.SerializeToString,
+            ml__engine__pb2.EmbeddingResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GenerateStudentEmbedding(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ml_engine.MLEngineService/GenerateStudentEmbedding',
+            ml__engine__pb2.StudentEmbeddingRequest.SerializeToString,
+            ml__engine__pb2.EmbeddingResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GenerateSkillEmbedding(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ml_engine.MLEngineService/GenerateSkillEmbedding',
+            ml__engine__pb2.SkillEmbeddingRequest.SerializeToString,
+            ml__engine__pb2.EmbeddingResponse.FromString,
             options,
             channel_credentials,
             insecure,

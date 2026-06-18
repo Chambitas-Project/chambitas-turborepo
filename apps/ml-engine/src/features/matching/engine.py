@@ -78,15 +78,29 @@ class MatchingEngine:
             return {"score": 0.0, "cluster": -1, "error": "Modelos no cargados"}
 
         # 1. NLP PIPELINE Y FEATURE ENGINEERING (SVD 300D)
-        combined_est = f"{student_data.hSkills} {student_data.sSkills}"
-        combined_pub = f"{project_data.reqHSkills}"
+        if hasattr(student_data, 'embedding') and len(student_data.embedding) == 300:
+            v_est = list(student_data.embedding)
+        else:
+            combined_est = f"{student_data.hSkills} {student_data.sSkills}"
+            v_est = self.get_text_embedding(combined_est)
+            
+        if hasattr(project_data, 'embedding') and len(project_data.embedding) == 300:
+            v_pub = list(project_data.embedding)
+        else:
+            combined_pub = f"{project_data.reqHSkills}"
+            v_pub = self.get_text_embedding(combined_pub)
         
-        # Generar las representaciones densas
-        v_est = self.get_text_embedding(combined_est)
-        v_pub = self.get_text_embedding(combined_pub)
-        
-        # Matriz densa comprimida como diferencia absoluta
-        svd_diff = np.abs(np.array(v_est) - np.array(v_pub)).tolist()
+        # Calcular Similitud Coseno
+        # Evitar divisiones por cero con eps
+        eps = 1e-9
+        v_est_arr = np.array(v_est)
+        v_pub_arr = np.array(v_pub)
+        norm_est = np.linalg.norm(v_est_arr)
+        norm_pub = np.linalg.norm(v_pub_arr)
+        if norm_est < eps or norm_pub < eps:
+            cosine_sim = 0.0
+        else:
+            cosine_sim = np.dot(v_est_arr, v_pub_arr) / (norm_est * norm_pub)
 
         # 2. FEATURE ENGINEERING (Filtros y Negocio)
         schedule_overlap = self.check_schedule_overlap(student_data.availabilityJson, project_data.scheduleJson)
@@ -132,8 +146,8 @@ class MatchingEngine:
         
         X_cat = [current_features.get(col, 0) for col in self.cat_cols]
         
-        # Combinar todo: Numéricas Base + Matriz de 300D (SVD Diff) + Categóricas OHE
-        X_final = X_numeric_base + svd_diff + X_cat
+        # Combinar todo: Numéricas Base + Similitud Coseno + Categóricas OHE
+        X_final = X_numeric_base + [cosine_sim] + X_cat
 
         # Obtener probabilidad de clase 1 (Apto)
         proba = self.rf.predict_proba([X_final])[0][1]

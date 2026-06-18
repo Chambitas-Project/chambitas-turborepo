@@ -1,1 +1,1 @@
-{"n_samples": 20000, "gpa_range": [13, 20], "skills_per_student": [3, 10], "scenario": "upc_standard_academic_limits"}
+{"n_samples": 5000, "gpa_range": [13, 20], "skills_per_student": [3, 10], "scenario": "upc_standard_academic_limits"}
