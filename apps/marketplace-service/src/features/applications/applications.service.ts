@@ -141,7 +141,7 @@ export class ApplicationsService {
       student_name: app.student_profiles?.full_name || undefined,
       student_career: app.student_profiles?.careers?.name || undefined,
       student_academic_cycle: app.student_profiles?.academic_cycle || undefined,
-      match_score: app.matches?.score || undefined,
+      match_score: (Array.isArray(app.matches) ? app.matches[0]?.score : app.matches?.score) || undefined,
       project_title: app.projects?.title || undefined,
       student_skills: app.student_profiles?.student_skills?.map((ss: any) => ({
         id: ss.skills?.id,
