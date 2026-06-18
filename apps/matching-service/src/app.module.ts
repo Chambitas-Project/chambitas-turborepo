@@ -15,7 +15,9 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          url: configService.get<string>('REDIS_URL', 'redis://localhost:6379'),
+          host: configService.get<string>('REDISHOST', 'localhost'),
+          port: configService.get<number>('REDISPORT', 6379),
+          password: configService.get<string>('REDISPASSWORD'),
         },
       }),
     }),
