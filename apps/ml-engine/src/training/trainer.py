@@ -150,6 +150,7 @@ def train_tesis_v10_hybrid():
     joblib.dump(rf, os.path.join(base_data_path, 'model_rf_tesis.pkl'))
 
     # 6. MÉTRICAS FINALES
+    from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, classification_report
     y_pred = rf.predict(X_test)
     f1 = f1_score(y_test, y_pred)
     prec = precision_score(y_test, y_pred)
@@ -166,6 +167,10 @@ def train_tesis_v10_hybrid():
     print(f"F1-Score:  {f1:.3f}")
     print(f"Precision: {prec:.3f}")
     print(f"Recall:    {rec:.3f}")
+    print("\n--- MATRIZ DE CONFUSIÓN ---")
+    print(confusion_matrix(y_test, y_pred))
+    print("\n--- REPORTE DE CLASIFICACIÓN ---")
+    print(classification_report(y_test, y_pred, digits=3))
     print("="*50)
 
     # 7. REGISTRO EN SUPABASE
