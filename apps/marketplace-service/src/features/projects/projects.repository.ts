@@ -6,6 +6,7 @@ type ProjectWithRelations = Tables<'projects'> & {
   project_universities: { university_id: string }[];
   project_required_skills: (Tables<'project_required_skills'> & { skills: { name: string } })[];
   employer_profiles?: { company_name: string | null; name: string | null };
+  applications?: { count: number } | { count: number }[];
 };
 
 @Injectable()
@@ -50,10 +51,10 @@ export class ProjectsRepository {
     university_id?: string; // Student's university
     limit?: number;
     offset?: number;
-  }): Promise<{ data: (Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string })[]; total: number }> {
+  }): Promise<{ data: (Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string; applicant_count?: number })[]; total: number }> {
     let query = this.client
       .from('projects')
-      .select('*, employer_profiles(name, company_name), project_universities!left(university_id), project_required_skills(*, skills(name))', { count: 'exact' })
+      .select('*, employer_profiles(name, company_name), project_universities!left(university_id), project_required_skills(*, skills(name)), applications(count)', { count: 'exact' })
       .is('deleted_at', null);
     
     // ... filtros existentes ...
@@ -83,7 +84,10 @@ export class ProjectsRepository {
         skill_name: ps.skills?.name,
         min_proficiency: ps.min_proficiency,
         mandatory: ps.mandatory
-      }))
+      })),
+      applicant_count: Array.isArray(project.applications) 
+        ? project.applications[0]?.count || 0 
+        : (project.applications as any)?.count || 0
     }));
 
     return {

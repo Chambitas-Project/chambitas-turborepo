@@ -292,6 +292,7 @@ export interface Project {
   schedule_constraints?: string;
   company_name?: string;
   match_score?: number;
+  applicant_count?: number;
 }
 
 export interface SkillRequirement {
