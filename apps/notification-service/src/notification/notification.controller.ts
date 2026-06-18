@@ -22,4 +22,14 @@ export class NotificationController {
   sendPushNotification(data: SendPushNotificationRequest): Observable<SendPushNotificationResponse> {
     return this.notificationService.sendPushNotification(data);
   }
+
+  @GrpcMethod('NotificationService', 'ListNotifications')
+  listNotifications(data: any): Observable<any> {
+    return this.notificationService.listNotifications(data);
+  }
+
+  @GrpcMethod('NotificationService', 'MarkAsRead')
+  markAsRead(data: any): Observable<any> {
+    return this.notificationService.markAsRead(data);
+  }
 }

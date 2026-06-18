@@ -90,6 +90,64 @@ export class NotificationService {
     );
   }
 
+  listNotifications(data: { user_id: string; limit?: number; offset?: number }): Observable<any> {
+    const limit = data.limit || 50;
+    const offset = data.offset || 0;
+
+    return from(
+      this.supabase.getClient<Database>().from('notifications')
+        .select('*', { count: 'exact' })
+        .eq('user_id', data.user_id)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+    ).pipe(
+      switchMap(async (response) => {
+        if (response.error) {
+          this.logger.error(`Error fetching notifications: ${response.error.message}`);
+          return { notifications: [], total: 0, unread_count: 0 };
+        }
+
+        const unreadCountRes = await this.supabase.getClient<Database>().from('notifications')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', data.user_id)
+          .is('read_at', null);
+
+        return {
+          notifications: response.data.map(n => ({
+            id: n.id,
+            user_id: n.user_id,
+            title: n.title,
+            message: n.message,
+            type: n.type,
+            priority: n.priority,
+            metadata_json: JSON.stringify(n.metadata || {}),
+            read_at: n.read_at,
+            created_at: n.created_at,
+          })),
+          total: response.count || 0,
+          unread_count: unreadCountRes.count || 0,
+        };
+      })
+    );
+  }
+
+  markAsRead(data: { id: string; user_id: string }): Observable<{ success: boolean }> {
+    return from(
+      this.supabase.getClient<Database>().from('notifications')
+        .update({ read_at: new Date().toISOString() } as any)
+        .eq('id', data.id)
+        .eq('user_id', data.user_id)
+    ).pipe(
+      map((response) => {
+        if (response.error) {
+          this.logger.error(`Error marking notification as read: ${response.error.message}`);
+          return { success: false };
+        }
+        return { success: true };
+      })
+    );
+  }
+
   private mapNotificationType(type: NotificationType): string {
     switch (type) {
       case NotificationType.MATCH: return 'MATCH';

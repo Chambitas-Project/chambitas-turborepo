@@ -639,9 +639,44 @@ export interface IMediaService {
   DeleteFile(data: { url: string }, metadata?: any): Observable<{ success: boolean }>;
 }
 
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: string;
+  priority: string;
+  metadata_json: string;
+  read_at?: string;
+  created_at: string;
+}
+
+export interface ListNotificationsRequest {
+  user_id: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface ListNotificationsResponse {
+  notifications: Notification[];
+  total: number;
+  unread_count: number;
+}
+
+export interface MarkAsReadRequest {
+  id: string;
+  user_id: string;
+}
+
+export interface MarkAsReadResponse {
+  success: boolean;
+}
+
 export interface INotificationService {
   CreateNotification(data: CreateNotificationRequest, metadata?: any): Observable<CreateNotificationResponse>;
   SendPushNotification(data: SendPushNotificationRequest, metadata?: any): Observable<SendPushNotificationResponse>;
+  ListNotifications(data: ListNotificationsRequest, metadata?: any): Observable<ListNotificationsResponse>;
+  MarkAsRead(data: MarkAsReadRequest, metadata?: any): Observable<MarkAsReadResponse>;
 }
 
 export interface IAnalyticsService {

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { Button } from "@chambitas/ui";
 import { ProfileModal } from "../../../components/organisms/ProfileModal";
+import { NotificationBell } from "../../../components/organisms/NotificationBell";
 
 interface DashboardNavbarProps {
   role: "student" | "employer";
@@ -64,6 +65,8 @@ export function DashboardNavbar({ role }: DashboardNavbarProps) {
             </Button>
           )}
           
+          <NotificationBell />
+
           <div className="relative" ref={dropdownRef}>
             <div 
               className="h-9 w-9 rounded-md bg-slate-200 border border-slate-200 shadow-sm overflow-hidden cursor-pointer hover:ring-2 hover:ring-emerald-500 hover:ring-offset-1 transition-all"
