@@ -57,11 +57,16 @@ export class ApplicationsService {
     });
 
     // Enviar a la cola de BullMQ para evaluación asíncrona
-    await this.scoringQueue.add('calculate-score', {
-      application_id: application.id,
-      project_id: application.project_id,
-      student_id: application.student_id,
-    });
+    try {
+      await this.scoringQueue.add('calculate-score', {
+        application_id: application.id,
+        project_id: application.project_id,
+        student_id: application.student_id,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to queue calculate-score job for application ${application.id}. Redis might be down: ${error}`);
+      // La postulación ya se guardó, así que no lanzamos la excepción para no mostrarle un error falso al usuario.
+    }
 
     return this.mapToProto(application);
   }
