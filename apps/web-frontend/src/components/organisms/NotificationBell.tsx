@@ -5,6 +5,7 @@ import { notificationApi, type NotificationData } from "../../api/notification.a
 import { cn } from "@chambitas/ui";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { useAuth } from "../../context/AuthContext";
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +13,7 @@ export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const fetchNotifications = async () => {
     const data = await notificationApi.getNotifications(10, 0);
@@ -50,13 +52,21 @@ export function NotificationBell() {
 
     setIsOpen(false);
 
-    // Navigate based on type
+    // Navigate based on type and role
     try {
       const metadata = JSON.parse(notification.metadata_json || '{}');
       if (notification.type === 'MATCH' && metadata.project_id) {
-        navigate(`/employer/projects/${metadata.project_id}`);
+        if (user?.role === 'employer') {
+          navigate(`/employer/projects/${metadata.project_id}`);
+        } else {
+          navigate(`/projects/${metadata.project_id}`);
+        }
       } else if (notification.type === 'APPLICATION' && metadata.project_id) {
-        navigate(`/employer/projects/${metadata.project_id}`);
+        if (user?.role === 'employer') {
+          navigate(`/employer/projects/${metadata.project_id}`);
+        } else {
+          navigate(`/projects/${metadata.project_id}`);
+        }
       }
     } catch (e) {
       console.error(e);
