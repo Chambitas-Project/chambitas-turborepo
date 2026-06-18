@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { Loader2 } from "lucide-react";
+import { GlobalErrorBoundary } from "./components/organisms/GlobalErrorBoundary";
 
 // Lazy loaded pages
 const EmployerProjectsPage = React.lazy(() => import("./pages/EmployerProjectsPage").then(m => ({ default: m.EmployerProjectsPage })));
@@ -57,18 +58,22 @@ const PageLoader = () => (
 export const router = createBrowserRouter([
   {
     path: "/",
+    errorElement: <GlobalErrorBoundary />,
     element: <Suspense fallback={<PageLoader />}><PublicRoute><LandingPage /></PublicRoute></Suspense>,
   },
   {
     path: "/login",
+    errorElement: <GlobalErrorBoundary />,
     element: <Suspense fallback={<PageLoader />}><PublicRoute><LoginPage /></PublicRoute></Suspense>,
   },
   {
     path: "/register",
+    errorElement: <GlobalErrorBoundary />,
     element: <Suspense fallback={<PageLoader />}><PublicRoute><RegisterPage /></PublicRoute></Suspense>,
   },
   {
     path: "/onboarding",
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <ProtectedRoute>
         <Suspense fallback={<PageLoader />}>
@@ -79,6 +84,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <ProtectedRoute>
         <Suspense fallback={<PageLoader />}>
@@ -89,6 +95,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/jobs",
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <ProtectedRoute>
         <Suspense fallback={<PageLoader />}>
@@ -99,6 +106,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/student/applications",
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <ProtectedRoute>
         <Suspense fallback={<PageLoader />}>
@@ -109,6 +117,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/projects/:id",
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <ProtectedRoute>
         <Suspense fallback={<PageLoader />}>
@@ -119,6 +128,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/employer/projects",
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <ProtectedRoute>
         <Suspense fallback={<PageLoader />}>
@@ -129,6 +139,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/employer/projects/new",
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <ProtectedRoute>
         <Suspense fallback={<PageLoader />}>
@@ -139,6 +150,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/employer/projects/:id/edit",
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <ProtectedRoute>
         <Suspense fallback={<PageLoader />}>
@@ -149,6 +161,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/employer/projects/:id",
+    errorElement: <GlobalErrorBoundary />,
     element: (
       <ProtectedRoute>
         <Suspense fallback={<PageLoader />}>
@@ -159,6 +172,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "*",
+    errorElement: <GlobalErrorBoundary />,
     element: <Navigate to="/" replace />,
   },
 ]);
