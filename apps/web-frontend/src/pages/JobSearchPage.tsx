@@ -186,7 +186,7 @@ export function JobSearchPage() {
                     <JobCard
                       key={projectId}
                       project={project}
-                      matchScore={match?.score}
+                      matchScore={match?.score ?? 0}
                       hasApplied={hasApplied}
                     />
                   );
