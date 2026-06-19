@@ -57,9 +57,14 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
           </div>
 
           <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
-            {matchScore !== undefined && matchScore > 0 && (
-              <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-none">
-                <CheckCircle2 className="h-3.5 w-3.5" /> {(matchScore * 100).toFixed(0)}% de Coincidencia
+            {matchScore !== undefined && (
+              <Badge className={cn(
+                "font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-none border",
+                matchScore > 0 
+                  ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                  : "bg-rose-50 text-rose-600 border-rose-100"
+              )}>
+                <CheckCircle2 className="h-3.5 w-3.5" /> {(Math.max(0, matchScore) * 100).toFixed(0)}% de Coincidencia
               </Badge>
             )}
             <p className="text-[22px] font-black text-slate-900">S/.{budget}</p>
