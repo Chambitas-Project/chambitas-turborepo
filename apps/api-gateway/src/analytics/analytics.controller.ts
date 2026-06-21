@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Inject, OnModuleInit } from '@nestjs/common';
+import { Controller, Post, Get, Body, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { IAnalyticsService, TrackEventRequest } from '@chambitas/proto';
 import { TrackEventDto } from './dto/track-event.dto';
+import { firstValueFrom } from 'rxjs';
 
 @ApiTags('Analytics')
 @Controller('analytics')
@@ -24,5 +25,21 @@ export class AnalyticsController implements OnModuleInit {
       timestamp: new Date().toISOString(),
     };
     return this.analyticsService.TrackEvent(grpcData);
+  }
+
+  @Get('overview')
+  @ApiOperation({ summary: 'Obtener métricas y KPIs para el Dashboard de Analíticas' })
+  async getOverview() {
+    const response = await firstValueFrom(this.analyticsService.GetOverviewKPIs({}));
+    
+    return {
+      activeStudents: response.activeStudents,
+      totalProjects: response.totalProjects,
+      totalApplications: response.totalApplications,
+      totalIncomeGenerated: response.totalIncomeGenerated,
+      avgTimeToHireDays: response.avgTimeToHireDays,
+      funnelData: JSON.parse(response.funnelDataJson || '[]'),
+      incomeProgress: JSON.parse(response.incomeProgressJson || '[]')
+    };
   }
 }

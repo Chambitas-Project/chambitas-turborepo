@@ -4,6 +4,7 @@ package analytics;
 
 service AnalyticsService {
   rpc TrackEvent (TrackEventRequest) returns (TrackEventResponse) {}
+  rpc GetOverviewKPIs (GetOverviewKPIsRequest) returns (GetOverviewKPIsResponse) {}
 }
 
 message TrackEventRequest {
@@ -16,4 +17,17 @@ message TrackEventRequest {
 
 message TrackEventResponse {
   bool success = 1;
+}
+
+message GetOverviewKPIsRequest {
+}
+
+message GetOverviewKPIsResponse {
+  int32 activeStudents = 1;
+  int32 totalProjects = 2;
+  int32 totalApplications = 3;
+  double totalIncomeGenerated = 4;
+  double avgTimeToHireDays = 5;
+  string funnelDataJson = 6;
+  string incomeProgressJson = 7;
 }

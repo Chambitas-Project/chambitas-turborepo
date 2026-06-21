@@ -680,8 +680,21 @@ export interface INotificationService {
   MarkAsRead(data: MarkAsReadRequest, metadata?: any): Observable<MarkAsReadResponse>;
 }
 
+export interface GetOverviewKPIsRequest {}
+
+export interface GetOverviewKPIsResponse {
+  activeStudents: number;
+  totalProjects: number;
+  totalApplications: number;
+  totalIncomeGenerated: number;
+  avgTimeToHireDays: number;
+  funnelDataJson: string;
+  incomeProgressJson: string;
+}
+
 export interface IAnalyticsService {
   TrackEvent(data: TrackEventRequest, metadata?: any): Observable<TrackEventResponse>;
+  GetOverviewKPIs(data: GetOverviewKPIsRequest, metadata?: any): Observable<GetOverviewKPIsResponse>;
 }
 
 export interface EmbeddingResponse {
