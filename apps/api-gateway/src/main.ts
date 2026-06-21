@@ -28,16 +28,19 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalRpcExceptionFilter());
 
   // Habilitar Swagger
-  setupSwagger(app, {
+  setupSwagger(app as any, {
     title: 'API Gateway',
     description: 'Punto de entrada principal para el ecosistema de microservicios Chambitas.',
     version: '1.0.0',
     tag: 'Gateway',
   });
 
-  // Habilitar CORS para el Front-end
+  // Habilitar CORS para el Front-end y Analytics Dashboard
   app.enableCors({
-    origin: [process.env.FRONTEND_URL || 'http://localhost:5173'],
+    origin: [
+      process.env.FRONTEND_URL || 'http://localhost:5174',
+      process.env.DASHBOARD_URL || 'http://localhost:5173'
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

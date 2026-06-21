@@ -5,6 +5,7 @@ export const apiClient = {
     try {
       const response = await fetch(`${this.baseURL}/analytics/overview`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -23,6 +24,7 @@ export const apiClient = {
     try {
       const response = await fetch(`${this.baseURL}/analytics/ml-engine`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -41,6 +43,7 @@ export const apiClient = {
     try {
       const response = await fetch(`${this.baseURL}/analytics/infrastructure`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -59,6 +62,7 @@ export const apiClient = {
     try {
       const response = await fetch(`${this.baseURL}/analytics/track`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -75,6 +79,59 @@ export const apiClient = {
       return await response.json();
     } catch (error) {
       console.error('Error sending track event:', error);
+      throw error;
+    }
+  },
+
+  async login(credentials: any) {
+    try {
+      const response = await fetch(`${this.baseURL}/auth/login`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials)
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Error HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error in login:', error);
+      throw error;
+    }
+  },
+
+  async logout() {
+    try {
+      const response = await fetch(`${this.baseURL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error in logout:', error);
+      throw error;
+    }
+  },
+
+  async getProfile() {
+    try {
+      const response = await fetch(`${this.baseURL}/profile/me`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching profile:', error);
       throw error;
     }
   }

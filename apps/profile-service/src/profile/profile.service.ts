@@ -79,6 +79,22 @@ export class ProfileService implements OnModuleInit {
       return this.mapEmployerToUnified(employer);
     }
 
+    // Verificar si es administrador
+    const supabase = this.supabaseService.getClient<Database>();
+    const { data: user } = await supabase.from('users').select('*').eq('id', id).single();
+    if (user && user.role === 'admin') {
+      this.logger.debug(`[GetProfile] Admin user found: ${id}`);
+      return {
+        id: user.id,
+        role: 'admin',
+        full_name: 'Administrador General',
+        is_onboarded: true,
+        is_gpa_verified: false,
+        skills: [],
+        activity: [],
+      };
+    }
+
     this.logger.error(`[GetProfile] Profile not found for user ${id}`);
     throw new RpcException({ code: status.NOT_FOUND, message: 'Profile not found' });
   }
