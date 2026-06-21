@@ -42,4 +42,28 @@ export class AnalyticsController implements OnModuleInit {
       incomeProgress: JSON.parse(response.incomeProgressJson || '[]')
     };
   }
+
+  @Get('ml-engine')
+  @ApiOperation({ summary: 'Obtener métricas del motor de ML' })
+  async getMLEngineKPIs() {
+    const response = await firstValueFrom(this.analyticsService.GetMLEngineKPIs({}));
+    
+    return {
+      modelVersions: JSON.parse(response.modelVersionsJson || '[]'),
+      recommendationLogs: JSON.parse(response.recommendationLogsJson || '[]'),
+      matchesDistribution: JSON.parse(response.matchesDistributionJson || '[]')
+    };
+  }
+
+  @Get('infrastructure')
+  @ApiOperation({ summary: 'Obtener métricas de infraestructura y seguridad' })
+  async getInfrastructureKPIs() {
+    const response = await firstValueFrom(this.analyticsService.GetInfrastructureKPIs({}));
+    
+    return {
+      performanceMetrics: JSON.parse(response.performanceMetricsJson || '[]'),
+      uxFunnel: JSON.parse(response.uxFunnelJson || '[]'),
+      securityAlerts: JSON.parse(response.securityAlertsJson || '[]')
+    };
+  }
 }

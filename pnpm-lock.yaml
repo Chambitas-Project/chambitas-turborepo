@@ -184,6 +184,9 @@ importers:
       react-dom:
         specifier: ^19.2.6
         version: 19.2.7(react@19.2.7)
+      react-router-dom:
+        specifier: ^7.15.0
+        version: 7.15.0(react-dom@19.2.7)(react@19.2.7)
       recharts:
         specifier: ^2.12.0
         version: 2.15.4(react-dom@19.2.7)(react@19.2.7)
@@ -9163,6 +9166,18 @@ packages:
       react-router: 7.15.0(react-dom@19.2.5)(react@19.2.5)
     dev: false
 
+  /react-router-dom@7.15.0(react-dom@19.2.7)(react@19.2.7):
+    resolution: {integrity: sha512-VcrVg64Fo8nwBvDscajG8gRTLIuTC6N50nb22l2HOOV4PTOHgoGp8mUjy9wLiHYoYTSYI36tUnXZgasSRFZorQ==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+    dependencies:
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
+      react-router: 7.15.0(react-dom@19.2.7)(react@19.2.7)
+    dev: false
+
   /react-router@7.15.0(react-dom@19.2.5)(react@19.2.5):
     resolution: {integrity: sha512-HW9vYwuM8f4yx66Izy8xfrzCM+SBJluoZcCbww9A1TySax11S5Vgw6fi3ZjMONw9J4gQwngL7PzkyIpJJpJ7RQ==}
     engines: {node: '>=20.0.0'}
@@ -9176,6 +9191,22 @@ packages:
       cookie: 1.1.1
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
+      set-cookie-parser: 2.7.2
+    dev: false
+
+  /react-router@7.15.0(react-dom@19.2.7)(react@19.2.7):
+    resolution: {integrity: sha512-HW9vYwuM8f4yx66Izy8xfrzCM+SBJluoZcCbww9A1TySax11S5Vgw6fi3ZjMONw9J4gQwngL7PzkyIpJJpJ7RQ==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+    dependencies:
+      cookie: 1.1.1
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
       set-cookie-parser: 2.7.2
     dev: false
 

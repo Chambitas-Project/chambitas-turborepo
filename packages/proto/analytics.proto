@@ -5,13 +5,15 @@ package analytics;
 service AnalyticsService {
   rpc TrackEvent (TrackEventRequest) returns (TrackEventResponse) {}
   rpc GetOverviewKPIs (GetOverviewKPIsRequest) returns (GetOverviewKPIsResponse) {}
+  rpc GetMLEngineKPIs (GetMLEngineKPIsRequest) returns (GetMLEngineKPIsResponse) {}
+  rpc GetInfrastructureKPIs (GetInfrastructureKPIsRequest) returns (GetInfrastructureKPIsResponse) {}
 }
 
 message TrackEventRequest {
   string userId = 1;
   string eventType = 2;
   string source = 3;
-  string payloadJson = 4; // Usamos string para evitar google.protobuf.Any
+  string payloadJson = 4;
   string timestamp = 5;
 }
 
@@ -30,4 +32,20 @@ message GetOverviewKPIsResponse {
   double avgTimeToHireDays = 5;
   string funnelDataJson = 6;
   string incomeProgressJson = 7;
+}
+
+message GetMLEngineKPIsRequest {}
+
+message GetMLEngineKPIsResponse {
+  string modelVersionsJson = 1;
+  string recommendationLogsJson = 2;
+  string matchesDistributionJson = 3;
+}
+
+message GetInfrastructureKPIsRequest {}
+
+message GetInfrastructureKPIsResponse {
+  string performanceMetricsJson = 1;
+  string uxFunnelJson = 2;
+  string securityAlertsJson = 3;
 }

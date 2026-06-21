@@ -17,5 +17,41 @@ export const apiClient = {
       console.error('Error fetching analytics overview:', error);
       throw error;
     }
+  },
+
+  async getMLEngineKPIs() {
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/ml-engine`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching ML-Engine KPIs:', error);
+      throw error;
+    }
+  },
+
+  async getInfrastructureKPIs() {
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/infrastructure`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching Infrastructure KPIs:', error);
+      throw error;
+    }
   }
 };

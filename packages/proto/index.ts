@@ -692,9 +692,27 @@ export interface GetOverviewKPIsResponse {
   incomeProgressJson: string;
 }
 
+export interface GetMLEngineKPIsRequest {}
+
+export interface GetMLEngineKPIsResponse {
+  modelVersionsJson: string;
+  recommendationLogsJson: string;
+  matchesDistributionJson: string;
+}
+
+export interface GetInfrastructureKPIsRequest {}
+
+export interface GetInfrastructureKPIsResponse {
+  performanceMetricsJson: string;
+  uxFunnelJson: string;
+  securityAlertsJson: string;
+}
+
 export interface IAnalyticsService {
   TrackEvent(data: TrackEventRequest, metadata?: any): Observable<TrackEventResponse>;
   GetOverviewKPIs(data: GetOverviewKPIsRequest, metadata?: any): Observable<GetOverviewKPIsResponse>;
+  GetMLEngineKPIs(data: GetMLEngineKPIsRequest, metadata?: any): Observable<GetMLEngineKPIsResponse>;
+  GetInfrastructureKPIs(data: GetInfrastructureKPIsRequest, metadata?: any): Observable<GetInfrastructureKPIsResponse>;
 }
 
 export interface EmbeddingResponse {
