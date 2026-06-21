@@ -1,0 +1,16 @@
+/*
+ * Chambitas Analytics Dashboard — Entry CSS
+ * ─────────────────────────────────────────────────────────────
+ * Una sola importación: hereda TODO el sistema de diseño desde
+ * el paquete UI centralizado (@chambitas/ui).
+ *
+ * globals.css contiene:
+ *   · @import "tailwindcss"   (motor Oxide)
+ *   · @theme { ... }          (paleta OKLCH + variables Shadcn)
+ *   · @layer base { ... }     (reset + estilos base)
+ *   · @layer utilities { ... } (utilidades custom)
+ *
+ * Para modificar el tema, edita:
+ *   packages/ui/src/globals.css  ← única fuente de verdad
+ */
+@import "@chambitas/ui/globals.css";

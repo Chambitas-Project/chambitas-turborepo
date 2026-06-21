@@ -4,8 +4,7 @@
     "target": "es2023",
     "lib": [
       "ES2023",
-      "DOM",
-      "DOM.Iterable"
+      "DOM"
     ],
     "module": "esnext",
     "types": [
@@ -27,10 +26,10 @@
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "src",
-    "../../packages/ui/src"
+    "src"
   ]
 }
