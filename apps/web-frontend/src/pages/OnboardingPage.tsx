@@ -11,9 +11,13 @@ import { StudentIdentityStep } from "../features/onboarding/components/StudentId
 import { StudentAvailabilityStep } from "../features/onboarding/components/StudentAvailabilityStep";
 import { StudentSkillsStep } from "../features/onboarding/components/StudentSkillsStep";
 import { EmployerProfileStep } from "../features/onboarding/components/EmployerProfileStep";
+import { useUxTelemetry } from "../hooks/useUxTelemetry";
 
 export function OnboardingPage() {
   const { user, logout, refreshUser } = useAuth();
+  
+  const { completeStep } = useUxTelemetry(user?.role === 'employer' ? 'EmployerOnboarding' : 'StudentOnboarding', 'ProfileSetup');
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,6 +147,7 @@ export function OnboardingPage() {
     try {
       await apiClient.post("/profile/onboarding/student", payload);
       await refreshUser();
+      completeStep();
       navigate("/");
     } catch (err: any) {
       const respStatus = err.response?.status;
@@ -166,6 +171,7 @@ export function OnboardingPage() {
         description: employerData.description
       });
       await refreshUser();
+      completeStep();
       navigate("/");
     } catch (err: any) {
       if (err.response?.status === 401) setError("Sesión expirada.");

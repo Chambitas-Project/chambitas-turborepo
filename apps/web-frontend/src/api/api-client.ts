@@ -7,3 +7,15 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+export const trackEvent = async (eventType: string, payload: any) => {
+  try {
+    await apiClient.post('/analytics/track', {
+      eventType,
+      source: 'web-frontend',
+      payloadJson: JSON.stringify(payload)
+    });
+  } catch (error) {
+    console.error('[Telemetry] Failed to track event:', error);
+  }
+};

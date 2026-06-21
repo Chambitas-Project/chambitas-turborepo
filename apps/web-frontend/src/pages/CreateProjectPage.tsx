@@ -13,10 +13,13 @@ import type { Skill, SelectedSkill, ProjectFormData } from "../features/project-
 // Components
 import { ProjectMainDetailsForm } from "../features/project-form/components/ProjectMainDetailsForm";
 import { ProjectSkillsSelector } from "../features/project-form/components/ProjectSkillsSelector";
+import { useUxTelemetry } from "../hooks/useUxTelemetry";
 
 export function CreateProjectPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { completeStep } = useUxTelemetry('EmployerProject', 'CreateForm');
 
   const [formData, setFormData] = useState<ProjectFormData>({
     title: "",
@@ -108,6 +111,7 @@ export function CreateProjectPage() {
         max_hours_week: formData.max_hours_week ? Number(formData.max_hours_week) : undefined
       });
       // Redirect on success
+      completeStep();
       navigate("/employer/projects");
     } catch (err: any) {
       setError(err.response?.data?.message || "Ocurrió un error al publicar el empleo. Revisa los datos.");

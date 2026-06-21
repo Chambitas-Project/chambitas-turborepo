@@ -14,10 +14,13 @@ import { ProjectHeader } from "../features/project-details/components/ProjectHea
 import { ProjectInfo } from "../features/project-details/components/ProjectInfo";
 import { EmployerProfileCard } from "../features/project-details/components/EmployerProfileCard";
 import { ApplicationWidget } from "../features/project-details/components/ApplicationWidget";
+import { useUxTelemetry } from "../hooks/useUxTelemetry";
 
 export function ProjectDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const { completeStep } = useUxTelemetry('StudentApplication', 'ProjectDetails');
 
   // Data State
   const [project, setProject] = useState<Project | null>(null);
@@ -98,6 +101,7 @@ export function ProjectDetailsPage() {
         cover_note: coverNote
       });
       setApplication(res.data);
+      completeStep();
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || err.message || "Error de conexión";
