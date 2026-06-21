@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { BullModule } from '@nestjs/bullmq';
 import { MatchingModule } from './matching/matching.module';
-import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
+import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles, TelemetryModule } from '@chambitas/common';
 
 @Module({
   imports: [
@@ -36,6 +36,7 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
       },
     }),
     MatchingModule,
+    TelemetryModule,
   ],
   controllers: [],
   providers: [

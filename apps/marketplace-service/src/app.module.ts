@@ -5,7 +5,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { ProjectsModule } from './features/projects/projects.module';
 import { ApplicationsModule } from './features/applications/applications.module';
 import { ReviewsModule } from './features/reviews/reviews.module';
-import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
+import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles, TelemetryModule } from '@chambitas/common';
 
 @Module({
   imports: [
@@ -40,6 +40,7 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
     ProjectsModule,
     ApplicationsModule,
     ReviewsModule,
+    TelemetryModule,
   ],
   controllers: [],
   providers: [

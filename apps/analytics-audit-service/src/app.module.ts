@@ -4,12 +4,15 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
 
+import { ScheduleModule } from '@nestjs/schedule';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: getEnvFiles(),
     }),
+    ScheduleModule.forRoot(),
     AnalyticsModule,
   ],
   controllers: [],

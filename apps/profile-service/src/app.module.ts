@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { SupabaseModule } from '@chambitas/supabase';
-import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
+import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles, TelemetryModule } from '@chambitas/common';
 import { ProfileModule } from './profile/profile.module';
 
 @Module({
@@ -12,6 +12,7 @@ import { ProfileModule } from './profile/profile.module';
       envFilePath: getEnvFiles(),
     }),
     SupabaseModule,
+    TelemetryModule,
     ProfileModule,
   ],
   controllers: [],

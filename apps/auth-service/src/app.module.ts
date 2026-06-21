@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
-import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
+import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles, TelemetryModule } from '@chambitas/common';
 
 @Module({
   imports: [
@@ -10,6 +10,7 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
       isGlobal: true,
       envFilePath: getEnvFiles(),
     }),
+    TelemetryModule,
     AuthModule,
   ],
   controllers: [],

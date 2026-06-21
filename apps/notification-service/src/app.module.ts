@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { NotificationModule } from './notification/notification.module';
-import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@chambitas/common';
+import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles, TelemetryModule } from '@chambitas/common';
 
 @Module({
   imports: [
@@ -11,6 +11,7 @@ import { CorrelationIdInterceptor, GrpcContextInterceptor, getEnvFiles } from '@
       isGlobal: true,
       envFilePath: getEnvFiles(),
     }),
+    TelemetryModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

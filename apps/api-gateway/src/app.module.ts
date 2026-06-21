@@ -7,7 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { AppService } from './app.service';
 import { ProfileController } from './profile/profile.controller';
 import { MediaController } from './media/media.controller';
-import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor, getEnvFiles } from '@chambitas/common';
+import { GrpcCircuitBreakerInterceptor, CorrelationIdInterceptor, getEnvFiles, TelemetryModule } from '@chambitas/common';
 import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
 import { ProjectsController } from './marketplace/projects.controller';
 import { ApplicationsController } from './marketplace/applications.controller';
@@ -23,6 +23,7 @@ import { AnalyticsController } from './analytics/analytics.controller';
       envFilePath: getEnvFiles(),
     }),
     AuthModule,
+    TelemetryModule,
     ClientsModule.register([
       {
         name: 'PROFILE_PACKAGE',
