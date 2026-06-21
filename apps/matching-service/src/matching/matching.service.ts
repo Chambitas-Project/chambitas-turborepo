@@ -1,19 +1,27 @@
-import { Injectable, Logger, InternalServerErrorException, Inject } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, Inject, OnModuleInit } from '@nestjs/common';
+import { ClientGrpc } from '@nestjs/microservices';
 import { SupabaseService, Database } from '@chambitas/supabase';
 import { 
   GetRecommendationsRequest, 
   GetRecommendationsResponse, 
   UpdateMatchStatusRequest, 
-  UpdateMatchStatusResponse 
+  UpdateMatchStatusResponse,
+  IAnalyticsService
 } from '@chambitas/proto';
 
 @Injectable()
-export class MatchingService {
+export class MatchingService implements OnModuleInit {
   private readonly logger = new Logger(MatchingService.name);
+  private analyticsService!: IAnalyticsService;
 
   constructor(
     private readonly supabase: SupabaseService,
+    @Inject('ANALYTICS_PACKAGE') private readonly client: ClientGrpc,
   ) {}
+
+  onModuleInit() {
+    this.analyticsService = this.client.getService<IAnalyticsService>('AnalyticsService');
+  }
 
   // ========================================================================
   // 1. REFACTORIZACIÓN DE 'getRecommendations' (Búsqueda Masiva Ponderada)
@@ -23,6 +31,7 @@ export class MatchingService {
     this.logger.log(`Consultando RPC pgvector híbrido para el usuario: ${userId}`);
 
     try {
+      const startTime = Date.now();
       // Delegamos toda la responsabilidad de extracción y cruce matemático al RPC masivo
       // Esto hace que la búsqueda de recomendaciones sea también O(1) en memoria de Node.js
       const { data: matches, error: rpcError } = await this.supabase.getClient<Database>()
@@ -32,10 +41,26 @@ export class MatchingService {
           match_limit: limit,
           page_offset: (page - 1) * limit
         } as any);
+      
+      const duration = Date.now() - startTime;
 
       if (rpcError) {
         throw new InternalServerErrorException(`Fallo en RPC de Supabase: ${rpcError.message}`);
       }
+
+      // Emit analytics event
+      this.analyticsService.TrackEvent({
+        eventType: 'RECOMMENDATION_LOG',
+        source: 'matching-service',
+        userId: userId,
+        timestamp: Date.now().toString(),
+        payloadJson: JSON.stringify({
+          response_ms: duration,
+          matchesCount: matches?.length || 0
+        })
+      }).subscribe({
+        error: (err) => this.logger.error(`[Analytics] Failed to log recommendation latency`, err.message)
+      });
 
       // Consumo del score ponderado real (m.similarity) retornado por el SQL
       const finalRecommendations = (matches || []).map((m: any) => ({

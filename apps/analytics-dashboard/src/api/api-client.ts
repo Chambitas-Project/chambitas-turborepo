@@ -53,5 +53,29 @@ export const apiClient = {
       console.error('Error fetching Infrastructure KPIs:', error);
       throw error;
     }
+  },
+
+  async trackEvent(eventType: string, payload: any, source: string = 'analytics-dashboard') {
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/track`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eventType,
+          source,
+          userId: '', // Include user context if available
+          payload
+        })
+      });
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error sending track event:', error);
+      throw error;
+    }
   }
 };

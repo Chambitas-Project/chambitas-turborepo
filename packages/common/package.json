@@ -7,6 +7,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@chambitas/proto": "workspace:*",
     "@grpc/grpc-js": "^1.12.5",
     "@nestjs/common": "^11.1.19",
     "@nestjs/core": "^11.0.1",

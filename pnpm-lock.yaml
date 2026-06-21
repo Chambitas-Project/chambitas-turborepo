@@ -1203,6 +1203,9 @@ importers:
 
   packages/common:
     dependencies:
+      '@chambitas/proto':
+        specifier: workspace:*
+        version: link:../proto
       '@grpc/grpc-js':
         specifier: ^1.12.5
         version: 1.14.3

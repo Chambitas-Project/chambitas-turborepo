@@ -1,11 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
+import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
+import { RpcException, ClientGrpc } from '@nestjs/microservices';
 import { SupabaseService, Database } from '@chambitas/supabase';
 import { UNIVERSITY_EMAIL_PATTERNS } from '@chambitas/common';
+import { IAnalyticsService } from '@chambitas/proto';
 
 @Injectable()
-export class AuthService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+export class AuthService implements OnModuleInit {
+  private analyticsService!: IAnalyticsService;
+
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    @Inject('ANALYTICS_PACKAGE') private readonly client: ClientGrpc,
+  ) {}
+
+  onModuleInit() {
+    this.analyticsService = this.client.getService<IAnalyticsService>('AnalyticsService');
+  }
 
   async register(data: any) {
     const supabase = this.supabaseService.getClient<Database>();
@@ -72,13 +82,18 @@ export class AuthService {
       }
 
       if (!isValid) {
-        // Audit failure
-        await supabase.from('security_audit_logs').insert({
-          event_type: 'regex_fail',
-          severity: 'warning',
-          university_id: universityId,
-          metadata: { email: cleanEmail, reason: 'University email validation failed' },
-          created_at: new Date().toISOString(),
+        // Audit failure via gRPC
+        this.analyticsService.TrackEvent({
+          eventType: 'SECURITY_ALERT',
+          source: 'auth-service',
+          userId: '',
+          timestamp: Date.now().toString(),
+          payloadJson: JSON.stringify({
+            severity: 'HIGH',
+            message: `Registro fallido por regex para universidad ${universityId}: ${cleanEmail}`
+          })
+        }).subscribe({
+          error: (err) => console.error('[AuthService] Failed to emit analytics event', err.message)
         });
 
         throw new RpcException({
