@@ -26,6 +26,7 @@ export function JobSearchPage() {
   const [activeCategory, setActiveCategory] = useState("Todos");
   const [activeSkill, setActiveSkill] = useState("");
   const [maxPrice, setMaxPrice] = useState(5000);
+  const [sortBy, setSortBy] = useState("Más Recientes");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -77,7 +78,7 @@ export function JobSearchPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, activeCategory, maxPrice, activeSkill]);
+  }, [searchQuery, activeCategory, maxPrice, activeSkill, sortBy]);
 
   const filteredProjects = projects.filter(project => {
     const isProjectOpen = (project.status || "open").toLowerCase() === "open";
@@ -101,8 +102,27 @@ export function JobSearchPage() {
     return matchesSearch && matchesCategory && matchesPrice && matchesSkill;
   });
 
-  const totalPages = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE);
-  const paginatedProjects = filteredProjects.slice(
+  const sortedProjects = [...filteredProjects].sort((a, b) => {
+    if (sortBy === "Más Recientes") {
+      const dateA = new Date(a.created_at || (a as any).created || 0).getTime();
+      const dateB = new Date(b.created_at || (b as any).created || 0).getTime();
+      return dateB - dateA;
+    }
+    if (sortBy === "Mayor Match") {
+      const idA = a.id || (a as any).project_id || (a as any)._id;
+      const idB = b.id || (b as any).project_id || (b as any)._id;
+      const matchA = recommendations.find(r => r.jobId === idA)?.score || 0;
+      const matchB = recommendations.find(r => r.jobId === idB)?.score || 0;
+      return matchB - matchA;
+    }
+    if (sortBy === "Mejor Pago") {
+      return (b.budget || 0) - (a.budget || 0);
+    }
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sortedProjects.length / ITEMS_PER_PAGE);
+  const paginatedProjects = sortedProjects.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -164,10 +184,14 @@ export function JobSearchPage() {
               <p className="text-sm font-bold text-slate-500">
                 {loading ? "Buscando..." : <>Mostrando <span className="text-slate-900 font-black">{filteredProjects.length} proyectos</span></>}
               </p>
-              <select className="bg-transparent text-sm font-black text-slate-900 outline-none cursor-pointer focus:text-emerald-600 transition-colors">
-                <option>Más Recientes</option>
-                <option>Mayor Match</option>
-                <option>Mejor Pago</option>
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-transparent text-sm font-black text-slate-900 outline-none cursor-pointer focus:text-emerald-600 transition-colors"
+              >
+                <option value="Más Recientes">Más Recientes</option>
+                <option value="Mayor Match">Mayor Match</option>
+                <option value="Mejor Pago">Mejor Pago</option>
               </select>
             </div>
 
