@@ -9,7 +9,7 @@ import type { Project, Recommendation } from "../features/job-search/types";
 
 // Components
 import { RecommendationsHero } from "../features/job-search/components/RecommendationsHero";
-import { JobSearchFilters } from "../features/job-search/components/JobSearchFilters";
+import { JobSearchFilters, type FilterState } from "../features/job-search/components/JobSearchFilters";
 import { JobCard } from "../features/job-search/components/JobCard";
 
 const ITEMS_PER_PAGE = 10;
@@ -23,9 +23,15 @@ export function JobSearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // States for dynamic filtering
-  const [activeCategory, setActiveCategory] = useState("Todos");
-  const [activeSkill, setActiveSkill] = useState("");
-  const [maxPrice, setMaxPrice] = useState(5000);
+  const defaultFilters: FilterState = {
+    category: "Todos",
+    skills: [],
+    minPrice: 0,
+    maxPrice: 5000,
+    recommended: false
+  };
+
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
   const [sortBy, setSortBy] = useState("Más Recientes");
 
   // Pagination state
@@ -78,7 +84,7 @@ export function JobSearchPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, activeCategory, maxPrice, activeSkill, sortBy]);
+  }, [searchQuery, appliedFilters, sortBy]);
 
   const filteredProjects = projects.filter(project => {
     const isProjectOpen = (project.status || "open").toLowerCase() === "open";
@@ -89,17 +95,24 @@ export function JobSearchPage() {
       project.description.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory =
-      activeCategory === "Todos" ||
-      (project.service_category || "").toLowerCase() === activeCategory.toLowerCase();
+      appliedFilters.category === "Todos" ||
+      (project.service_category || "").toLowerCase() === appliedFilters.category.toLowerCase();
 
-    const matchesPrice = project.budget <= maxPrice;
+    const matchesPrice = project.budget >= appliedFilters.minPrice && project.budget <= appliedFilters.maxPrice;
 
-    const matchesSkill = !activeSkill || (project.skills && project.skills.some(skill => {
-      if (typeof skill === 'string') return skill.toLowerCase().includes(activeSkill.toLowerCase());
-      return skill.skill_name?.toLowerCase().includes(activeSkill.toLowerCase());
-    }));
+    const matchesSkill = appliedFilters.skills.length === 0 || appliedFilters.skills.every(skillToMatch => {
+      if (!project.skills) return false;
+      return project.skills.some(skill => {
+        if (typeof skill === 'string') return skill.toLowerCase().includes(skillToMatch.toLowerCase());
+        return skill.skill_name?.toLowerCase().includes(skillToMatch.toLowerCase());
+      });
+    });
 
-    return matchesSearch && matchesCategory && matchesPrice && matchesSkill;
+    const projectId = project.id || (project as any).project_id || (project as any)._id;
+    const match = recommendations.find(r => r.jobId === projectId);
+    const matchesRecommended = !appliedFilters.recommended || (match && match.score > 0);
+
+    return matchesSearch && matchesCategory && matchesPrice && matchesSkill && matchesRecommended;
   });
 
   const sortedProjects = [...filteredProjects].sort((a, b) => {
@@ -165,16 +178,12 @@ export function JobSearchPage() {
           <JobSearchFilters
             showFilters={showFilters}
             categories={categories}
-            activeCategory={activeCategory}
-            setActiveCategory={setActiveCategory}
-            activeSkill={activeSkill}
-            setActiveSkill={setActiveSkill}
-            maxPrice={maxPrice}
-            setMaxPrice={setMaxPrice}
+            initialFilters={appliedFilters}
+            onApplyFilters={(filters) => {
+              setAppliedFilters(filters);
+            }}
             onClearFilters={() => {
-              setActiveCategory("Todos");
-              setActiveSkill("");
-              setMaxPrice(5000);
+              setAppliedFilters(defaultFilters);
               setSearchQuery("");
             }}
           />
@@ -184,7 +193,7 @@ export function JobSearchPage() {
               <p className="text-sm font-bold text-slate-500">
                 {loading ? "Buscando..." : <>Mostrando <span className="text-slate-900 font-black">{filteredProjects.length} proyectos</span></>}
               </p>
-              <select 
+              <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="bg-transparent text-sm font-black text-slate-900 outline-none cursor-pointer focus:text-emerald-600 transition-colors"
@@ -273,8 +282,7 @@ export function JobSearchPage() {
                 <Button
                   onClick={() => {
                     setSearchQuery("");
-                    setActiveCategory("Todos");
-                    setMaxPrice(5000);
+                    setAppliedFilters(defaultFilters);
                   }}
                   variant="outline"
                   className="rounded-md font-black"

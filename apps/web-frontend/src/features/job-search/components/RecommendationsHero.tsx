@@ -1,4 +1,4 @@
-import { Zap, ChevronRight } from "lucide-react";
+import { Zap } from "lucide-react";
 import { Button } from "@chambitas/ui";
 import { useNavigate } from "react-router-dom";
 import { type Recommendation } from "../types";
@@ -26,9 +26,6 @@ export function RecommendationsHero({ recommendations }: RecommendationsHeroProp
           Basado en tu perfil, hemos encontrado <span className="text-emerald-400">{recommendations.length} proyectos</span> abiertos para postular hoy.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
-          <Button className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-8 h-12 rounded-md shadow-md group transition-all active:scale-95">
-            Ver coincidencias <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
           <Button variant="outline" onClick={() => navigate("/dashboard")} className="border-slate-700 text-slate-300 hover:bg-slate-800 h-12 px-8 rounded-md font-black">
             Actualizar Perfil
           </Button>

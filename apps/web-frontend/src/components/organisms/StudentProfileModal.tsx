@@ -78,7 +78,7 @@ export function StudentProfileModal({ isOpen, onClose, studentId }: StudentProfi
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in">
       <style>{`
         .light-scrollbar::-webkit-scrollbar-track {
           background: transparent !important;
@@ -92,18 +92,18 @@ export function StudentProfileModal({ isOpen, onClose, studentId }: StudentProfi
         }
       `}</style>
       <div className="bg-white rounded-xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-100">
           <h2 className="text-xl font-black text-slate-800 tracking-tight">Perfil del Estudiante</h2>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         {/* Content */}
         <div className="p-6 md:p-8 overflow-y-auto bg-white flex flex-col gap-8 light-scrollbar">
           {loading ? (
@@ -125,7 +125,7 @@ export function StudentProfileModal({ isOpen, onClose, studentId }: StudentProfi
                 <div className="text-center md:text-left space-y-2 flex-1 pt-2">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">{profile.full_name || profile.name || 'Estudiante'}</h3>
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm font-bold text-slate-500">
-                    <span className="flex items-center gap-1.5"><GraduationCap className="h-4 w-4 text-emerald-500" /> {profile.careers?.name || 'Carrera no especificada'}</span>
+                    <span className="flex items-center gap-1.5"><GraduationCap className="h-4 w-4 text-emerald-500" /> {profile.careers?.name || profile.career || profile.career_name || profile.student_career || 'Carrera no especificada'}</span>
                     <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4 text-indigo-500" /> Ciclo {profile.academic_cycle || '-'}</span>
                   </div>
                 </div>
@@ -201,7 +201,7 @@ export function StudentProfileModal({ isOpen, onClose, studentId }: StudentProfi
                       <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded bg-emerald-500 shadow-sm shadow-emerald-200" /> Disponible</div>
                     </div>
                   </div>
-                  
+
                   <div className="overflow-x-auto">
                     <div className="grid grid-cols-8 gap-2 min-w-[500px]">
                       <div />

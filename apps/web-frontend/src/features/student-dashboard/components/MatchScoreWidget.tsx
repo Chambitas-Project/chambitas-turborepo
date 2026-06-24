@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Button } from "@chambitas/ui";
+import { ChevronRight, ChevronDown, CheckCircle2, Circle } from "lucide-react";
 import type { Profile } from "../types";
 
 interface MatchScoreWidgetProps {
@@ -8,6 +10,22 @@ interface MatchScoreWidgetProps {
 }
 
 export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScoreWidgetProps) {
+  const [showMissing, setShowMissing] = useState(false);
+
+  const missingItems = [];
+  const completedItems = [];
+  
+  if (profile?.bio) completedItems.push("Sobre mí");
+  else missingItems.push("Sobre mí");
+
+  if (profile?.gpa && profile.gpa > 0) completedItems.push("Promedio Ponderado");
+  else missingItems.push("Promedio Ponderado");
+
+  if (profile?.skills && profile.skills.length >= 3) completedItems.push("Al menos 3 habilidades");
+  else missingItems.push("Al menos 3 habilidades");
+
+  if (profile?.academicCycle && profile.academicCycle > 1) completedItems.push("Ciclo académico");
+  else missingItems.push("Ciclo académico");
   return (
     <>
       {/* Match de Mercado */}
@@ -98,9 +116,39 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
                 </span>
               </div>
             </div>
-            <p className="text-[10px] font-bold text-slate-400 px-4 leading-relaxed italic">
-              ¡Tu perfil está listo para el mercado!
-            </p>
+            <div className="pt-2">
+              <button 
+                onClick={() => setShowMissing(!showMissing)}
+                className="flex items-center justify-center w-full gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-emerald-600 transition-all cursor-pointer"
+              >
+                VER QUÉ FALTA {showMissing ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              </button>
+              
+              {showMissing && (
+                <div className="pt-4 text-left space-y-2 animate-in fade-in slide-in-from-top-2">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Por completar:</p>
+                  {missingItems.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs font-medium text-slate-600">
+                      <Circle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                  
+                  {completedItems.length > 0 && (
+                    <>
+                      <div className="h-px w-full bg-slate-100 my-3" />
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Completado:</p>
+                      {completedItems.map((item, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-xs font-medium text-slate-400">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                          <span className="line-through">{item}</span>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

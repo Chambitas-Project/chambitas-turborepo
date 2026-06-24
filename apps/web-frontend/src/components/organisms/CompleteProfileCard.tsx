@@ -22,7 +22,7 @@ export function CompleteProfileCard() {
   }
   
   const userData = user as any;
-  if (userData.name) {
+  if (userData.name || userData.full_name) {
     completion += 10;
     completedItems.push('Nombre personal');
   } else {
