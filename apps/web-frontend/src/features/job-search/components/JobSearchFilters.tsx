@@ -167,7 +167,7 @@ export function JobSearchFilters({
             </div>
           </div>
 
-          <Button onClick={handleApply} className="w-full font-black mt-4">
+          <Button onClick={handleApply} className="w-full font-black mt-4 bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm border-none">
             Aplicar Filtros
           </Button>
         </div>

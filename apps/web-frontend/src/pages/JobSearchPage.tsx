@@ -8,7 +8,6 @@ import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
 import type { Project, Recommendation } from "../features/job-search/types";
 
 // Components
-import { RecommendationsHero } from "../features/job-search/components/RecommendationsHero";
 import { JobSearchFilters, type FilterState } from "../features/job-search/components/JobSearchFilters";
 import { JobCard } from "../features/job-search/components/JobCard";
 
@@ -145,10 +144,6 @@ export function JobSearchPage() {
       <DashboardNavbar role="student" />
 
       <main className="max-w-7xl mx-auto px-4 py-8 md:py-10 space-y-10">
-        {currentPage === 1 && (
-          <RecommendationsHero recommendations={recommendations} />
-        )}
-
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1 group">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
