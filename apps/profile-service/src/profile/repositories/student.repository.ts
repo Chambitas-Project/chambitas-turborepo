@@ -28,7 +28,7 @@ export class StudentRepository {
         *,
         user:users(is_onboarded),
         university:universities(name, logo_url),
-        career:careers(name),
+        careers(name),
         student_skills(
           proficiency_level,
           verified,

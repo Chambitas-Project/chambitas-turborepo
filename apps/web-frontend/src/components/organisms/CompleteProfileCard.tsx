@@ -9,7 +9,6 @@ export function CompleteProfileCard() {
   
   if (!user) return null;
 
-  // Calculate dynamic completion percentage and track missing items
   let completion = 20; // Base creation
   const missingItems: string[] = [];
   const completedItems: string[] = ['Crear cuenta'];
@@ -22,25 +21,58 @@ export function CompleteProfileCard() {
   }
   
   const userData = user as any;
-  if (userData.name || userData.full_name) {
-    completion += 10;
-    completedItems.push('Nombre personal');
-  } else {
-    missingItems.push('Nombre personal');
-  }
+  const isEmployer = user.role === 'employer';
+  const isStudent = user.role === 'student';
 
-  if (userData.company_name) {
-    completion += 10;
-    completedItems.push('Nombre de la empresa');
-  } else {
-    missingItems.push('Nombre de la empresa');
-  }
+  if (isEmployer) {
+    if (userData.fullName || userData.name || userData.full_name) {
+      completion += 10;
+      completedItems.push('Nombre personal');
+    } else {
+      missingItems.push('Nombre personal');
+    }
 
-  if (userData.description) {
-    completion += 20;
-    completedItems.push('Descripción de la empresa');
-  } else {
-    missingItems.push('Descripción de la empresa');
+    if (userData.companyName || userData.company_name || userData.commercialName) {
+      completion += 10;
+      completedItems.push('Nombre de la empresa');
+    } else {
+      missingItems.push('Nombre de la empresa');
+    }
+
+    if (userData.description || userData.bio) {
+      completion += 20;
+      completedItems.push('Descripción de la empresa');
+    } else {
+      missingItems.push('Descripción de la empresa');
+    }
+  } else if (isStudent) {
+    if (userData.fullName || userData.full_name) {
+      completion += 10;
+      completedItems.push('Nombre personal');
+    } else {
+      missingItems.push('Nombre personal');
+    }
+
+    if (userData.skills && userData.skills.length > 0) {
+      completion += 10;
+      completedItems.push('Habilidades añadidas');
+    } else {
+      missingItems.push('Habilidades faltantes');
+    }
+
+    if (userData.bio) {
+      completion += 10;
+      completedItems.push('Sobre mí');
+    } else {
+      missingItems.push('Sobre mí');
+    }
+
+    if (userData.availabilityBlocks) {
+      completion += 10;
+      completedItems.push('Disponibilidad');
+    } else {
+      missingItems.push('Disponibilidad');
+    }
   }
 
   // Cap at 100
@@ -58,7 +90,7 @@ export function CompleteProfileCard() {
        </div>
        <div className="relative z-10">
          <div className="flex justify-between items-end mb-1">
-           <h4 className="text-emerald-900 font-black">Perfil de Empresa</h4>
+           <h4 className="text-emerald-900 font-black">{isEmployer ? "Perfil de Empresa" : "Perfil de Estudiante"}</h4>
            <span className="text-emerald-700 font-bold text-xs">{completion}%</span>
          </div>
          <p className="text-emerald-800/80 text-xs font-medium mb-4 leading-relaxed">

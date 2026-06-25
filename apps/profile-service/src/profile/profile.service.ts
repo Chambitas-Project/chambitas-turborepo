@@ -481,7 +481,7 @@ export class ProfileService implements OnModuleInit {
       id: student.id,
       role: 'student',
       full_name: student.full_name,
-      career: student.career?.name || student.career_id, // Map career name for display
+      career: student.careers?.name || student.career?.name || student.career_id, // Map career name for display
       university_id: student.university_id,
       university_name: student.university?.name,
       university_logo: student.university?.logo_url,
