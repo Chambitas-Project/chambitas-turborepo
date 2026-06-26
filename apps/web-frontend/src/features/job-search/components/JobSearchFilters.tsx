@@ -59,8 +59,8 @@ export function JobSearchFilters({
     onApplyFilters(localFilters);
   };
   return (
-    <aside className={cn("lg:col-span-3 sticky top-24 transition-all", showFilters ? "block" : "hidden lg:block")}>
-      <div className="space-y-6 px-2">
+    <aside className={cn("lg:col-span-3 sticky top-24 transition-all h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar pr-2", showFilters ? "block" : "hidden lg:block")}>
+      <div className="space-y-6 px-2 pb-8">
         <div className="flex items-center justify-between pb-4 border-b border-slate-200">
           <h3 className="text-xl font-black text-slate-900">Filtra tus resultados</h3>
           <button
