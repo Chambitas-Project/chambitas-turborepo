@@ -1,12 +1,12 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { 
-  CreateApplicationRequest, 
-  Application, 
-  GetApplicationRequest, 
-  ListStudentApplicationsRequest, 
-  ListProjectApplicationsRequest, 
-  ListApplicationsResponse, 
-  UpdateApplicationStatusRequest 
+import {
+  CreateApplicationRequest,
+  Application,
+  GetApplicationRequest,
+  ListStudentApplicationsRequest,
+  ListProjectApplicationsRequest,
+  ListApplicationsResponse,
+  UpdateApplicationStatusRequest
 } from '@chambitas/proto';
 import { ApplicationsRepository } from './applications.repository';
 import { ProjectsRepository } from '../projects/projects.repository';
@@ -22,12 +22,11 @@ export class ApplicationsService {
     private readonly applicationsRepository: ApplicationsRepository,
     private readonly projectsRepository: ProjectsRepository,
     @InjectQueue('ml-scoring-queue') private scoringQueue: Queue,
-  ) {}
+  ) { }
 
   async createApplication(request: CreateApplicationRequest): Promise<Application> {
     this.logger.log(`Creating application for student ${request.student_id} on project ${request.project_id}`);
 
-    // 1. Validar que el proyecto exista y esté abierto
     const project = await this.projectsRepository.findById(request.project_id);
     if (!project) {
       throw new NotFoundException(`El proyecto ${request.project_id} no existe.`);
@@ -36,13 +35,11 @@ export class ApplicationsService {
       throw new BadRequestException(`El proyecto no está abierto para nuevas postulaciones (Status: ${project.status}).`);
     }
 
-    // 2. Validar que el estudiante no tenga una postulación activa para este proyecto
     const existing = await this.applicationsRepository.findActiveByStudentAndProject(request.student_id, request.project_id);
     if (existing) {
       throw new BadRequestException('Ya tienes una postulación activa para este proyecto.');
     }
 
-    // 3. Obtener el perfil (ya no bloquea, pero se podría usar para advertencias en frontend)
     const studentData = await this.applicationsRepository.getStudentValidationData(request.student_id);
     if (!studentData) {
       throw new BadRequestException('No se pudo encontrar el perfil del estudiante.');
@@ -56,7 +53,6 @@ export class ApplicationsService {
       status: 'pending_scoring' as any,
     });
 
-    // Enviar a la cola de BullMQ para evaluación asíncrona
     try {
       await this.scoringQueue.add('calculate-score', {
         application_id: application.id,
@@ -65,7 +61,6 @@ export class ApplicationsService {
       });
     } catch (error) {
       this.logger.error(`Failed to queue calculate-score job for application ${application.id}. Redis might be down: ${error}`);
-      // La postulación ya se guardó, así que no lanzamos la excepción para no mostrarle un error falso al usuario.
     }
 
     return this.mapToProto(application);
@@ -110,10 +105,10 @@ export class ApplicationsService {
   async updateApplicationStatus(request: UpdateApplicationStatusRequest): Promise<Application> {
     this.logger.log(`Updating status for app ${request.id} to ${request.status}`);
     const status = request.status as any;
-    
+
     // 1. Actualizar el estado de la postulación
     const application = await this.applicationsRepository.updateStatus(request.id, status);
-    
+
     // 2. Si se acepta la postulación, cambiar el estado del proyecto a 'in_progress'
     if (status === 'accepted') {
       this.logger.log(`Application accepted, moving project ${application.project_id} to in_progress`);

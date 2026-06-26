@@ -7,7 +7,7 @@ import { SupabaseService, Database } from '@chambitas/supabase';
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
 
-  constructor(private readonly supabase: SupabaseService) {}
+  constructor(private readonly supabase: SupabaseService) { }
 
   trackEvent(data: TrackEventRequest): Observable<TrackEventResponse> {
     return from(this._handleTrackEvent(data));
@@ -17,7 +17,7 @@ export class AnalyticsService {
     this.logger.log(`Tracking event: ${data.eventType} from ${data.source}`);
     const client = this.supabase.getAdminClient<Database>();
     let payload: any = {};
-    
+
     try {
       if (data.payloadJson) {
         payload = JSON.parse(data.payloadJson);
@@ -39,7 +39,7 @@ export class AnalyticsService {
         case 'RECOMMENDATION_LOG':
           await client.from('recommendation_logs').insert({
             response_ms: payload.response_ms || 0,
-            model_version_id: payload.model_version_id || '00000000-0000-0000-0000-000000000000', // Need a valid UUID or omit if not strictly required, but schema says it's required. Let's assume the DB has a default or we pass one. Actually, wait, model_version_id is string and required.
+            model_version_id: payload.model_version_id || '00000000-0000-0000-0000-000000000000',
             student_id: payload.student_id || data.userId || '00000000-0000-0000-0000-000000000000'
           } as any);
           break;
@@ -57,7 +57,7 @@ export class AnalyticsService {
         case 'INFRA_METRIC':
           let microservice = data.source;
           if (!['auth', 'profile', 'analytics-audit', 'marketplace', 'matching', 'ml', 'notification'].includes(microservice)) {
-            microservice = 'auth'; // Default fallback
+            microservice = 'auth';
           }
           await client.from('infrastructure_performance_metrics').insert({
             microservice_name: microservice as any,
@@ -91,7 +91,7 @@ export class AnalyticsService {
 
   private async _getMLEngineKPIs(): Promise<GetMLEngineKPIsResponse> {
     const client = this.supabase.getAdminClient<Database>();
-    
+
     // ML Model Versions (Mock with fallback)
     const { data: modelVersions, error: err1 } = await client.from('ml_model_versions' as any).select('*').order('trained_at', { ascending: true });
     let modelVersionsJson = JSON.stringify(!err1 && modelVersions?.length ? modelVersions : [
@@ -103,8 +103,8 @@ export class AnalyticsService {
 
     // Recommendation Logs (Latencia)
     const { data: recLogs, error: err2 } = await client.from('recommendation_logs' as any).select('response_ms, created_at').limit(100);
-    let recommendationLogsJson = JSON.stringify(!err2 && recLogs?.length ? recLogs : Array.from({length: 20}).map((_, i) => ({
-      time: `10:${i < 10 ? '0'+i : i}`,
+    let recommendationLogsJson = JSON.stringify(!err2 && recLogs?.length ? recLogs : Array.from({ length: 20 }).map((_, i) => ({
+      time: `10:${i < 10 ? '0' + i : i}`,
       response_ms: Math.floor(Math.random() * 50) + 100 // 100-150ms
     })));
 

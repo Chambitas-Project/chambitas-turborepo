@@ -1,10 +1,10 @@
 import { Injectable, Logger, InternalServerErrorException, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { SupabaseService, Database } from '@chambitas/supabase';
-import { 
-  GetRecommendationsRequest, 
-  GetRecommendationsResponse, 
-  UpdateMatchStatusRequest, 
+import {
+  GetRecommendationsRequest,
+  GetRecommendationsResponse,
+  UpdateMatchStatusRequest,
   UpdateMatchStatusResponse,
   IAnalyticsService
 } from '@chambitas/proto';
@@ -17,31 +17,26 @@ export class MatchingService implements OnModuleInit {
   constructor(
     private readonly supabase: SupabaseService,
     @Inject('ANALYTICS_PACKAGE') private readonly client: ClientGrpc,
-  ) {}
+  ) { }
 
   onModuleInit() {
     this.analyticsService = this.client.getService<IAnalyticsService>('AnalyticsService');
   }
 
-  // ========================================================================
-  // 1. REFACTORIZACIÓN DE 'getRecommendations' (Búsqueda Masiva Ponderada)
-  // ========================================================================
   async getRecommendations(data: GetRecommendationsRequest): Promise<GetRecommendationsResponse> {
     const { userId, limit = 20, page = 1 } = data as any;
     this.logger.log(`Consultando RPC pgvector híbrido para el usuario: ${userId}`);
 
     try {
       const startTime = Date.now();
-      // Delegamos toda la responsabilidad de extracción y cruce matemático al RPC masivo
-      // Esto hace que la búsqueda de recomendaciones sea también O(1) en memoria de Node.js
       const { data: matches, error: rpcError } = await this.supabase.getClient<Database>()
         .rpc('match_projects_for_student' as any, {
           p_student_id: userId,
-          match_threshold: 0.2, 
+          match_threshold: 0.2,
           match_limit: limit,
           page_offset: (page - 1) * limit
         } as any);
-      
+
       const duration = Date.now() - startTime;
 
       if (rpcError) {
@@ -62,17 +57,16 @@ export class MatchingService implements OnModuleInit {
         error: (err) => this.logger.error(`[Analytics] Failed to log recommendation latency`, err.message)
       });
 
-      // Consumo del score ponderado real (m.similarity) retornado por el SQL
       const finalRecommendations = (matches || []).map((m: any) => ({
         jobId: m.id,
         score: m.similarity,
         reason: `Compatibilidad híbrida del ${(m.similarity * 100).toFixed(0)}% (Habilidades + Horarios).`,
         aiMetadata: JSON.stringify({
           cluster: 0,
-          skillMatch: m.similarity, // Utilizando la métrica híbrida matemática
+          skillMatch: m.similarity,
           mandatoryOk: true
         }),
-        matchId: '' 
+        matchId: ''
       }));
 
       return { recommendations: finalRecommendations };

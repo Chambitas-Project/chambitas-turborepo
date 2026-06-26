@@ -136,9 +136,6 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
         except Exception as e:
             print(f"[THREAD] ERROR en skill {skill_id}: {e}")
 
-    # ==========================================
-    # ENDPOINTS gRPC (Retorno Inmediato)
-    # ==========================================
     def GenerateProjectEmbedding(self, request, context):
         threading.Thread(target=self._bg_project_embedding, args=(request.project_id,)).start()
         return ml_engine_pb2.EmbeddingResponse(success=True, status="ACCEPTED", message="Processing in background")
