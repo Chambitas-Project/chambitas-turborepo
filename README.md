@@ -45,8 +45,32 @@ La distribución de espacios de trabajo (`apps`) se organiza de la siguiente man
 - `apps/notification-service`: Gestión de notificaciones.
 - `apps/profile-service`: Gestión del portafolio, currículum vitae (CV) e información laboral de los usuarios.
 - `apps/matching-service`: Orquestador principal de la lógica transaccional de cruces (Empresas - Talento).
+- `apps/media-service`: Servicio de gestión y procesamiento de archivos multimedia (imágenes, documentos, etc.).
 - `apps/ml-engine`: Motor analítico de Inteligencia Artificial desarrollado en Python.
 - `apps/analytics-audit-service`: Servicio dedicado a la recolección y análisis de logs para auditoría y métricas de la plataforma.
+- `apps/analytics-dashboard`: Dashboard para visualización de métricas de análisis.
+
+Además, el monorepo cuenta con un directorio de librerías compartidas (`packages`) que incluye:
+- `packages/common`: Utilidades y configuraciones transversales a todo el proyecto.
+- `packages/proto`: Definiciones de Protocol Buffers (gRPC) compartidas entre microservicios.
+- `packages/supabase`: Cliente y tipos generados para la base de datos Supabase.
+- `packages/ui`: Componentes visuales reutilizables para el Frontend.
+- Configuraciones compartidas (`eslint-config`, `typescript-config`).
+
+---
+
+## Documentación de APIs
+
+El ecosistema de Chambitas utiliza dos enfoques para la comunicación y exposición de servicios:
+
+1. **REST APIs (Cliente - Servidor):**
+   Todas las interacciones desde el Frontend y clientes externos pasan a través del `api-gateway`. Las APIs están completamente documentadas utilizando **Swagger/OpenAPI**.
+   - Para acceder a la documentación interactiva, debes levantar el proyecto en entorno de desarrollo (`development`).
+   - La interfaz de Swagger estará disponible típicamente en: `http://localhost:3000/api/docs` (o la ruta configurada para el Gateway localmente). *Nota: Por seguridad, Swagger está deshabilitado en producción.*
+
+2. **gRPC (Microservicio - Microservicio):**
+   La comunicación interna entre los distintos microservicios (Backend a Backend) se realiza mediante **gRPC** para garantizar una comunicación binaria ultra-rápida y tipado estricto.
+   - Las definiciones exactas de cada servicio y sus mensajes (payloads) se encuentran en los archivos `.proto` ubicados en el paquete compartido `packages/proto/`.
 
 ---
 
