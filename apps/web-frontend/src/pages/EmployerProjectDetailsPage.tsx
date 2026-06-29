@@ -77,6 +77,12 @@ export function EmployerProjectDetailsPage() {
       setIsCompleting(true);
       await employerApi.completeProject(project.id);
       await fetchProjectData();
+      
+      // Auto-open review modal for accepted student
+      const acceptedApplicant = applicants.find(a => a.status === 'accepted');
+      if (acceptedApplicant) {
+        handleOpenReview(acceptedApplicant.id, acceptedApplicant.student_name);
+      }
     } catch (error) {
       console.error("Error completing project:", error);
     } finally {

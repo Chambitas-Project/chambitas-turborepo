@@ -101,6 +101,11 @@ export function ApplicantsList({
                     <p className="text-sm font-medium text-slate-600 mt-1 line-clamp-3 leading-relaxed">
                       "{app.cover_note || "Sin carta de presentación"}"
                     </p>
+                    {app.status === 'accepted' && app.student_phone && (
+                      <div className="mt-2 text-sm font-bold bg-emerald-100/50 text-emerald-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-emerald-200/50">
+                        <span>📞</span> Celular: {app.student_phone}
+                      </div>
+                    )}
                     <div className="flex items-center gap-4 mt-2">
                       <span className="text-xs font-bold text-slate-400">
                         {app.applied_at || app.created_at

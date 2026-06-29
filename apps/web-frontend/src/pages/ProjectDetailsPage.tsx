@@ -4,6 +4,7 @@ import { ArrowLeft, AlertCircle, Loader2, History } from "lucide-react";
 import { Button, Badge } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 import { ReviewModal } from "../components/organisms/ReviewModal";
+import { EmployerProfileModal } from "../components/organisms/EmployerProfileModal";
 import React from "react";
 
 // Types
@@ -36,6 +37,7 @@ export function ProjectDetailsPage() {
   const [isSubmitting, setSubmitting] = useState(false);
   const [coverNote, setCoverNote] = useState("");
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isEmployerProfileModalOpen, setIsEmployerProfileModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProjectAndApplication = async () => {
@@ -178,6 +180,7 @@ export function ProjectDetailsPage() {
                 employerProfile={employerProfile}
                 employerProjectsCount={employerProjectsCount}
                 employerReviews={employerReviews}
+                onViewProfile={() => setIsEmployerProfileModalOpen(true)}
               />
               <ApplicationWidget
                 application={application}
@@ -201,6 +204,15 @@ export function ProjectDetailsPage() {
         onClose={() => setIsReviewModalOpen(false)}
         applicationId={application?.id}
         targetName={companyName}
+      />
+      
+      <EmployerProfileModal
+        isOpen={isEmployerProfileModalOpen}
+        onClose={() => setIsEmployerProfileModalOpen(false)}
+        employerId={project.employer_id}
+        companyName={companyName}
+        employerName={employerName}
+        employerProfile={employerProfile}
       />
     </div>
   );

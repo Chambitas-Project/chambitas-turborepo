@@ -45,6 +45,7 @@ export interface ApplicationData {
   created_at?: string;
   student_career?: string;
   student_academic_cycle?: number;
+  student_phone?: string;
 }
 
 export const employerApi = {

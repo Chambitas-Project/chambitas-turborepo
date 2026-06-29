@@ -96,6 +96,7 @@ message UnifiedProfileResponse {
   optional string commercial_name = 17;
   bool is_gpa_verified = 18;
   optional string evidence_url = 19;
+  optional string phone_number = 20;
 }
 
 message GetProfileRequest {
@@ -115,6 +116,7 @@ message CreateStudentProfileRequest {
   optional string bio = 6;
   optional string availability_blocks = 7;
   repeated string skills = 8;
+  optional string phone_number = 9;
 }
 
 message SkillUpdate {
@@ -131,6 +133,7 @@ message UpdateProfileRequest {
   optional float gpa = 5;
   optional string availability_blocks = 6;
   optional int32 academic_cycle = 7;
+  optional string phone_number = 8;
 }
 
 message UpdateStudentProfileRequest {
@@ -144,6 +147,7 @@ message UpdateStudentProfileRequest {
   optional float gpa = 8;
   optional bool is_gpa_verified = 9;
   optional string evidence_url = 10;
+  optional string phone_number = 11;
 }
 
 message CreateEmployerProfileRequest {
@@ -177,6 +181,7 @@ message StudentProfileResponse {
   optional string evidence_url = 12;
   string created_at = 13;
   string updated_at = 14;
+  optional string phone_number = 15;
 }
 
 message EmployerProfileResponse {
@@ -211,6 +216,7 @@ message CompleteOnboardingRequest {
   optional string availability_blocks = 13;
   optional bool is_gpa_verified = 14;
   optional string evidence_url = 15;
+  optional string phone_number = 16;
 }
 
 message ProfileResponse {

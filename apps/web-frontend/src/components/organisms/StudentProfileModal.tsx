@@ -3,6 +3,7 @@ import { X, GraduationCap, Calendar, BookOpen, Loader2 } from "lucide-react";
 import { cn } from "@chambitas/ui";
 import { employerApi } from "../../api/employer.api";
 import { apiClient } from "../../api/api-client";
+import { ReviewsList } from "./ReviewsList";
 
 interface StudentProfileModalProps {
   isOpen: boolean;
@@ -203,10 +204,10 @@ export function StudentProfileModal({ isOpen, onClose, studentId }: StudentProfi
                   </div>
 
                   <div className="overflow-x-auto">
-                    <div className="grid grid-cols-8 gap-2 min-w-[500px]">
+                    <div className="grid grid-cols-8 gap-2 min-w-125">
                       <div />
                       {DAYS.map(day => <div key={day.id} className="text-center text-[9px] font-black text-slate-500 uppercase tracking-tighter pb-2">{day.label}</div>)}
-                      <div className="col-span-8 space-y-1.5 max-h-[250px] overflow-y-auto pr-2 light-scrollbar">
+                      <div className="col-span-8 space-y-1.5 max-h-62.5 overflow-y-auto pr-2 light-scrollbar">
                         {TIME_SLOTS.map((time, idx) => {
                           const blocksStr = profile.availability_blocks;
                           const blocksObj = typeof blocksStr === 'string' ? JSON.parse(blocksStr) : (blocksStr || {});
@@ -231,6 +232,12 @@ export function StudentProfileModal({ isOpen, onClose, studentId }: StudentProfi
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {studentId && (
+                <div className="pt-6 border-t border-slate-100 pb-4">
+                  <ReviewsList userId={studentId} role="student" />
                 </div>
               )}
             </>

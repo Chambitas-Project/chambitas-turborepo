@@ -905,6 +905,7 @@ export type Database = {
           gpa: number | null
           id: string
           is_gpa_verified: boolean | null
+          phone_number: string | null
           skills: string[] | null
           university_id: string
           updated_at: string | null
@@ -922,6 +923,7 @@ export type Database = {
           gpa?: number | null
           id: string
           is_gpa_verified?: boolean | null
+          phone_number?: string | null
           skills?: string[] | null
           university_id: string
           updated_at?: string | null
@@ -939,6 +941,7 @@ export type Database = {
           gpa?: number | null
           id?: string
           is_gpa_verified?: boolean | null
+          phone_number?: string | null
           skills?: string[] | null
           university_id?: string
           updated_at?: string | null

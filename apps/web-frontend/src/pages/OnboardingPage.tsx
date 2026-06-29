@@ -29,6 +29,7 @@ export function OnboardingPage() {
   // Estados para Estudiante
   const [studentData, setStudentData] = useState({
     fullName: "",
+    phoneNumber: "",
     careerId: "",
     academicCycle: 1,
     gpa: 15.0,
@@ -95,7 +96,7 @@ export function OnboardingPage() {
 
   const isStepValid = () => {
     if (user?.role === "student") {
-      if (step === 1) return studentData.fullName.trim().length > 3 && studentData.bio.trim().length > 10 && studentData.careerId !== "";
+      if (step === 1) return studentData.fullName.trim().length > 3 && studentData.phoneNumber.trim().length >= 9 && studentData.bio.trim().length > 10 && studentData.careerId !== "";
       if (step === 2) return studentData.gpa >= 0 && studentData.gpa <= 20 && calculateTotalHours() >= 4;
       if (step === 3) return studentData.skills.length >= 3;
     } else {
@@ -135,6 +136,7 @@ export function OnboardingPage() {
     setError(null);
     const payload = {
       full_name: studentData.fullName,
+      phone_number: studentData.phoneNumber,
       career_id: studentData.careerId,
       academic_cycle: Number(studentData.academicCycle),
       gpa: Number(studentData.gpa),

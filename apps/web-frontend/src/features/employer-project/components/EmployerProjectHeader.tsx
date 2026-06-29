@@ -51,22 +51,42 @@ export function EmployerProjectHeader({ project }: EmployerProjectHeaderProps) {
         </div>
       </div>
 
-      {/* Progress Bar para Proyectos en Progreso */}
-      {project.status === 'in_progress' && (
-        <div className="mt-8 pt-8 border-t border-slate-100">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
-              <Clock className="h-4 w-4 text-indigo-500" /> Tiempo del Proyecto
-            </h3>
-            <span className="text-xs font-bold text-slate-500">En ejecución</span>
-          </div>
-          <div className="h-3 w-full bg-slate-100 rounded-md overflow-hidden">
-            <div className="h-full bg-indigo-500 w-1/2 rounded-md relative overflow-hidden">
-              <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite] -translate-x-full"></div>
-            </div>
-          </div>
+      {/* Progress Bar (Stepper) */}
+      <div className="mt-8 pt-8 border-t border-slate-100">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative px-2 sm:px-8">
+          <div className="absolute top-5 left-8 right-8 h-1 bg-slate-100 hidden sm:block z-0" />
+          
+          {[
+            { id: 'draft', label: 'Borrador', icon: '📝' },
+            { id: 'open', label: 'Recibiendo Postulantes', icon: '📢' },
+            { id: 'in_progress', label: 'En Ejecución', icon: '🚀' },
+            { id: 'closed', label: 'Completado', icon: '✅' }
+          ].map((step, index) => {
+            const isCompleted = 
+              project.status === 'closed' || 
+              (project.status === 'in_progress' && index <= 2) ||
+              (project.status === 'open' && index <= 1) ||
+              (project.status === 'draft' && index === 0);
+            const isCurrent = project.status === step.id;
+
+            return (
+              <div key={step.id} className="relative z-10 flex flex-col items-center gap-2 bg-white sm:px-2 mb-4 sm:mb-0 w-full sm:w-auto">
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm border-2 transition-all",
+                  isCurrent ? "border-indigo-500 bg-indigo-50 scale-110" :
+                  isCompleted ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-200 bg-white opacity-50 grayscale"
+                )}>
+                  {isCompleted && !isCurrent ? '✓' : step.icon}
+                </div>
+                <span className={cn(
+                  "text-xs font-bold text-center",
+                  isCurrent ? "text-indigo-600" : isCompleted ? "text-emerald-700" : "text-slate-400"
+                )}>{step.label}</span>
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }

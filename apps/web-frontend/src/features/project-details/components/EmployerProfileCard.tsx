@@ -6,6 +6,7 @@ interface EmployerProfileCardProps {
   employerProfile: any;
   employerProjectsCount: number;
   employerReviews: any[];
+  onViewProfile?: () => void;
 }
 
 export function EmployerProfileCard({
@@ -14,6 +15,7 @@ export function EmployerProfileCard({
   employerProfile,
   employerProjectsCount,
   employerReviews,
+  onViewProfile,
 }: EmployerProfileCardProps) {
   return (
     <div className="space-y-8">
@@ -54,6 +56,15 @@ export function EmployerProfileCard({
             </p>
           </div>
         </div>
+
+        {onViewProfile && (
+          <button 
+            onClick={onViewProfile}
+            className="w-full mt-2 py-2 text-sm font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
+          >
+            Ver Perfil Completo
+          </button>
+        )}
       </div>
     </div>
   );

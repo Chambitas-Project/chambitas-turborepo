@@ -29,6 +29,20 @@ export function StudentIdentityStep({
         />
       </div>
 
+      <div className="space-y-1.5">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex justify-between">
+          <span>Número de Celular</span>
+          <span className="text-[10px] text-slate-400 normal-case font-medium tracking-normal">Privado (solo para tu empleador cuando te acepte)</span>
+        </label>
+        <Input
+          type="tel"
+          placeholder="Ej. 987654321"
+          value={studentData.phoneNumber}
+          onChange={(e) => setStudentData({ ...studentData, phoneNumber: e.target.value.replace(/\D/g, '').slice(0, 15) })}
+          className="h-12 border-slate-200 focus:border-emerald-500 bg-white"
+        />
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex justify-between">
