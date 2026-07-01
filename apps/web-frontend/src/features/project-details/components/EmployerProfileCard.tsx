@@ -1,4 +1,4 @@
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Star } from "lucide-react";
 
 interface EmployerProfileCardProps {
   companyName: string;
@@ -42,18 +42,21 @@ export function EmployerProfileCard({
         )}
 
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-          <div className="text-center p-2 rounded-md bg-slate-50">
+          <div className="text-center p-2 rounded-md bg-slate-50 flex flex-col justify-center">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Proyectos</p>
             <p className="text-lg font-black text-slate-900">{employerProjectsCount}</p>
           </div>
-          <div className="text-center p-2 rounded-md bg-slate-50">
+          <div className="text-center p-2 rounded-md bg-slate-50 flex flex-col justify-center items-center">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Reseñas</p>
-            <p className="text-lg font-black text-slate-900">
-              {employerReviews.length > 0
-                ? (employerReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / employerReviews.length).toFixed(1)
-                : 'N/A'}
-              <span className="text-[10px] text-slate-500 font-medium ml-1">({employerReviews.length})</span>
-            </p>
+            <div className="flex items-center justify-center gap-1">
+              <Star className="h-4 w-4 text-amber-400 fill-amber-400 mb-0.5" />
+              <p className="text-lg font-black text-slate-900 leading-none">
+                {employerReviews.length > 0
+                  ? (employerReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / employerReviews.length).toFixed(1)
+                  : 'N/A'}
+              </p>
+              <span className="text-[10px] text-slate-500 font-medium ml-0.5 leading-none">({employerReviews.length})</span>
+            </div>
           </div>
         </div>
 
