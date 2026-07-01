@@ -34,7 +34,7 @@ export function ApplicationWidget({
       {application ? (
         <div className={cn(
           "rounded-xl p-8 text-white text-center space-y-6 shadow-xl",
-          application.status === 'accepted' ? "bg-indigo-600 shadow-indigo-200" :
+          (application.status === 'accepted' || application.status === 'completed') ? "bg-indigo-600 shadow-indigo-200" :
             application.status === 'rejected' ? "bg-red-500 shadow-red-200" :
               "bg-emerald-600 shadow-emerald-200"
         )}>
@@ -43,18 +43,20 @@ export function ApplicationWidget({
           </div>
           <div className="space-y-2">
             <h4 className="text-2xl font-black tracking-tight">
-              {application.status === 'accepted' ? '¡Fuiste Seleccionado!' :
-                application.status === 'rejected' ? 'Postulación Rechazada' :
-                  '¡Enviado!'}
+              {application.status === 'completed' ? '¡Proyecto Finalizado!' :
+                application.status === 'accepted' ? '¡Fuiste Seleccionado!' :
+                  application.status === 'rejected' ? 'Postulación Rechazada' :
+                    '¡Enviado!'}
             </h4>
             <p className="text-white/90 text-sm font-medium">
-              {application.status === 'accepted' ? 'El empleador aceptó tu propuesta y el proyecto está en curso.' :
-                application.status === 'rejected' ? 'No fuiste seleccionado para este proyecto.' :
-                  `Hemos enviado tu propuesta a ${companyName}.`}
+              {application.status === 'completed' ? 'Has completado este proyecto con éxito.' :
+                application.status === 'accepted' ? 'El empleador aceptó tu propuesta y el proyecto está en curso.' :
+                  application.status === 'rejected' ? 'No fuiste seleccionado para este proyecto.' :
+                    `Hemos enviado tu propuesta a ${companyName}.`}
             </p>
           </div>
 
-          {project.status === 'completed' && application.status === 'accepted' ? (
+          {(project.status === 'completed' || project.status === 'closed') && (application.status === 'accepted' || application.status === 'completed') ? (
             <Button onClick={onOpenReviewModal} className="w-full bg-amber-500 hover:bg-amber-400 text-white font-black py-6 rounded-md transition-all shadow-md shadow-amber-900/20">
               Dejar Reseña al Empleador
             </Button>
@@ -72,7 +74,7 @@ export function ApplicationWidget({
               onChange={(e) => onCoverNoteChange(e.target.value)}
               placeholder="Escribe por qué eres ideal para este proyecto..."
               maxLength={500}
-              className="w-full bg-white border border-slate-200 rounded-md p-5 text-sm font-medium text-slate-900 min-h-[160px] resize-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 outline-none transition-all placeholder:text-slate-400 shadow-sm"
+              className="w-full bg-white border border-slate-200 rounded-md p-5 text-sm font-medium text-slate-900 min-h-40 resize-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 outline-none transition-all placeholder:text-slate-400 shadow-sm"
             />
             <div className="absolute bottom-6 right-8 text-[9px] font-black text-slate-300 uppercase tracking-widest">
               {coverNote.length}/500
