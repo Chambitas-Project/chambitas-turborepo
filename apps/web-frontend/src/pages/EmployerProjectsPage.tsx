@@ -24,7 +24,23 @@ export function EmployerProjectsPage() {
       try {
         setIsLoading(true);
         const projectsData = await employerApi.getRecentProjects();
-        setProjects(Array.isArray(projectsData) ? projectsData : []);
+        const validProjects = Array.isArray(projectsData) ? projectsData : [];
+        
+        // Ordenar por cantidad de postulantes (descendente) y luego por fecha (descendente)
+        validProjects.sort((a, b) => {
+          const appsA = a.applicantsCount || a.applicantCount || (a as any).applicant_count || 0;
+          const appsB = b.applicantsCount || b.applicantCount || (b as any).applicant_count || 0;
+          
+          if (appsA !== appsB) {
+            return appsB - appsA;
+          }
+          
+          const dateA = new Date(a.createdAt || (a as any).created_at || 0).getTime();
+          const dateB = new Date(b.createdAt || (b as any).created_at || 0).getTime();
+          return dateB - dateA;
+        });
+
+        setProjects(validProjects);
       } catch (error) {
         console.error("Error fetching projects", error);
       } finally {
