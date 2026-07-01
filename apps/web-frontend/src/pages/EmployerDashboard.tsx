@@ -12,6 +12,7 @@ import { CompleteProfileCard } from "../components/organisms/CompleteProfileCard
 import { ReviewsList } from "../components/organisms/ReviewsList";
 import { ProfileModal } from "../components/organisms/ProfileModal";
 import { useAuth } from "../context/AuthContext";
+import { reviewsApi } from "../api/reviews.api";
 
 export function EmployerDashboard() {
   const [stats, setStats] = useState<EmployerStats | null>(null);
@@ -41,6 +42,17 @@ export function EmployerDashboard() {
           })
         );
         
+        // Obtener las reseñas escritas por este empleador para saber cuáles faltan
+        let employerWrittenReviews: any[] = [];
+        if (user?.id) {
+          try {
+            const { reviews } = await reviewsApi.listReviews({ employer_id: user.id });
+            employerWrittenReviews = reviews.filter(r => r.reviewer_role === 'employer');
+          } catch (e) {
+            console.error("Error fetching reviews for stats", e);
+          }
+        }
+        
         // Actualizar proyectos con contador real
         const projectsWithCounts = validProjects.map(p => {
            const projApps = applicationsData.find(a => a.projectId === p.id)?.apps || [];
@@ -51,7 +63,18 @@ export function EmployerDashboard() {
         const activeJobs = validProjects.filter(p => p.status === 'open' || p.status === 'active').length;
         const allApps = applicationsData.flatMap(a => a.apps);
         const newApplicants = allApps.filter(a => a.status === 'pending').length;
-        const pendingReviews = validProjects.filter(p => p.status === 'completed' || p.status === 'closed').length; // Proyectos finalizados
+        
+        // Calcular revisiones (reseñas) pendientes reales
+        const pendingReviews = validProjects.filter(p => {
+          if (p.status !== 'completed' && p.status !== 'closed') return false;
+          const apps = applicationsData.find(a => a.projectId === p.id)?.apps || [];
+          const acceptedApp = apps.find(a => a.status === 'accepted');
+          if (!acceptedApp) return false; // Si no hay postulante aceptado, no hay a quién reseñar
+          
+          // Verificar si el empleador ya dejó una reseña para esta postulación
+          const hasReviewed = employerWrittenReviews.some(r => r.application_id === acceptedApp.id);
+          return !hasReviewed;
+        }).length;
 
         setStats({
           activeJobs,
@@ -59,7 +82,7 @@ export function EmployerDashboard() {
           newApplicants,
           newApplicantsTrend: 'Postulantes pendientes',
           pendingReviews,
-          pendingReviewsTrend: 'Proyectos finalizados'
+          pendingReviewsTrend: 'Reseñas por escribir'
         });
 
         setProjects(projectsWithCounts);
