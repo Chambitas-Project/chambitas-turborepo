@@ -53,7 +53,7 @@ export function EmployerProfileCard({
               <p className="text-lg font-black text-slate-900 leading-none">
                 {employerReviews.length > 0
                   ? (employerReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / employerReviews.length).toFixed(1)
-                  : 'N/A'}
+                  : 'Nuevo'}
               </p>
               <span className="text-[10px] text-slate-500 font-medium ml-0.5 leading-none">({employerReviews.length})</span>
             </div>
