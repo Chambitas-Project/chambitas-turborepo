@@ -14,6 +14,7 @@ const LandingPage = React.lazy(() => import("./pages/LandingPage").then(m => ({ 
 const LoginPage = React.lazy(() => import("./pages/LoginPage").then(m => ({ default: m.LoginPage })));
 const RegisterPage = React.lazy(() => import("./pages/RegisterPage").then(m => ({ default: m.RegisterPage })));
 const ForgotPasswordPage = React.lazy(() => import("./pages/ForgotPasswordPage").then(m => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = React.lazy(() => import("./pages/ResetPasswordPage").then(m => ({ default: m.ResetPasswordPage })));
 const TermsPage = React.lazy(() => import("./pages/TermsPage").then(m => ({ default: m.TermsPage })));
 const OnboardingPage = React.lazy(() => import("./pages/OnboardingPage").then(m => ({ default: m.OnboardingPage })));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
@@ -84,6 +85,11 @@ export const router = createBrowserRouter([
     path: "/forgot-password",
     errorElement: <GlobalErrorBoundary />,
     element: <Suspense fallback={<PageLoader />}><PublicRoute><ForgotPasswordPage /></PublicRoute></Suspense>,
+  },
+  {
+    path: "/reset-password",
+    errorElement: <GlobalErrorBoundary />,
+    element: <Suspense fallback={<PageLoader />}><PublicRoute><ResetPasswordPage /></PublicRoute></Suspense>,
   },
   {
     path: "/onboarding",
