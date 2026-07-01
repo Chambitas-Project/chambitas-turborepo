@@ -164,7 +164,7 @@ export function EmployerDashboard() {
             )}
           </div>
 
-          <div className="mt-8">
+          <div id="reviews-section" className="mt-8">
             {user?.id && <ReviewsList userId={user.id} role="employer" />}
           </div>
         </div>
