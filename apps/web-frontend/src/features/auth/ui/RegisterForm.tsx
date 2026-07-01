@@ -3,26 +3,33 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Input, Checkbox, RoleSelector, Alert, cn } from "@chambitas/ui";
 import { useRegister } from "../model/use-register";
+import { RegisterSuccessView } from "../../../components/molecules/RegisterSuccessView";
 
 interface RegisterFormProps {
   role: string;
   setRole: (role: string) => void;
+  onSuccess?: () => void;
 }
 
-export function RegisterForm({ role, setRole }: RegisterFormProps) {
+export function RegisterForm({ role, setRole, onSuccess }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const {
     form,
     universities,
     loadingUnis,
     regError,
-    onSubmit
-  } = useRegister(role);
+    onSubmit,
+    isSuccess
+  } = useRegister(role, onSuccess);
 
   const { register, formState: { errors, isSubmitting } } = form;
 
+  if (isSuccess) {
+    return <RegisterSuccessView role={role} />;
+  }
+
   return (
-    <div className="w-full max-w-[400px] space-y-8">
+    <div className="w-full max-w-100 space-y-8">
       <div className="space-y-2 text-center lg:text-left">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Crea tu cuenta</h1>
         <p className="text-sm font-medium text-slate-500">Acceso directo con tus credenciales</p>

@@ -15,8 +15,8 @@ const registerSchema = z.object({
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export function useRegister(role: string) {
-  const { register: registerWithApi } = useAuth();
+export function useRegister(role: string, onSuccess?: () => void) {
+  const { register: registerWithApi, login } = useAuth();
   const [universities, setUniversities] = useState<University[]>([]);
   const [loadingUnis, setLoadingUnis] = useState(true);
   const [regError, setRegError] = useState<string | null>(null);
@@ -72,7 +72,14 @@ export function useRegister(role: string) {
         role: role,
         university_id: role === "student" ? data.universityId : null
       });
-      setIsSuccess(true);
+      
+      try {
+        await login({ email: data.email, password: data.password });
+        if (onSuccess) onSuccess();
+      } catch (loginError) {
+        console.error("Auto-login falló tras registro:", loginError);
+        setIsSuccess(true);
+      }
     } catch (error: any) {
       const message = error.response?.data?.message || "Error al crear la cuenta. Verifica los datos.";
       setRegError(message);
