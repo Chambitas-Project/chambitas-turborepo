@@ -19,9 +19,12 @@ const JobSearchPage = React.lazy(() => import("./pages/JobSearchPage").then(m =>
 const ProjectDetailsPage = React.lazy(() => import("./pages/ProjectDetailsPage").then(m => ({ default: m.ProjectDetailsPage })));
 
 
+import { useLocation } from "react-router-dom";
+
 // Componente para proteger rutas privadas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white">
@@ -32,7 +35,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!user) return <Navigate to="/login" replace />;
   
   // Si no ha hecho onboarding, forzarlo a ir allá (a menos que ya esté en onboarding)
-  if (!user.isOnboarded && window.location.pathname !== "/onboarding") {
+  if (!user.isOnboarded && location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
   }
 

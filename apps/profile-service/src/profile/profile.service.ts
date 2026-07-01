@@ -76,15 +76,30 @@ export class ProfileService implements OnModuleInit {
       return this.mapEmployerToUnified(employer);
     }
 
-    // Verificar si es administrador
+    // Verificar en la tabla de usuarios base
     const supabase = this.supabaseService.getClient<Database>();
     const { data: user } = await supabase.from('users').select('*').eq('id', id).single();
-    if (user && user.role === 'admin') {
+
+    if (user) {
+      if (user.role === 'admin') {
+        return {
+          id: user.id,
+          role: 'admin',
+          full_name: 'Administrador General',
+          is_onboarded: true,
+          is_gpa_verified: false,
+          skills: [],
+          activity: [],
+        };
+      }
+
+      // Si existe pero no tiene perfil en student_profiles o employer_profiles,
+      // significa que no ha hecho el onboarding. Retornamos sus datos básicos.
       return {
         id: user.id,
-        role: 'admin',
-        full_name: 'Administrador General',
-        is_onboarded: true,
+        role: user.role,
+        full_name: '',
+        is_onboarded: user.is_onboarded!,
         is_gpa_verified: false,
         skills: [],
         activity: [],

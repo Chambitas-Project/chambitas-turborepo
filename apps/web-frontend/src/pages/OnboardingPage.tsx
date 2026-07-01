@@ -107,10 +107,12 @@ export function OnboardingPage() {
 
   const handleNext = () => {
     if (!isStepValid()) {
-      if (user?.role === "student" && step === 1 && studentData.careerId === "") {
-        setError("Por favor, selecciona tu carrera académica del catálogo.");
-      } else if (user?.role === "student" && step === 1 && (studentData.phoneNumber.length !== 9 || !studentData.phoneNumber.startsWith('9'))) {
-        setError("El número de celular debe ser de Perú (9 dígitos y empezar con 9).");
+      if (user?.role === "student" && step === 1) {
+        if (studentData.fullName.trim().length <= 3 || studentData.phoneNumber.trim().length === 0 || studentData.bio.trim().length <= 10 || studentData.careerId === "") {
+          setError("Por favor, completa todos los campos obligatorios (*).");
+        } else if (studentData.phoneNumber.length !== 9 || !studentData.phoneNumber.startsWith('9')) {
+          setError("El número de celular debe ser de Perú (9 dígitos y empezar con 9).");
+        }
       } else if (user?.role === "student" && step === 2 && calculateTotalHours() < 4) {
         setError("Por favor, selecciona al menos 4 horas de disponibilidad semanal.");
       } else if (user?.role === "student" && step === 3 && studentData.skills.length < 3) {
