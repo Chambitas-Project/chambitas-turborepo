@@ -1,4 +1,5 @@
-import { Users, CheckCircle2, XCircle, Award, Loader2, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { useState } from "react";
+import { Users, CheckCircle2, XCircle, Award, Loader2, ChevronLeft, ChevronRight, MoreHorizontal, Phone, Mail, Copy } from "lucide-react";
 import { Button, Badge, cn } from "@chambitas/ui";
 import type { EmployerProject, ApplicationData } from "../types";
 
@@ -33,13 +34,23 @@ export function ApplicantsList({
   handleCompleteProject,
   handleOpenReview,
 }: ApplicantsListProps) {
+  const [copiedText, setCopiedText] = useState<string | null>(null);
   const isSelectedStatus = project.status === 'in_progress' || project.status === 'closed';
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(text);
+    setTimeout(() => setCopiedText(null), 2000);
+  };
 
   // Ordenar por fecha más reciente
   const sortedApplicants = [...applicants].sort((a, b) => {
-    const dateA = new Date(a.applied_at || a.created_at || 0).getTime();
-    const dateB = new Date(b.applied_at || b.created_at || 0).getTime();
-    return dateB - dateA;
+    const getUtcTime = (dateStr: string | undefined) => {
+      if (!dateStr) return 0;
+      const utcDateStr = dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : `${dateStr}Z`;
+      return new Date(utcDateStr).getTime();
+    };
+    return getUtcTime(b.applied_at || b.created_at) - getUtcTime(a.applied_at || a.created_at);
   });
 
   return (
@@ -70,7 +81,9 @@ export function ApplicantsList({
               ? sortedApplicants.filter((a) => a.status === 'accepted')
               : sortedApplicants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
             ).map((app) => {
-              const isNew = (Date.now() - new Date(app.applied_at || app.created_at || 0).getTime()) < 1000 * 60 * 60 * 24 * 2; // 48 horas
+              const dateStr = app.applied_at || app.created_at || '';
+              const utcDateStr = dateStr ? (dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : `${dateStr}Z`) : 0;
+              const isNew = (Date.now() - new Date(utcDateStr).getTime()) < 1000 * 60 * 60 * 24 * 2; // 48 horas
 
               return (
               <div
@@ -119,13 +132,25 @@ export function ApplicantsList({
                     {app.status === 'accepted' && (app.student_phone || app.student_email) && (
                       <div className="mt-3 flex flex-col gap-2">
                         {app.student_phone && (
-                          <div className="text-sm font-bold bg-emerald-100/50 text-emerald-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-emerald-200/50 w-fit">
-                            <span>📞</span> Celular: {app.student_phone}
+                          <div 
+                            onClick={() => handleCopy(app.student_phone!)}
+                            className="text-sm font-bold bg-emerald-100/50 text-emerald-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-emerald-200/50 w-fit cursor-pointer hover:bg-emerald-200 transition-colors group"
+                            title="Haz clic para copiar"
+                          >
+                            <Phone className="h-4 w-4" /> 
+                            {copiedText === app.student_phone ? "¡Copiado!" : `Celular: ${app.student_phone}`}
+                            <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
                           </div>
                         )}
                         {app.student_email && (
-                          <div className="text-sm font-bold bg-blue-100/50 text-blue-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-blue-200/50 w-fit">
-                            <span>✉️</span> Email: {app.student_email}
+                          <div 
+                            onClick={() => handleCopy(app.student_email!)}
+                            className="text-sm font-bold bg-blue-100/50 text-blue-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-blue-200/50 w-fit cursor-pointer hover:bg-blue-200 transition-colors group"
+                            title="Haz clic para copiar"
+                          >
+                            <Mail className="h-4 w-4" /> 
+                            {copiedText === app.student_email ? "¡Copiado!" : `Email: ${app.student_email}`}
+                            <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
                           </div>
                         )}
                       </div>
@@ -133,7 +158,12 @@ export function ApplicantsList({
                     <div className="flex items-center gap-4 mt-3">
                       <span className="text-xs font-bold text-slate-400">
                         {app.applied_at || app.created_at
-                          ? `Postuló el ${new Date(app.applied_at || app.created_at!).toLocaleDateString()} a las ${new Date(app.applied_at || app.created_at!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                          ? (() => {
+                              const dateStr = app.applied_at || app.created_at!;
+                              const utcDateStr = dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : `${dateStr}Z`;
+                              const d = new Date(utcDateStr);
+                              return `Postuló el ${d.toLocaleDateString('es-PE')} a las ${d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`;
+                            })()
                           : ''}
                       </span>
                       {app.status === 'accepted' && (
