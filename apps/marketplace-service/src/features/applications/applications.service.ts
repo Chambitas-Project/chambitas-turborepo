@@ -149,6 +149,8 @@ export class ApplicationsService {
         proficiency_level: ss.proficiency_level,
         verified: ss.verified || false,
       })) || [],
+      student_phone: app.status === 'accepted' ? app.student_profiles?.phone_number || undefined : undefined,
+      student_email: app.status === 'accepted' ? app.users?.email || undefined : undefined,
     };
   }
 }

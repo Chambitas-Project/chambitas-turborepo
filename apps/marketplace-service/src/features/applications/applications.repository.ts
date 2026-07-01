@@ -12,7 +12,7 @@ export class ApplicationsRepository {
   async findById(id: string): Promise<any | null> {
     const { data, error } = await this.client
       .from('applications')
-      .select('*, projects(title, employer_id), student_profiles(full_name, academic_cycle, careers(name), student_skills(proficiency_level, verified, skills(id, name))), matches(score)')
+      .select('*, projects(title, employer_id), student_profiles(full_name, academic_cycle, phone_number, careers(name), student_skills(proficiency_level, verified, skills(id, name))), users!applications_student_id_fkey(email), matches(score)')
       .eq('id', id)
       .is('deleted_at', null)
       .single();
@@ -43,7 +43,7 @@ export class ApplicationsRepository {
   }): Promise<{ data: any[]; total: number }> {
     let query = this.client
       .from('applications')
-      .select('*, projects(title, employer_id), student_profiles(full_name, academic_cycle, careers(name), student_skills(proficiency_level, verified, skills(id, name))), matches(score)', { count: 'exact' })
+      .select('*, projects(title, employer_id), student_profiles(full_name, academic_cycle, phone_number, careers(name), student_skills(proficiency_level, verified, skills(id, name))), users!applications_student_id_fkey(email), matches(score)', { count: 'exact' })
       .is('deleted_at', null);
 
     const isUuid = (uuid: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);

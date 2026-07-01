@@ -131,6 +131,8 @@ message Application {
   optional double match_score = 14;
   optional string project_title = 15;
   repeated SkillInfo student_skills = 16;
+  optional string student_phone = 17;
+  optional string student_email = 18;
 }
 
 message SkillInfo {

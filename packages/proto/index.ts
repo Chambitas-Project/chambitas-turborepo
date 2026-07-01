@@ -375,6 +375,8 @@ export interface Application {
   match_score?: number;
   project_title?: string;
   student_skills?: SkillInfo[];
+  student_phone?: string;
+  student_email?: string;
 }
 
 export interface CreateApplicationRequest {

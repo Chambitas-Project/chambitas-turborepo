@@ -101,12 +101,21 @@ export function ApplicantsList({
                     <p className="text-sm font-medium text-slate-600 mt-1 line-clamp-3 leading-relaxed">
                       "{app.cover_note || "Sin carta de presentación"}"
                     </p>
-                    {app.status === 'accepted' && app.student_phone && (
-                      <div className="mt-2 text-sm font-bold bg-emerald-100/50 text-emerald-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-emerald-200/50">
-                        <span>📞</span> Celular: {app.student_phone}
+                    {app.status === 'accepted' && (app.student_phone || app.student_email) && (
+                      <div className="mt-3 flex flex-col gap-2">
+                        {app.student_phone && (
+                          <div className="text-sm font-bold bg-emerald-100/50 text-emerald-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-emerald-200/50 w-fit">
+                            <span>📞</span> Celular: {app.student_phone}
+                          </div>
+                        )}
+                        {app.student_email && (
+                          <div className="text-sm font-bold bg-blue-100/50 text-blue-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-blue-200/50 w-fit">
+                            <span>✉️</span> Email: {app.student_email}
+                          </div>
+                        )}
                       </div>
                     )}
-                    <div className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-4 mt-3">
                       <span className="text-xs font-bold text-slate-400">
                         {app.applied_at || app.created_at
                           ? `Postuló el ${new Date(app.applied_at || app.created_at!).toLocaleDateString()}`
