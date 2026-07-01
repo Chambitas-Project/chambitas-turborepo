@@ -35,6 +35,13 @@ export function ApplicantsList({
 }: ApplicantsListProps) {
   const isSelectedStatus = project.status === 'in_progress' || project.status === 'closed';
 
+  // Ordenar por fecha más reciente
+  const sortedApplicants = [...applicants].sort((a, b) => {
+    const dateA = new Date(a.applied_at || a.created_at || 0).getTime();
+    const dateB = new Date(b.applied_at || b.created_at || 0).getTime();
+    return dateB - dateA;
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
@@ -60,9 +67,12 @@ export function ApplicantsList({
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-4">
             {(isSelectedStatus
-              ? applicants.filter((a) => a.status === 'accepted')
-              : applicants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-            ).map((app) => (
+              ? sortedApplicants.filter((a) => a.status === 'accepted')
+              : sortedApplicants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+            ).map((app) => {
+              const isNew = (Date.now() - new Date(app.applied_at || app.created_at || 0).getTime()) < 1000 * 60 * 60 * 24 * 2; // 48 horas
+
+              return (
               <div
                 key={app.id}
                 className={cn(
@@ -84,8 +94,13 @@ export function ApplicantsList({
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <h4 className="font-bold text-slate-900 text-lg">
+                      <h4 className="font-bold text-slate-900 text-lg flex items-center gap-2">
                         {app.student_name || `Estudiante #${(app.student_id || '').substring(0, 5)}`}
+                        {isNew && app.status === 'pending' && (
+                          <Badge className="bg-blue-100 text-blue-700 font-black px-2 py-0 rounded-full text-[9px] uppercase tracking-widest shadow-none border-none animate-pulse">
+                            Nuevo
+                          </Badge>
+                        )}
                       </h4>
                       {app.match_score ? (
                         <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
@@ -118,7 +133,7 @@ export function ApplicantsList({
                     <div className="flex items-center gap-4 mt-3">
                       <span className="text-xs font-bold text-slate-400">
                         {app.applied_at || app.created_at
-                          ? `Postuló el ${new Date(app.applied_at || app.created_at!).toLocaleDateString()}`
+                          ? `Postuló el ${new Date(app.applied_at || app.created_at!).toLocaleDateString()} a las ${new Date(app.applied_at || app.created_at!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
                           : ''}
                       </span>
                       {app.status === 'accepted' && (
@@ -209,7 +224,8 @@ export function ApplicantsList({
                   </div>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
 
           {/* Pagination Controls */}
