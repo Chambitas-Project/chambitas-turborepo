@@ -77,7 +77,7 @@ export function JobSearchFilters({
             <p className="text-sm font-bold text-slate-900">Categorías</p>
             <ChevronDown className="h-4 w-4 text-emerald-600" />
           </div>
-          <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-3 pr-2">
             {categories.map(cat => (
               <label key={cat.value} className="flex items-center justify-between cursor-pointer group">
                 <span className={cn("text-sm transition-colors", localFilters.category === cat.value ? "text-slate-900 font-black" : "text-slate-500 font-medium group-hover:text-slate-900")}>
