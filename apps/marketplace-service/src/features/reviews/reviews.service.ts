@@ -136,6 +136,9 @@ export class ReviewsService {
   }
 
   private mapToProto(review: any): Review {
+    const studentProfile = Array.isArray(review.reviewer?.student_profiles) ? review.reviewer?.student_profiles[0] : review.reviewer?.student_profiles;
+    const employerProfile = Array.isArray(review.reviewer?.employer_profiles) ? review.reviewer?.employer_profiles[0] : review.reviewer?.employer_profiles;
+
     return {
       id: review.id,
       application_id: review.application_id,
@@ -144,9 +147,9 @@ export class ReviewsService {
       rating: review.rating,
       comment: review.comment || '',
       created_at: review.created_at || '',
-      reviewer_name: review.reviewer?.student_profiles?.full_name || 
-                     review.reviewer?.employer_profiles?.name || 
-                     review.reviewer?.employer_profiles?.company_name || 
+      reviewer_name: studentProfile?.full_name || 
+                     employerProfile?.name || 
+                     employerProfile?.company_name || 
                      '',
     };
   }

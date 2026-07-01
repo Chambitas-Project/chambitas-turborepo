@@ -98,7 +98,7 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
             </div>
             <div className="flex-1 space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <span className="text-sm font-black text-slate-900">Usuario {review.reviewer_id.substring(0, 5)}</span>
+                <span className="text-sm font-black text-slate-900">{review.reviewer_name || `Usuario ${review.reviewer_id.substring(0, 5)}`}</span>
                 <span className="text-xs font-bold text-slate-400">
                   {new Date(review.created_at).toLocaleDateString()}
                 </span>

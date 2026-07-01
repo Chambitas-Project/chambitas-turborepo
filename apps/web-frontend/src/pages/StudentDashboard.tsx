@@ -13,9 +13,10 @@ import { MatchScoreWidget } from "../features/student-dashboard/components/Match
 import { SkillsWidget } from "../features/student-dashboard/components/SkillsWidget";
 import { EditProfileModal, type EditProfileFormData } from "../features/student-dashboard/components/EditProfileModal";
 import { AddSkillModal, type AddSkillFormData } from "../features/student-dashboard/components/AddSkillModal";
+import { ReviewsList } from "../components/organisms/ReviewsList";
 
 export function StudentDashboard() {
-  useAuth();
+  const { user } = useAuth();
 
   // Data State
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -227,6 +228,7 @@ export function StudentDashboard() {
               onEditClick={() => setShowEditModal(true)}
             />
             <AvailabilityGrid profile={profile} />
+            {user?.id && <ReviewsList userId={user.id} role="student" />}
           </div>
 
           {/* Lateral - Sidebar Integrated */}
