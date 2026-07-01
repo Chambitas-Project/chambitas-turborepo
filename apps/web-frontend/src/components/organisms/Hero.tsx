@@ -1,7 +1,9 @@
 import { Zap, Search, ArrowRight } from 'lucide-react'
 import { Button } from '@chambitas/ui/button'
+import { useNavigate } from 'react-router-dom'
 
 export function Hero() {
+  const navigate = useNavigate();
   return (
     <section className="relative flex flex-col items-center justify-center text-center px-6 py-24 overflow-hidden">
       {/* Fondo decorativo radial */}
@@ -49,8 +51,11 @@ export function Hero() {
             type="text"
             placeholder="¿Qué servicio necesitas?"
             className="flex-1 bg-transparent px-2 py-1.5 text-sm placeholder:text-[--color-muted-foreground] focus:outline-none border-none"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') navigate('/register')
+            }}
           />
-          <Button size="sm" className="shrink-0">
+          <Button size="sm" className="shrink-0" onClick={() => navigate('/register')}>
             Buscar
             <ArrowRight className="size-3.5" />
           </Button>

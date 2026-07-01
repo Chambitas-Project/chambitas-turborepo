@@ -1,7 +1,9 @@
 import { Button } from '@chambitas/ui/button'
 import { Briefcase } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export function Navbar() {
+  const navigate = useNavigate();
   return (
     <nav className="border-b border-[--color-border] px-6 py-4 flex items-center justify-between backdrop-blur-sm bg-[oklch(0.13_0.010_165/0.8)] sticky top-0 z-50">
       <div className="flex items-center gap-2">
@@ -13,8 +15,8 @@ export function Navbar() {
         </span>
       </div>
       <div className="flex items-center gap-3">
-        <button className="text-sm font-medium hover:text-primary-400 transition-colors">Iniciar sesión</button>
-        <Button size="sm">Registrarse</Button>
+        <button onClick={() => navigate('/login')} className="text-sm font-medium hover:text-primary-400 transition-colors cursor-pointer">Iniciar sesión</button>
+        <Button size="sm" onClick={() => navigate('/register')}>Registrarse</Button>
       </div>
     </nav>
   )

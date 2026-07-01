@@ -86,12 +86,6 @@ export function LandingPage() {
                   onClick={() => handleRoleSelection("employer")}
                 />
               </div>
-
-              <footer className="text-center lg:text-right pt-4 pb-8 lg:pb-0">
-                <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">
-                  Protegido por encriptación empresarial
-                </p>
-              </footer>
             </div>
 
           </div>

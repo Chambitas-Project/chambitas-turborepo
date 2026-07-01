@@ -1,7 +1,10 @@
 import { Card, CardContent, Button } from "@chambitas/ui";
 import { TrendingUp } from "lucide-react";
 
+import { useNavigate } from "react-router-dom";
+
 export function MarketMatchCard() {
+  const navigate = useNavigate();
   return (
     <Card className="bg-emerald-600 text-white border-none shadow-2xl shadow-emerald-600/20 rounded-3xl overflow-hidden relative">
       <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -21,7 +24,7 @@ export function MarketMatchCard() {
             <div className="h-full bg-white rounded-full w-[94%] shadow-[0_0_10px_white]" />
           </div>
         </div>
-        <Button className="w-full bg-[#064e3b] hover:bg-[#043d2e] text-white font-black py-6 rounded-2xl shadow-lg border-none">
+        <Button onClick={() => navigate("/jobs")} className="w-full bg-[#064e3b] hover:bg-[#043d2e] text-white font-black py-6 rounded-2xl shadow-lg border-none cursor-pointer">
           Ver Empleos Sugeridos
         </Button>
       </CardContent>

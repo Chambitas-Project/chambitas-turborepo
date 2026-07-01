@@ -2,7 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle, cn } from "@chambitas/ui";
 import { Bell } from "lucide-react";
 import type { ActivityItemData } from "../../api/employer.api";
 
+import { useNavigate } from "react-router-dom";
+
 export function RecentActivityCard({ activities }: { activities: ActivityItemData[] }) {
+  const navigate = useNavigate();
   return (
     <Card className="bg-white border border-slate-100 shadow-sm rounded-xl">
       <CardHeader className="flex flex-row items-center justify-between pb-4">
@@ -21,7 +24,7 @@ export function RecentActivityCard({ activities }: { activities: ActivityItemDat
             color={activity.color} 
           />
         ))}
-        <button className="w-full pt-4 text-center text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">
+        <button onClick={() => navigate("/employer/projects")} className="w-full pt-4 text-center text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
           Ver Toda la Actividad
         </button>
       </CardContent>
