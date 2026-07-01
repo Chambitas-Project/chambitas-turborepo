@@ -187,6 +187,7 @@ export class ProfileService implements OnModuleInit {
             gpa: data.gpa || null,
             is_gpa_verified: false,
             evidence_url: data.evidence_url || null,
+            phone_number: data.phone_number || null,
             availability_blocks: data.availability_blocks
               ? (typeof data.availability_blocks === 'string' ? JSON.parse(data.availability_blocks) : data.availability_blocks)
               : null,
@@ -389,6 +390,7 @@ export class ProfileService implements OnModuleInit {
         if (data.gpa !== undefined) updateData.gpa = data.gpa;
         if (data.is_gpa_verified !== undefined) updateData.is_gpa_verified = data.is_gpa_verified;
         if (data.evidence_url !== undefined) updateData.evidence_url = data.evidence_url;
+        if (data.phone_number !== undefined) updateData.phone_number = data.phone_number;
         if (data.availability_blocks) {
           try {
             updateData.availability_blocks = typeof data.availability_blocks === 'string'

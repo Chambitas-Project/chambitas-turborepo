@@ -159,6 +159,12 @@ export class ProjectsService implements OnModuleInit {
       await this.applicationsRepository.updateStatus(app.id, 'completed');
     }
 
+    // 4. Marcar postulaciones pendientes como rechazadas (proyecto cerrado)
+    const { data: pendingApps } = await this.applicationsRepository.findAll({ project_id: request.id, status: 'pending' });
+    for (const app of pendingApps) {
+      await this.applicationsRepository.updateStatus(app.id, 'rejected');
+    }
+
     return {
       success: true,
       message: 'Proyecto y postulaciones marcados como completados exitosamente',

@@ -9,7 +9,8 @@ import {
   Search,
   ExternalLink,
   CalendarDays,
-  Loader2
+  Loader2,
+  Award
 } from "lucide-react";
 import { Button, Badge, cn } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
@@ -54,6 +55,12 @@ export function StudentApplicationsPage() {
           label: 'Aceptada',
           icon: <CheckCircle2 className="h-3 w-3" />,
           classes: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        };
+      case 'completed':
+        return {
+          label: 'Finalizada',
+          icon: <Award className="h-3 w-3" />,
+          classes: 'bg-indigo-50 text-indigo-700 border-indigo-200'
         };
       case 'rejected':
       case 'declined':

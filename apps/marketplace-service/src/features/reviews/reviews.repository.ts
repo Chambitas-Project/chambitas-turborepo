@@ -82,11 +82,11 @@ export class ReviewsRepository {
     `);
 
     if (filters.student_id) {
-      query = query.eq('application.student_id', filters.student_id);
+      query = query.eq('application.student_id', filters.student_id).eq('reviewer_role', 'employer');
     }
 
     if (filters.employer_id) {
-      query = query.eq('application.projects.employer_id', filters.employer_id);
+      query = query.eq('application.projects.employer_id', filters.employer_id).eq('reviewer_role', 'student');
     }
 
     if (filters.project_id) {
