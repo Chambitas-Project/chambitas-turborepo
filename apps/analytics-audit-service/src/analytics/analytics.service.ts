@@ -44,15 +44,32 @@ export class AnalyticsService {
           } as any);
           break;
         case 'UX_TELEMETRY':
-          await client.from('ux_usability_telemetry').insert({
-            event_type: payload.event_type || 'step_completed',
-            flow_name: payload.flow_name || 'registration',
+          // Map event type
+          let dbEventType = 'step_completed';
+          if (payload.event_type === 'step_abandoned') dbEventType = 'abandoned';
+          else if (payload.event_type === 'error_shown') dbEventType = 'error_shown';
+          else if (payload.event_type === 'step_started') dbEventType = 'step_started';
+
+          // Map flow name
+          let dbFlowName = 'application'; // Default valid flow
+          const rawFlow = (payload.flow_name || '').toLowerCase();
+          if (rawFlow.includes('registration')) dbFlowName = 'registration';
+          else if (rawFlow.includes('profile') || rawFlow.includes('onboarding')) dbFlowName = 'profile_setup';
+          else if (rawFlow.includes('project')) dbFlowName = 'project_search';
+
+          const { error: uxError } = await client.from('ux_usability_telemetry').insert({
+            event_type: dbEventType as any,
+            flow_name: dbFlowName as any,
             step_name: payload.step_name || payload.step || 'Unknown',
             abandonment_rate: payload.abandonment_rate || 0,
             time_on_step_ms: payload.time_on_step_ms || 0,
             session_id: payload.session_id || 'unknown-session',
             recorded_at: new Date().toISOString()
           });
+          
+          if (uxError) {
+            this.logger.error(`Failed to insert UX_TELEMETRY: ${uxError.message}`);
+          }
           break;
         case 'INFRA_METRIC':
           let microservice = data.source;
