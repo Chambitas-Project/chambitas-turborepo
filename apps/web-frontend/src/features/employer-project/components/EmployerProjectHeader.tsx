@@ -1,4 +1,4 @@
-import { Clock } from "lucide-react";
+import { Clock, FileEdit, Megaphone, Rocket, CheckSquare, Check } from "lucide-react";
 import { cn } from "@chambitas/ui";
 import type { EmployerProject } from "../types";
 
@@ -29,7 +29,7 @@ export function EmployerProjectHeader({ project }: EmployerProjectHeaderProps) {
           <div className="space-y-1">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Presupuesto Estimado</p>
             <p className="text-3xl font-black text-slate-900">{project.budget ? `S/.${project.budget}` : '--'}</p>
-            <p className="text-[10px] font-bold text-emerald-600 uppercase">Precio por proyecto</p>
+            <p className="text-[10px] font-bold text-emerald-600 uppercase">Pago por proyecto</p>
           </div>
           <div className="h-14 w-px bg-slate-100 hidden sm:block" />
           <div className="space-y-1">
@@ -55,28 +55,29 @@ export function EmployerProjectHeader({ project }: EmployerProjectHeaderProps) {
       <div className="mt-8 pt-8 border-t border-slate-100">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative px-2 sm:px-8">
           <div className="absolute top-5 left-8 right-8 h-1 bg-slate-100 hidden sm:block z-0" />
-          
+
           {[
-            { id: 'draft', label: 'Borrador', icon: '📝' },
-            { id: 'open', label: 'Recibiendo Postulantes', icon: '📢' },
-            { id: 'in_progress', label: 'En Ejecución', icon: '🚀' },
-            { id: 'closed', label: 'Completado', icon: '✅' }
+            { id: 'draft', label: 'Borrador', icon: FileEdit },
+            { id: 'open', label: 'Recibiendo Postulantes', icon: Megaphone },
+            { id: 'in_progress', label: 'En Ejecución', icon: Rocket },
+            { id: 'closed', label: 'Completado', icon: CheckSquare }
           ].map((step, index) => {
-            const isCompleted = 
-              project.status === 'closed' || 
+            const isCompleted =
+              project.status === 'closed' ||
               (project.status === 'in_progress' && index <= 2) ||
               (project.status === 'open' && index <= 1) ||
               (project.status === 'draft' && index === 0);
             const isCurrent = project.status === step.id;
+            const IconComponent = step.icon;
 
             return (
               <div key={step.id} className="relative z-10 flex flex-col items-center gap-2 bg-white sm:px-2 mb-4 sm:mb-0 w-full sm:w-auto">
                 <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center text-lg shadow-sm border-2 transition-all",
-                  isCurrent ? "border-indigo-500 bg-indigo-50 scale-110" :
-                  isCompleted ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-200 bg-white opacity-50 grayscale"
+                  "w-10 h-10 rounded-full flex items-center justify-center shadow-sm border-2 transition-all",
+                  isCurrent ? "border-indigo-500 bg-indigo-50 scale-110 text-indigo-600" :
+                    isCompleted ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-200 bg-white opacity-50 grayscale text-slate-400"
                 )}>
-                  {isCompleted && !isCurrent ? '✓' : step.icon}
+                  {isCompleted && !isCurrent ? <Check className="w-5 h-5" /> : <IconComponent className="w-5 h-5" />}
                 </div>
                 <span className={cn(
                   "text-xs font-bold text-center",

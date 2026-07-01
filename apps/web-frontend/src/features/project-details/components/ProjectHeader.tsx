@@ -34,7 +34,7 @@ export function ProjectHeader({ project, timeAgo, matchScore }: ProjectHeaderPro
           <div className="space-y-1">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Presupuesto Estimado</p>
             <p className="text-3xl font-black text-slate-900">S/.{project.budget}</p>
-            <p className="text-[10px] font-bold text-emerald-600 uppercase">Precio por proyecto</p>
+            <p className="text-[10px] font-bold text-emerald-600 uppercase">Pago por proyecto</p>
           </div>
           <div className="h-14 w-px bg-slate-100 hidden sm:block" />
           <div className="space-y-1">
