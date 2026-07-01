@@ -45,7 +45,9 @@ export function OnboardingPage() {
   const [employerData, setEmployerData] = useState({
     name: "",
     companyName: "",
-    description: ""
+    description: "",
+    phoneNumber: "",
+    industry: ""
   });
 
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
@@ -140,6 +142,7 @@ export function OnboardingPage() {
     setError(null);
     const payload = {
       full_name: studentData.fullName,
+      phone_number: studentData.phoneNumber,
       career_id: studentData.careerId,
       academic_cycle: Number(studentData.academicCycle),
       gpa: Number(studentData.gpa),
@@ -175,7 +178,9 @@ export function OnboardingPage() {
     const payload = {
       company_name: employerData.companyName,
       name: employerData.name,
+      phone_number: employerData.phoneNumber,
       description: employerData.description,
+      industry: employerData.industry,
     };
 
     try {

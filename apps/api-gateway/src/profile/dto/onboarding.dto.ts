@@ -60,6 +60,11 @@ export class StudentOnboardingDto {
   @Max(12)
   academic_cycle!: number;
 
+  @ApiPropertyOptional({ description: 'Número de celular', example: '987654321' })
+  @IsOptional()
+  @IsString()
+  phone_number?: string;
+
   @ApiPropertyOptional({ description: 'Breve biografía del estudiante', example: 'Apasionado por el desarrollo web y la IA.' })
   @IsOptional()
   @IsString()
@@ -128,6 +133,16 @@ export class EmployerOnboardingDto {
   @IsString()
   @IsNotEmpty()
   description!: string;
+
+  @ApiPropertyOptional({ description: 'Número de celular', example: '987654321' })
+  @IsOptional()
+  @IsString()
+  phone_number?: string;
+
+  @ApiPropertyOptional({ description: 'Sector de la industria', example: 'Tecnología' })
+  @IsOptional()
+  @IsString()
+  industry?: string;
 }
 
 export class UpdateStudentProfileDto {
@@ -140,10 +155,13 @@ export class UpdateStudentProfileDto {
   @ApiPropertyOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => SkillInputDto) @IsOptional() skill_inputs?: SkillInputDto[];
   @ApiPropertyOptional() @IsString() @IsOptional() evidence_url?: string;
   @ApiPropertyOptional() @IsOptional() is_gpa_verified?: boolean;
+  @ApiPropertyOptional() @IsString() @IsOptional() phone_number?: string;
 }
 
 export class UpdateEmployerProfileDto {
   @ApiPropertyOptional() @IsString() @IsOptional() company_name?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() name?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() description?: string;
+  @ApiPropertyOptional() @IsString() @IsOptional() phone_number?: string;
+  @ApiPropertyOptional() @IsString() @IsOptional() industry?: string;
 }

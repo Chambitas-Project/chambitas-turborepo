@@ -21,6 +21,7 @@ import { PROTO_PATH, PROTO_PACKAGE } from '@chambitas/proto';
           package: 'ml_engine',
           protoPath: PROTO_PATH.ML_ENGINE,
           url: process.env.ML_ENGINE_GRPC_URL || 'localhost:50058',
+          loader: { keepCase: true },
         },
       },
       {

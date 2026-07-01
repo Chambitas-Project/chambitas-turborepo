@@ -19,6 +19,9 @@ import { ApplicationsModule } from '../applications/applications.module';
           package: 'ml_engine',
           protoPath: PROTO_PATH.ML_ENGINE,
           url: process.env.ML_ENGINE_GRPC_URL || 'localhost:50058',
+          loader: {
+            keepCase: true,
+          }
         },
       },
     ]),

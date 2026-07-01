@@ -14,7 +14,7 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
 
   const missingItems = [];
   const completedItems = [];
-  
+
   if (profile?.bio) completedItems.push("Sobre mí");
   else missingItems.push("Sobre mí");
 
@@ -56,7 +56,7 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
               <span className="text-slate-900">{profile?.career}</span>.
             </p>
             <Button
-              onClick={() => (window.location.href = "/student/jobs")}
+              onClick={() => (window.location.href = "/jobs")}
               className="w-full bg-slate-900 hover:bg-black text-white rounded-md h-12 font-bold text-sm shadow-sm shadow-slate-200 transition-all"
             >
               Explorar Tareas
@@ -117,13 +117,13 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
               </div>
             </div>
             <div className="pt-2">
-              <button 
+              <button
                 onClick={() => setShowMissing(!showMissing)}
                 className="flex items-center justify-center w-full gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-emerald-600 transition-all cursor-pointer"
               >
                 VER QUÉ FALTA {showMissing ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
               </button>
-              
+
               {showMissing && (
                 <div className="pt-4 text-left space-y-2 animate-in fade-in slide-in-from-top-2">
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Por completar:</p>
@@ -133,7 +133,7 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
                       <span>{item}</span>
                     </div>
                   ))}
-                  
+
                   {completedItems.length > 0 && (
                     <>
                       <div className="h-px w-full bg-slate-100 my-3" />
