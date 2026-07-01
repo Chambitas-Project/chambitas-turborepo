@@ -19,7 +19,7 @@ export function StudentIdentityStep({
     <div className="space-y-6">
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-          Nombre Completo
+          Nombre Completo <span className="text-red-500">*</span>
         </label>
         <Input
           placeholder="Tu nombre y apellidos"
@@ -31,14 +31,14 @@ export function StudentIdentityStep({
 
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex justify-between">
-          <span>Número de Celular</span>
+          <span>Número de Celular <span className="text-red-500">*</span></span>
           <span className="text-[10px] text-slate-400 normal-case font-medium tracking-normal">Privado (solo para tu empleador cuando te acepte)</span>
         </label>
         <Input
           type="tel"
           placeholder="Ej. 987654321"
           value={studentData.phoneNumber}
-          onChange={(e) => setStudentData({ ...studentData, phoneNumber: e.target.value.replace(/\D/g, '').slice(0, 15) })}
+          onChange={(e) => setStudentData({ ...studentData, phoneNumber: e.target.value.replace(/\D/g, '').slice(0, 9) })}
           className="h-12 border-slate-200 focus:border-emerald-500 bg-white"
         />
       </div>
@@ -46,7 +46,7 @@ export function StudentIdentityStep({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex justify-between">
-            <span>Carrera</span>
+            <span>Carrera <span className="text-red-500">*</span></span>
             {careersError && (
               <span className="text-red-500 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" /> Error al cargar
@@ -68,7 +68,7 @@ export function StudentIdentityStep({
         </div>
         <div className="space-y-1.5">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-            Ciclo Actual
+            Ciclo Actual <span className="text-red-500">*</span>
           </label>
           <select
             value={studentData.academicCycle}
@@ -88,7 +88,7 @@ export function StudentIdentityStep({
 
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-          Promedio Ponderado (Referencial)
+          Promedio Ponderado (Referencial) <span className="text-red-500">*</span>
         </label>
         <div className="flex gap-2 items-center">
           <Input
@@ -108,7 +108,7 @@ export function StudentIdentityStep({
 
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex justify-between">
-          <span>Sobre ti</span>
+          <span>Sobre ti <span className="text-red-500">*</span></span>
           <span
             className={cn(
               "transition-colors",

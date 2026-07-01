@@ -63,19 +63,16 @@ export class ProfileService implements OnModuleInit {
   async searchProfiles(query: string, role?: string, limit?: number, offset?: number) { return this.searchProfilesInternal(query, role, limit, offset); }
 
   async getProfile(id: string): Promise<UnifiedProfileResponse> {
-    this.logger.log(`[GetProfile] Fetching profile for user ${id}`);
 
     // Buscar primero si es un estudiante
     const student = await this.studentRepo.findByUserId(id);
     if (student) {
-      this.logger.debug(`[GetProfile] Student data found: ${JSON.stringify(student)}`);
       return this.mapStudentToUnified(student);
     }
 
     // Si no, buscar si es un empleador
     const employer = await this.employerRepo.findByUserId(id);
     if (employer) {
-      this.logger.debug(`[GetProfile] Employer data found: ${JSON.stringify(employer)}`);
       return this.mapEmployerToUnified(employer);
     }
 
@@ -83,7 +80,6 @@ export class ProfileService implements OnModuleInit {
     const supabase = this.supabaseService.getClient<Database>();
     const { data: user } = await supabase.from('users').select('*').eq('id', id).single();
     if (user && user.role === 'admin') {
-      this.logger.debug(`[GetProfile] Admin user found: ${id}`);
       return {
         id: user.id,
         role: 'admin',
@@ -95,13 +91,11 @@ export class ProfileService implements OnModuleInit {
       };
     }
 
-    this.logger.error(`[GetProfile] Profile not found for user ${id}`);
     throw new RpcException({ code: status.NOT_FOUND, message: 'Profile not found' });
   }
 
   async completeOnboarding(data: CompleteOnboardingRequest): Promise<ProfileResponse> {
     const supabase = this.supabaseService.getClient<Database>();
-    this.logger.log(`Starting onboarding for user ${data.user_id} with role ${data.role}`);
 
     try {
       if (data.role === 'student') {
@@ -160,7 +154,6 @@ export class ProfileService implements OnModuleInit {
         });
 
         if (rpcError) {
-          this.logger.error(`[Onboarding] RPC complete_student_onboarding failed: ${rpcError.message}`);
           throw new RpcException({
             code: status.INTERNAL,
             message: `Error en la transacción de onboarding: ${rpcError.message}`,
@@ -168,7 +161,6 @@ export class ProfileService implements OnModuleInit {
         }
 
         // 6.5 Actualización manual de campos nuevos (Workaround para RPC antiguo)
-        this.logger.log(`[Onboarding] Syncing student profile for ${data.user_id}`);
         const { error: updateError } = await supabase
           .from('student_profiles')
           .update({
@@ -194,7 +186,6 @@ export class ProfileService implements OnModuleInit {
 
         // 7. Sincronizar estado de onboarding (Centralizado)
         await this.checkAndUpdateOnboarding(data.user_id, 'student');
-        this.logger.log(`[Onboarding] Student onboarding state synced`);
 
         firstValueFrom(this.mlEngine.GenerateStudentEmbedding({ student_id: data.user_id }))
           .then(() => this.logger.log(`[Webhook] Vectorización disparada para estudiante ${data.user_id}`))
@@ -350,7 +341,7 @@ export class ProfileService implements OnModuleInit {
     // 2. Si está completo, sincronizar con Identity (users y auth.users)
     if (isComplete) {
       this.logger.log(`[IdentitySync] User ${userId} completed onboarding. Syncing...`);
-      
+
       // Tabla pública
       await supabase.from('users').update({ is_onboarded: true }).eq('id', userId);
 
@@ -415,7 +406,7 @@ export class ProfileService implements OnModuleInit {
             .from('student_skills')
             .delete()
             .eq('student_id', userId);
-          
+
           if (deleteError) {
             this.logger.error(`[UpdateProfile] Error deleting skills: ${deleteError.message}`);
           } else if (resolvedSkills.length > 0) {
@@ -427,18 +418,18 @@ export class ProfileService implements OnModuleInit {
                 skill_id: s.id,
                 proficiency_level: s.proficiency_level
               })));
-            
+
             if (insertError) {
               this.logger.error(`[UpdateProfile] Error inserting skills: ${insertError.message}`);
               throw new RpcException({ code: status.INTERNAL, message: `Error al guardar habilidades: ${insertError.message}` });
             }
           }
         }
-        
+
         firstValueFrom(this.mlEngine.GenerateStudentEmbedding({ student_id: userId }))
           .then(() => this.logger.log(`[Webhook] Re-vectorización disparada para estudiante ${userId}`))
           .catch(e => this.logger.error(`[Webhook] Fallo al alertar al ML Engine: ${e.message}`));
-          
+
       } else {
         const updateData: any = {};
         if (data.company_name) updateData.company_name = data.company_name;

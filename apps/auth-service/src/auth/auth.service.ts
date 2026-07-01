@@ -11,7 +11,7 @@ export class AuthService implements OnModuleInit {
   constructor(
     private readonly supabaseService: SupabaseService,
     @Inject('ANALYTICS_PACKAGE') private readonly client: ClientGrpc,
-  ) {}
+  ) { }
 
   onModuleInit() {
     this.analyticsService = this.client.getService<IAnalyticsService>('AnalyticsService');
@@ -23,11 +23,6 @@ export class AuthService implements OnModuleInit {
     // 1. Pre-validation for Students (Institutional Domain/Regex)
     if (data.role === 'student') {
       const universityId = data.university_id || data.universityId;
-
-      console.log('[AuthService] Validating student registration:', {
-        email: data.email,
-        university_id: universityId,
-      });
 
       if (!universityId) {
         throw new RpcException({
@@ -73,7 +68,6 @@ export class AuthService implements OnModuleInit {
         const slugKey = university.slug.toUpperCase();
         const pattern = UNIVERSITY_EMAIL_PATTERNS[slugKey];
         if (pattern) {
-          console.log(`[AuthService] Testing regex for ${slugKey}:`, pattern.toString());
           if (!pattern.test(localPart)) {
             console.warn(`[AuthService] Regex failed for localPart: ${localPart}`);
             isValid = false;
@@ -101,9 +95,8 @@ export class AuthService implements OnModuleInit {
           message: 'Email is invalid for the selected university or does not match institutional requirements',
         });
       }
-      console.log('[AuthService] Student email validation successful');
     }
-    
+
     // 2. Supabase Auth Registration with Metadata
     // CRITICAL: Metadata in options.data is used by DB triggers to populate public.users and profiles
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -119,11 +112,11 @@ export class AuthService implements OnModuleInit {
 
     if (authError) {
       const errorMsg = authError.message.toLowerCase();
-      const isConflict = errorMsg.includes('already registered') || 
-                        errorMsg.includes('already exists') ||
-                        authError.status === 422 || 
-                        authError.status === 409;
-      
+      const isConflict = errorMsg.includes('already registered') ||
+        errorMsg.includes('already exists') ||
+        authError.status === 422 ||
+        authError.status === 409;
+
       throw new RpcException({
         code: isConflict ? 6 : 3, // 6: ALREADY_EXISTS, 3: INVALID_ARGUMENT
         message: authError.message,
@@ -140,11 +133,10 @@ export class AuthService implements OnModuleInit {
 
     // 3. Manual Population of public.users and Profile
     // We do this because DB triggers might be missing or slow in this environment.
-    console.log(`[AuthService] Manually populating public.users and profile for user ${userId}`);
-    
+
     try {
       const universityId = data.university_id || data.universityId;
-      
+
       // 3.1 Insert into public.users — CRÍTICO: si falla, el usuario no tiene perfil en la app.
       // En ese caso relanzamos para evitar un usuario zombie en auth.users sin datos de aplicación.
       const { error: userError } = await supabase
@@ -161,11 +153,11 @@ export class AuthService implements OnModuleInit {
       if (userError) {
         console.error('[AuthService] CRITICAL: Error inserting into public.users:', userError.message);
         // Detectar si el usuario ya existe (idempotencia en re-registros)
-        const isAlreadyExists = 
+        const isAlreadyExists =
           userError.code === '23505' || // PostgreSQL unique_violation
           userError.message?.toLowerCase().includes('already exists') ||
           userError.message?.toLowerCase().includes('duplicate');
-        
+
         if (!isAlreadyExists) {
           throw new RpcException({
             code: 13, // INTERNAL
@@ -190,11 +182,11 @@ export class AuthService implements OnModuleInit {
 
       if (profileError) {
         // Si el perfil ya existe, es idempotente — no fallar
-        const isAlreadyExists = 
+        const isAlreadyExists =
           profileError.code === '23505' ||
           profileError.message?.toLowerCase().includes('already exists') ||
           profileError.message?.toLowerCase().includes('duplicate');
-          
+
         if (!isAlreadyExists) {
           console.error(`[AuthService] Error inserting into ${profileTable}:`, profileError.message);
           // No lanzamos aquí: el perfil se puede completar en el onboarding
@@ -237,7 +229,7 @@ export class AuthService implements OnModuleInit {
 
   async login(data: any) {
     const supabase = this.supabaseService.getClient<Database>();
-    
+
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
@@ -251,7 +243,7 @@ export class AuthService implements OnModuleInit {
     }
 
     const userId = authData.user?.id;
-    
+
     // Obtener role y is_onboarded de public.users
     const { data: userData, error: userError } = await supabase
       .from('users')
@@ -283,9 +275,9 @@ export class AuthService implements OnModuleInit {
       const updateData: any = {};
       if (data.full_name !== undefined) updateData.full_name = data.full_name;
       if (data.fullName !== undefined) updateData.full_name = data.fullName;
-      
+
       if (data.career !== undefined) updateData.career = data.career;
-      
+
       if (data.academic_cycle !== undefined) updateData.academic_cycle = data.academic_cycle;
       if (data.academicCycle !== undefined) updateData.academic_cycle = data.academicCycle;
 
@@ -301,7 +293,7 @@ export class AuthService implements OnModuleInit {
       const updateData: any = {};
       if (data.company_name !== undefined) updateData.company_name = data.company_name;
       if (data.companyName !== undefined) updateData.company_name = data.companyName;
-      
+
       if (data.sector !== undefined) updateData.sector = data.sector;
 
       const { error } = await supabase
@@ -333,7 +325,7 @@ export class AuthService implements OnModuleInit {
 
   async forgotPassword(data: { email: string }) {
     const supabase = this.supabaseService.getClient<Database>();
-    
+
     const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
       // La URL de redirección debe apuntar al frontend que procesará el token
       redirectTo: process.env.RESET_PASSWORD_URL || 'http://localhost:3000/reset-password',

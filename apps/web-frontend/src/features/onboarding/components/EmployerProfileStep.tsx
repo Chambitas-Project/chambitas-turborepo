@@ -13,7 +13,7 @@ export function EmployerProfileStep({
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-          Nombre de Empresa / Organización
+          Nombre de Empresa / Organización <span className="text-red-500">*</span>
         </label>
         <Input
           placeholder="Ej: TechStart Peru S.A.C."
@@ -25,7 +25,7 @@ export function EmployerProfileStep({
 
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-          Nombre de Contacto
+          Nombre de Contacto <span className="text-red-500">*</span>
         </label>
         <Input
           placeholder="Tu nombre y apellidos"
@@ -37,7 +37,7 @@ export function EmployerProfileStep({
 
       <div className="space-y-1.5">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex justify-between">
-          <span>Descripción de la Empresa</span>
+          <span>Descripción de la Empresa <span className="text-red-500">*</span></span>
           <span
             className={cn(
               "transition-colors",
