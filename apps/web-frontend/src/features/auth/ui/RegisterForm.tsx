@@ -101,7 +101,7 @@ export function RegisterForm({ role, setRole, onSuccess }: RegisterFormProps) {
         </div>
 
         <div className="space-y-1">
-          <Checkbox label="Acepto los términos y condiciones" {...register("terms")} />
+          <Checkbox label={<>Acepto los <Link to="/terms" target="_blank" className="hover:underline">términos y condiciones</Link></>} {...register("terms")} />
           {errors.terms && <p className="text-[11px] font-bold text-destructive-500 ml-1">{errors.terms.message}</p>}
         </div>
 

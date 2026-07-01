@@ -13,11 +13,12 @@ const StudentApplicationsPage = React.lazy(() => import("./pages/StudentApplicat
 const LandingPage = React.lazy(() => import("./pages/LandingPage").then(m => ({ default: m.LandingPage })));
 const LoginPage = React.lazy(() => import("./pages/LoginPage").then(m => ({ default: m.LoginPage })));
 const RegisterPage = React.lazy(() => import("./pages/RegisterPage").then(m => ({ default: m.RegisterPage })));
+const ForgotPasswordPage = React.lazy(() => import("./pages/ForgotPasswordPage").then(m => ({ default: m.ForgotPasswordPage })));
+const TermsPage = React.lazy(() => import("./pages/TermsPage").then(m => ({ default: m.TermsPage })));
 const OnboardingPage = React.lazy(() => import("./pages/OnboardingPage").then(m => ({ default: m.OnboardingPage })));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage").then(m => ({ default: m.DashboardPage })));
 const JobSearchPage = React.lazy(() => import("./pages/JobSearchPage").then(m => ({ default: m.JobSearchPage })));
 const ProjectDetailsPage = React.lazy(() => import("./pages/ProjectDetailsPage").then(m => ({ default: m.ProjectDetailsPage })));
-
 
 import { useLocation } from "react-router-dom";
 
@@ -65,6 +66,11 @@ export const router = createBrowserRouter([
     element: <Suspense fallback={<PageLoader />}><PublicRoute><LandingPage /></PublicRoute></Suspense>,
   },
   {
+    path: "/terms",
+    errorElement: <GlobalErrorBoundary />,
+    element: <Suspense fallback={<PageLoader />}><TermsPage /></Suspense>,
+  },
+  {
     path: "/login",
     errorElement: <GlobalErrorBoundary />,
     element: <Suspense fallback={<PageLoader />}><PublicRoute><LoginPage /></PublicRoute></Suspense>,
@@ -73,6 +79,11 @@ export const router = createBrowserRouter([
     path: "/register",
     errorElement: <GlobalErrorBoundary />,
     element: <Suspense fallback={<PageLoader />}><PublicRoute><RegisterPage /></PublicRoute></Suspense>,
+  },
+  {
+    path: "/forgot-password",
+    errorElement: <GlobalErrorBoundary />,
+    element: <Suspense fallback={<PageLoader />}><PublicRoute><ForgotPasswordPage /></PublicRoute></Suspense>,
   },
   {
     path: "/onboarding",
