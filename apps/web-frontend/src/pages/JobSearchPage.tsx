@@ -36,23 +36,25 @@ export function JobSearchPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [catalogCategories, setCatalogCategories] = useState<string[]>([]);
+
   const categories = useMemo(() => {
-    const uniqueCategories = new Set(projects.map(p => p.service_category).filter(Boolean));
-    const dynamicCats = Array.from(uniqueCategories).map(cat => ({
-      label: cat as string,
-      value: cat as string
+    const dynamicCats = catalogCategories.map(cat => ({
+      label: cat,
+      value: cat
     }));
     return [{ label: "Todos", value: "Todos" }, ...dynamicCats];
-  }, [projects]);
+  }, [catalogCategories]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [projRes, recRes, appsRes] = await Promise.allSettled([
+        const [projRes, recRes, appsRes, skillsRes] = await Promise.allSettled([
           apiClient.get("/marketplace/projects"),
           apiClient.get("/matching/recommendations/me"),
-          apiClient.get("/marketplace/applications/my-applications")
+          apiClient.get("/marketplace/applications/my-applications"),
+          apiClient.get("/profile/skills")
         ]);
 
         if (projRes.status === "fulfilled") {
@@ -71,6 +73,16 @@ export function JobSearchPage() {
           const data = appsRes.value.data;
           const apps = Array.isArray(data) ? data : (data.applications || []);
           setApplications(apps);
+        }
+        
+        if (skillsRes.status === "fulfilled") {
+          const data = skillsRes.value.data;
+          const skillsData = Array.isArray(data) ? data : (data.skills || []);
+          const uniqueCats = new Set<string>();
+          skillsData.forEach((s: any) => {
+            if (s.category) uniqueCats.add(s.category);
+          });
+          setCatalogCategories(Array.from(uniqueCats).sort());
         }
       } catch (error) {
         console.error("Unexpected error fetching data:", error);

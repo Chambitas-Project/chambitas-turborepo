@@ -87,7 +87,11 @@ export function AddSkillModal({
                   setForm({ ...form, name: e.target.value });
                 }}
                 onFocus={() => setShowSuggestions(true)}
-                placeholder="Ej: React, Python..."
+                placeholder={
+                  addingSkillType === "soft" 
+                    ? "Ej: Liderazgo, Comunicación..." 
+                    : "Ej: React, Python..."
+                }
                 className={cn(
                   "w-full pl-9 pr-3 py-2 rounded-md border border-slate-300 bg-white font-medium text-slate-800 text-sm outline-none transition-colors placeholder:text-slate-400",
                   addingSkillType === "soft"
