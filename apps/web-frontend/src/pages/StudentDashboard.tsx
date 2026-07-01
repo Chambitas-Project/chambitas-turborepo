@@ -34,6 +34,7 @@ export function StudentDashboard() {
   const [editFormInitialData, setEditFormInitialData] = useState<EditProfileFormData>({
     bio: "",
     gpa: "",
+    phoneNumber: "",
     academicCycle: "1",
     availability: {
       mon: "0".repeat(32), tue: "0".repeat(32), wed: "0".repeat(32),
@@ -76,7 +77,8 @@ export function StudentDashboard() {
 
       setEditFormInitialData({
         bio: data.bio || "",
-        gpa: (data.gpa || 0).toString(),
+        gpa: Number(data.gpa || 0).toFixed(2),
+        phoneNumber: data.phoneNumber || data.phone_number || "",
         academicCycle: (data.academicCycle || data.academic_cycle || "1").toString(),
         availability: parsedBlocks || {
           mon: "0".repeat(32), tue: "0".repeat(32), wed: "0".repeat(32),
@@ -126,6 +128,7 @@ export function StudentDashboard() {
       await apiClient.patch("/profile/me", {
         bio: formData.bio,
         gpa: parseFloat(formData.gpa),
+        phone_number: formData.phoneNumber,
         academic_cycle: parseInt(formData.academicCycle),
         availability_blocks: formData.availability
       });

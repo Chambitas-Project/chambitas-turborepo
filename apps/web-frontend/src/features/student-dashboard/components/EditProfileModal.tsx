@@ -7,6 +7,7 @@ export interface EditProfileFormData {
   bio: string;
   gpa: string;
   academicCycle: string;
+  phoneNumber?: string;
   availability: any;
 }
 
@@ -85,6 +86,15 @@ export function EditProfileModal({
                   step="0.1"
                   value={form.gpa}
                   onChange={(e) => setForm({ ...form, gpa: e.target.value })}
+                  className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-medium text-slate-800 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-600">Celular</label>
+                <input
+                  type="tel"
+                  value={form.phoneNumber || ""}
+                  onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
                   className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-medium text-slate-800 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                 />
               </div>
