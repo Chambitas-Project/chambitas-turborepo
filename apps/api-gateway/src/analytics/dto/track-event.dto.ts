@@ -1,9 +1,9 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class TrackEventDto {
   @IsString()
-  @IsNotEmpty()
-  userId!: string;
+  @IsOptional()
+  userId?: string;
 
   @IsString()
   @IsNotEmpty()

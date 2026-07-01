@@ -4,6 +4,7 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { IAnalyticsService, TrackEventRequest } from '@chambitas/proto';
 import { TrackEventDto } from './dto/track-event.dto';
 import { firstValueFrom } from 'rxjs';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Analytics')
 @Controller('analytics')
@@ -16,17 +17,20 @@ export class AnalyticsController implements OnModuleInit {
     this.analyticsService = this.client.getService<IAnalyticsService>('AnalyticsService');
   }
 
+  @Public()
   @Post('track')
   @ApiOperation({ summary: 'Registrar un evento de analítica' })
   trackEvent(@Body() data: TrackEventDto) {
     const grpcData: TrackEventRequest = {
       ...data,
+      userId: data.userId || 'anonymous',
       payloadJson: JSON.stringify(data.payload),
       timestamp: new Date().toISOString(),
     };
     return this.analyticsService.TrackEvent(grpcData);
   }
 
+  @Public()
   @Get('overview')
   @ApiOperation({ summary: 'Obtener métricas y KPIs para el Dashboard de Analíticas' })
   async getOverview() {
@@ -43,6 +47,7 @@ export class AnalyticsController implements OnModuleInit {
     };
   }
 
+  @Public()
   @Get('ml-engine')
   @ApiOperation({ summary: 'Obtener métricas del motor de ML' })
   async getMLEngineKPIs() {
@@ -55,6 +60,7 @@ export class AnalyticsController implements OnModuleInit {
     };
   }
 
+  @Public()
   @Get('infrastructure')
   @ApiOperation({ summary: 'Obtener métricas de infraestructura y seguridad' })
   async getInfrastructureKPIs() {

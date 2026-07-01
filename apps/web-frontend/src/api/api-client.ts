@@ -13,7 +13,7 @@ export const trackEvent = async (eventType: string, payload: any) => {
     await apiClient.post('/analytics/track', {
       eventType,
       source: 'web-frontend',
-      payloadJson: JSON.stringify(payload)
+      payload: payload
     });
   } catch (error) {
     console.error('[Telemetry] Failed to track event:', error);
