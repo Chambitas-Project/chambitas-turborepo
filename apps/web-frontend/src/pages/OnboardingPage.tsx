@@ -140,13 +140,15 @@ export function OnboardingPage() {
     setError(null);
     const payload = {
       full_name: studentData.fullName,
-      phone_number: studentData.phoneNumber,
       career_id: studentData.careerId,
       academic_cycle: Number(studentData.academicCycle),
       gpa: Number(studentData.gpa),
       weekly_availability: Math.round(calculateTotalHours()),
       bio: studentData.bio,
-      skill_inputs: studentData.skills,
+      skill_inputs: studentData.skills.map((s: any) => ({
+        name: s.name,
+        proficiency_level: s.level || 1
+      })),
       availability_blocks: studentData.availability
     };
 
@@ -159,7 +161,7 @@ export function OnboardingPage() {
       const respStatus = err.response?.status;
       if (respStatus === 500) setError("Error interno del servidor (500).");
       else if (respStatus === 503) setError("El servicio está inactivo. Inténtalo de nuevo.");
-      else if (respStatus === 400) setError("Error de validación.");
+      else if (respStatus === 400) setError("Error de validación (verifica que no haya campos extra).");
       else if (respStatus === 401) setError("Sesión expirada.");
       else setError(err.response?.data?.message || "Error al completar onboarding.");
     } finally {
@@ -170,12 +172,14 @@ export function OnboardingPage() {
   const handleEmployerSubmit = async () => {
     setLoading(true);
     setError(null);
+    const payload = {
+      company_name: employerData.companyName,
+      name: employerData.name,
+      description: employerData.description,
+    };
+
     try {
-      await apiClient.post("/profile/onboarding/employer", {
-        name: employerData.name,
-        company_name: employerData.companyName,
-        description: employerData.description
-      });
+      await apiClient.post("/profile/onboarding/employer", payload);
       await refreshUser();
       completeStep();
       navigate("/");

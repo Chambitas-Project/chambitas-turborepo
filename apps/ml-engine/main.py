@@ -96,7 +96,12 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
             p = p_resp.data[0]
             
             r_resp = supabase.table("project_required_skills").select("skills(name)").eq("project_id", project_id).execute()
-            skills_text = ", ".join([row['skills']['name'] for row in r_resp.data if row.get('skills')])
+            skills_names = []
+            if r_resp.data:
+                for row in r_resp.data:
+                    if row.get('skills') and isinstance(row['skills'], dict) and 'name' in row['skills']:
+                        skills_names.append(row['skills']['name'])
+            skills_text = ", ".join(skills_names)
             
             corpus = f"{p.get('title','')} {p.get('description','')} {skills_text}".strip()
             vector_300 = engine.get_text_embedding(corpus)
@@ -107,14 +112,17 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
 
     def _bg_student_embedding(self, student_id):
         try:
-            s_resp = supabase.table("student_profiles").select("skills").eq("id", student_id).execute()
+            s_resp = supabase.table("student_profiles").select("id").eq("id", student_id).execute()
             if not s_resp.data: return
             
             r_resp = supabase.table("student_skills").select("skills(name)").eq("student_id", student_id).execute()
-            nm_skills = [row['skills']['name'] for row in r_resp.data if row.get('skills')]
-            legacy_skills = s_resp.data[0].get('skills') or []
+            nm_skills = []
+            if r_resp.data:
+                for row in r_resp.data:
+                    if row.get('skills') and isinstance(row['skills'], dict) and 'name' in row['skills']:
+                        nm_skills.append(row['skills']['name'])
             
-            final_skills = list(set(nm_skills + legacy_skills))
+            final_skills = list(set(nm_skills))
             corpus = ", ".join(final_skills)
             
             vector_300 = engine.get_text_embedding(corpus)
