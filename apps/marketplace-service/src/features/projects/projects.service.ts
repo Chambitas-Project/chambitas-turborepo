@@ -155,8 +155,40 @@ export class ProjectsService implements OnModuleInit {
 
     // 3. Marcar la aplicación aceptada como completada
     const { data: apps } = await this.applicationsRepository.findAll({ project_id: request.id, status: 'accepted' });
+    const adminClient = this.supabaseService.getAdminClient<Database>();
     for (const app of apps) {
       await this.applicationsRepository.updateStatus(app.id, 'completed');
+      
+      // Upsert employment outcomes tracking para el estudiante
+      const { data: existingOutcome } = await adminClient
+        .from('employment_outcomes_tracking')
+        .select('*')
+        .eq('student_id', app.student_id)
+        .single();
+        
+      const timeToHireDays = Math.max(0, Math.floor((new Date().getTime() - new Date(project.created_at || Date.now()).getTime()) / (1000 * 3600 * 24)));
+
+      if (existingOutcome) {
+         await adminClient.from('employment_outcomes_tracking').update({
+           income_generated: (existingOutcome.income_generated || 0) + (project.budget || 0),
+           total_microjobs_completed: (existingOutcome.total_microjobs_completed || 0) + 1,
+           time_to_hire_days: timeToHireDays,
+           updated_at: new Date().toISOString()
+         }).eq('id', existingOutcome.id);
+      } else {
+         const { data: student } = await adminClient.from('student_profiles').select('university_id').eq('id', app.student_id).single();
+         if (student && student.university_id) {
+           await adminClient.from('employment_outcomes_tracking').insert({
+             student_id: app.student_id,
+             university_id: student.university_id,
+             income_generated: project.budget || 0,
+             total_microjobs_completed: 1,
+             employer_id_hired_by: project.employer_id,
+             time_to_hire_days: timeToHireDays,
+             first_microjob_completed_at: new Date().toISOString()
+           });
+         }
+      }
     }
 
     // 4. Marcar postulaciones pendientes como rechazadas (proyecto cerrado)
