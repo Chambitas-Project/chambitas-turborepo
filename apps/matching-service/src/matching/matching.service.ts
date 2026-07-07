@@ -66,7 +66,8 @@ export class MatchingService implements OnModuleInit {
           .from('projects')
           .select('id')
           .in('id', matchIds)
-          .eq('status', 'open');
+          .eq('status', 'open')
+          .is('deleted_at', null);
 
         const { data: applications } = await this.supabase.getClient<Database>()
           .from('applications')
