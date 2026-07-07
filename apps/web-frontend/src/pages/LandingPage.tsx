@@ -1,6 +1,7 @@
 import { GraduationCap, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Badge, RoleCard, IAOptimizerCard } from "@chambitas/ui";
+import { Badge, RoleCard } from "@chambitas/ui";
+import piononoImg from "../assets/pionono.webp";
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -14,7 +15,14 @@ export function LandingPage() {
       {/* Header - Totalmente limpio y fijo arriba */}
       <header className="w-full bg-white sticky top-0 z-50 shrink-0">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-center lg:justify-start">
-          <span className="text-xl font-bold text-primary">Chambitas</span>
+          <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate("/")}>
+            <img
+              src="/logo-chambitas.webp"
+              alt="Chambitas"
+              className="w-16 h-16 object-contain transition-transform group-hover:scale-110"
+            />
+            <span className="text-xl font-bold text-primary">Chambitas</span>
+          </div>
         </div>
       </header>
 
@@ -26,9 +34,11 @@ export function LandingPage() {
             {/* Left Column: Hero */}
             <div className="flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-8 lg:slide-in-from-left-8 duration-700">
               <div className="space-y-6 text-center lg:text-left">
-                <Badge variant="brand" className="py-1.5 px-4 mx-auto lg:mx-0 w-fit">
-                  ⚡ Emparejamiento de micro-tareas con IA
-                </Badge>
+                <div className="relative inline-block w-fit mx-auto lg:mx-0">
+                  <Badge variant="brand" className="py-1.5 px-4 w-fit">
+                    Emparejamiento de micro-tareas con IA
+                  </Badge>
+                </div>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight">
                   Conecta tus habilidades con <span className="text-primary">oportunidades.</span>
@@ -39,23 +49,24 @@ export function LandingPage() {
                 </p>
               </div>
 
-              {/* Social Proof & IA Card */}
-              <div className="space-y-6 flex flex-col items-center lg:items-start">
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <div className="flex -space-x-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-8 w-8 rounded-md border-2 border-white bg-slate-200 overflow-hidden">
-                        <img src={`https://i.pravatar.cc/100?u=${i}`} alt="Student" className="h-full w-full object-cover" />
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-sm font-semibold text-slate-600 text-center">
-                    <span className="text-slate-900">2,500+</span> estudiantes emparejados esta semana
-                  </p>
-                </div>
+              {/* Pionono Speech Bubble */}
+              <div className="flex flex-row items-start gap-3 sm:gap-6 pt-4 hover:scale-105 transition-transform duration-300">
+                {/* Pionono Image */}
+                <img
+                  src={piononoImg}
+                  alt="Pionono mascota"
+                  className="w-32 sm:w-48 h-auto object-contain drop-shadow-xl z-10"
+                />
 
-                <div className="w-full max-w-[320px]">
-                  <IAOptimizerCard className="border-primary/10" />
+                {/* Smooth Speech Bubble */}
+                <div className="relative bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xl shadow-emerald-900/5 max-w-70 mt-4 sm:mt-8">
+                  {/* Modern Bubble Tail */}
+                  <div className="absolute top-8 -left-2 -translate-y-1/2 w-4 h-4 bg-white border-l border-t border-slate-200 transform -rotate-45 rounded-tl-sm"></div>
+
+                  <p className="text-center text-slate-600 text-sm sm:text-[15px] font-medium leading-relaxed relative z-10">
+                    ¡Hola, soy <span className="font-bold text-emerald-600">Pionono</span>!<br />
+                    Te ayudaré a encontrar las mejores chambitas.
+                  </p>
                 </div>
               </div>
             </div>
