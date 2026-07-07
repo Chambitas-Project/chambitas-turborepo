@@ -1,4 +1,4 @@
-import { Briefcase } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function AuthHeroPanel() {
   return (
@@ -12,18 +12,26 @@ export function AuthHeroPanel() {
         <div className="absolute inset-0 bg-primary-900/80" />
       </div>
 
-      <div className="relative z-10 w-full max-sm space-y-12 text-slate-100">
-        <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg">
-              <Briefcase className="h-7 w-7" />
-            </div>
-            <h2 className="text-5xl font-black text-white tracking-tighter">Chambitas</h2>
-          </div>
-          <div className="space-y-4">
-            <p className="text-2xl font-bold leading-tight">Empieza tu camino profesional hoy</p>
-            <p className="text-slate-300 leading-relaxed text-sm">Únete a la plataforma líder en micro-empleos universitarios.</p>
-          </div>
+      {/* Logo and Home Link (Desktop) */}
+      <Link 
+        to="/" 
+        className="absolute top-8 left-8 z-20 flex items-center gap-3 group hover:opacity-90 transition-opacity"
+      >
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg">
+          <img
+            src="/logo-chambitas.webp"
+            alt="Chambitas"
+            className="w-8 h-8 object-contain transition-transform group-hover:scale-110"
+          />
+        </div>
+        <h2 className="text-2xl font-black text-white tracking-tight">Chambitas</h2>
+      </Link>
+
+      {/* Centered text (Desktop) */}
+      <div className="relative z-10 w-full max-w-sm space-y-12 text-white">
+        <div className="space-y-4 mt-8">
+          <p className="text-4xl font-bold leading-tight italic">Empieza tu camino profesional hoy.</p>
+          <p className="text-white/80 leading-relaxed text-lg">Únete a la plataforma líder en micro-empleos universitarios.</p>
         </div>
       </div>
     </div>

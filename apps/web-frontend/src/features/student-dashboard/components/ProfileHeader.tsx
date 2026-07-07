@@ -57,7 +57,7 @@ export function ProfileHeader({ profile, onEditClick }: ProfileHeaderProps) {
             <div className="space-y-1">
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Promedio General</p>
               <p className="text-sm font-bold text-slate-700 flex items-center justify-center md:justify-start gap-2">
-                <Trophy className="h-4 w-4 text-emerald-500 shrink-0" /> {profile?.gpa ? profile.gpa.toFixed(2) : "0.00"} Promedio Ponderado
+                <Trophy className="h-4 w-4 text-emerald-500 shrink-0" /> {profile?.gpa ? profile.gpa.toFixed(2) : "0.00"}
               </p>
             </div>
           </div>

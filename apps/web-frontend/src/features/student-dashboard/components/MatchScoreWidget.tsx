@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@chambitas/ui";
 import { ChevronRight, ChevronDown, CheckCircle2, Circle } from "lucide-react";
 import type { Profile } from "../types";
+import piononoImg from "../../../assets/pionono.webp";
 
 interface MatchScoreWidgetProps {
   maxMatchScore: number | null;
@@ -35,6 +36,16 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
         </h3>
         {maxMatchScore !== null && maxMatchScore > 0 ? (
           <div className="space-y-6">
+            <div className="flex items-center gap-3 group">
+              <img src={piononoImg} alt="Pionono IA" className="w-12 h-12 object-contain drop-shadow-sm group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300 z-10 shrink-0" />
+              <div className="relative bg-white border border-emerald-100 rounded-2xl p-3 shadow-sm shadow-emerald-900/5 flex-1">
+                <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-3 bg-white border-l border-t border-emerald-100 transform -rotate-45 rounded-tl-xs"></div>
+                <p className="text-[11px] text-slate-600 leading-relaxed relative z-10">
+                  ¡Hola! Soy <span className="font-bold text-emerald-600">Pionono</span>. Mi motor de IA analizó tu perfil y estas son tus métricas.
+                </p>
+              </div>
+            </div>
+
             <div className="flex justify-between items-end">
               <div className="space-y-1 w-full text-center md:text-left">
                 <span className="text-5xl font-black text-slate-900 tracking-tighter">
@@ -64,7 +75,16 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="text-center py-6 bg-slate-50 rounded-xl border border-slate-100">
+            <div className="flex items-center gap-3 group">
+              <img src={piononoImg} alt="Pionono IA" className="w-12 h-12 object-contain drop-shadow-sm opacity-80 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300 z-10 shrink-0" />
+              <div className="relative bg-slate-50 border border-slate-100 rounded-2xl p-3 shadow-sm flex-1">
+                <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-3 bg-slate-50 border-l border-t border-slate-100 transform -rotate-45 rounded-tl-xs"></div>
+                <p className="text-[11px] text-slate-600 leading-relaxed relative z-10">
+                  Soy <span className="font-bold text-slate-700">Pionono</span>. Aún no tengo suficientes datos tuyos para que mi IA pueda analizar tu compatibilidad.
+                </p>
+              </div>
+            </div>
+            <div className="text-center py-6 bg-slate-50 rounded-xl border border-slate-100 hidden">
               <p className="text-xs font-bold text-slate-400">Sin datos de coincidencia aún.</p>
               <p className="text-[10px] font-medium text-slate-500 mt-1">Sigue mejorando tu perfil.</p>
             </div>

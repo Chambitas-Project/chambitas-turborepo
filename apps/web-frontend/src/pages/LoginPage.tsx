@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Briefcase } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -65,25 +65,39 @@ export function LoginPage() {
           <div className="absolute inset-0 bg-[#065f46]/80" />
         </div>
 
+        {/* Logo and Home Link (Desktop) */}
+        <Link
+          to="/"
+          className="absolute top-8 left-8 z-20 flex items-center gap-3 group hover:opacity-90 transition-opacity"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg">
+            <img
+              src="/logo-chambitas.webp"
+              alt="Chambitas"
+              className="w-8 h-8 object-contain transition-transform group-hover:scale-110"
+            />
+          </div>
+          <h2 className="text-2xl font-black text-white tracking-tight">Chambitas</h2>
+        </Link>
+
+        {/* Centered text (Desktop) */}
         <div className="relative z-10 w-full max-w-sm space-y-12 text-white">
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg">
-                <Briefcase className="h-7 w-7" />
-              </div>
-              <h2 className="text-5xl font-black text-white tracking-tighter">Chambitas</h2>
-            </div>
-            <div className="space-y-4">
-              <p className="text-2xl font-bold leading-tight italic">Micro-empleos que impulsan tu futuro.</p>
-              <p className="text-white/60 leading-relaxed text-sm">Gestiona tus aplicaciones y encuentra las mejores oportunidades universitarias.</p>
-            </div>
+          <div className="space-y-4 mt-8">
+            <p className="text-4xl font-bold leading-tight italic">Micro-empleos que impulsan tu futuro.</p>
+            <p className="text-white/80 leading-relaxed text-lg">Gestiona tus aplicaciones y encuentra las mejores oportunidades universitarias.</p>
           </div>
         </div>
       </div>
 
       {/* Panel Derecho (Login Form) */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-20" style={{ backgroundColor: '#ffffff' }}>
-        <div className="w-full max-w-100 space-y-8">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-20 relative" style={{ backgroundColor: '#ffffff' }}>
+
+        {/* Mobile Back Button */}
+        <Link to="/" className="lg:hidden absolute top-6 left-6 flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-700 transition-colors">
+          &larr; Volver al inicio
+        </Link>
+
+        <div className="w-full max-w-100 space-y-8 mt-8 lg:mt-0">
 
           <div className="space-y-2 text-center lg:text-left">
             <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: '#0f172a' }}>Bienvenido de nuevo</h1>
