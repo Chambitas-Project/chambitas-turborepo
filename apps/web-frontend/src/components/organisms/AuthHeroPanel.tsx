@@ -18,7 +18,7 @@ export function AuthHeroPanel() {
             <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg">
               <Briefcase className="h-7 w-7" />
             </div>
-            <h2 className="text-5xl font-black tracking-tighter">Chambitas</h2>
+            <h2 className="text-5xl font-black text-white tracking-tighter">Chambitas</h2>
           </div>
           <div className="space-y-4">
             <p className="text-2xl font-bold leading-tight">Empieza tu camino profesional hoy</p>
