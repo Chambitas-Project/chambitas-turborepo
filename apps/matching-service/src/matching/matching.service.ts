@@ -57,7 +57,32 @@ export class MatchingService implements OnModuleInit {
         error: (err) => this.logger.error(`[Analytics] Failed to log recommendation latency`, err.message)
       });
 
-      const finalRecommendations = (matches || []).map((m: any) => ({
+      // Filter matches to only include 'open' projects that the user hasn't applied to
+      let finalMatches = matches || [];
+      if (finalMatches.length > 0) {
+        const matchIds = finalMatches.map((m: any) => m.id);
+
+        const { data: validProjects } = await this.supabase.getClient<Database>()
+          .from('projects')
+          .select('id')
+          .in('id', matchIds)
+          .eq('status', 'open');
+
+        const { data: applications } = await this.supabase.getClient<Database>()
+          .from('applications')
+          .select('project_id')
+          .eq('student_id', userId)
+          .in('project_id', matchIds);
+
+        const validProjectIds = new Set((validProjects || []).map(p => p.id));
+        const appliedProjectIds = new Set((applications || []).map(a => a.project_id));
+
+        finalMatches = finalMatches.filter((m: any) => 
+          validProjectIds.has(m.id) && !appliedProjectIds.has(m.id)
+        );
+      }
+
+      const finalRecommendations = finalMatches.map((m: any) => ({
         jobId: m.id,
         score: m.similarity,
         reason: `Compatibilidad híbrida del ${(m.similarity * 100).toFixed(0)}% (Habilidades + Horarios).`,
