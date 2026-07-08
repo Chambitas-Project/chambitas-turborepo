@@ -156,6 +156,7 @@ export class ProfileController implements OnModuleInit {
         user_id: user.id,
         role: 'student',
         full_name: dto.full_name,
+        phone_number: dto.phone_number,
         career_id: dto.career_id,
         academic_cycle: dto.academic_cycle,
         bio: dto.bio,

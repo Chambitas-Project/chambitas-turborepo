@@ -5,7 +5,7 @@ import { SupabaseService, Database, Tables, TablesInsert, TablesUpdate, Enums } 
 type ProjectWithRelations = Tables<'projects'> & {
   project_universities: { university_id: string }[];
   project_required_skills: (Tables<'project_required_skills'> & { skills: { name: string } })[];
-  employer_profiles?: { company_name: string | null; name: string | null };
+  employer_profiles?: { company_name: string | null; name: string | null; avatar_url: string | null };
   applications?: { count: number } | { count: number }[];
 };
 
@@ -17,10 +17,10 @@ export class ProjectsRepository {
     return this.supabaseService.getClient<Database>();
   }
 
-  async findById(id: string): Promise<(Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string }) | null> {
+  async findById(id: string): Promise<(Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string; employer_avatar_url?: string }) | null> {
     const { data, error } = await this.client
       .from('projects')
-      .select('*, employer_profiles(name, company_name), project_universities(university_id), project_required_skills(*, skills(name))')
+      .select('*, employer_profiles(name, company_name, avatar_url), project_universities(university_id), project_required_skills(*, skills(name))')
       .eq('id', id)
       .is('deleted_at', null)
       .is('project_universities.deleted_at', null)
@@ -34,6 +34,7 @@ export class ProjectsRepository {
       ...projectData,
       company_name: projectData.employer_profiles?.company_name || undefined,
       employer_name: projectData.employer_profiles?.name || undefined,
+      employer_avatar_url: projectData.employer_profiles?.avatar_url || undefined,
       university_ids: (projectData.project_universities || []).map(pu => pu.university_id),
       skills: (projectData.project_required_skills || []).map(ps => ({
         skill_id: ps.skill_id,
@@ -51,10 +52,10 @@ export class ProjectsRepository {
     university_id?: string; // Student's university
     limit?: number;
     offset?: number;
-  }): Promise<{ data: (Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string; applicant_count?: number })[]; total: number }> {
+  }): Promise<{ data: (Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string; employer_avatar_url?: string; applicant_count?: number })[]; total: number }> {
     let query = this.client
       .from('projects')
-      .select('*, employer_profiles(name, company_name), project_universities!left(university_id), project_required_skills(*, skills(name)), applications(count)', { count: 'exact' })
+      .select('*, employer_profiles(name, company_name, avatar_url), project_universities!left(university_id), project_required_skills(*, skills(name)), applications(count)', { count: 'exact' })
       .is('deleted_at', null);
     
     // ... filtros existentes ...
@@ -78,6 +79,7 @@ export class ProjectsRepository {
       ...project,
       company_name: project.employer_profiles?.company_name || undefined,
       employer_name: project.employer_profiles?.name || undefined,
+      employer_avatar_url: project.employer_profiles?.avatar_url || undefined,
       university_ids: (project.project_universities || []).map(pu => pu.university_id),
       skills: (project.project_required_skills || []).map(ps => ({
         skill_id: ps.skill_id,
@@ -100,7 +102,7 @@ export class ProjectsRepository {
     data: TablesInsert<'projects'>, 
     university_ids: string[] = [], 
     skills: any[] = []
-  ): Promise<Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string }> {
+  ): Promise<Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string; employer_avatar_url?: string }> {
     // 1. Insert Project
     const { data: project, error: projectError } = await this.client
       .from('projects')
@@ -158,7 +160,7 @@ export class ProjectsRepository {
     data: TablesUpdate<'projects'>,
     university_ids?: string[],
     skills?: any[]
-  ): Promise<Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string }> {
+  ): Promise<Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string; employer_avatar_url?: string }> {
     // 1. Update project fields
     const { data: project, error: projectError } = await this.client
       .from('projects')

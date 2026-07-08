@@ -45,6 +45,7 @@ message Project {
   optional string company_name = 17;
   optional double match_score = 18;
   optional int32 applicant_count = 19;
+  optional string employer_avatar_url = 20;
 }
 
 message SkillRequirement {

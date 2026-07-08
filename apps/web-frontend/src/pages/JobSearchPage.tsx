@@ -3,14 +3,13 @@ import { Search, Filter, ChevronRight, ChevronLeft, X } from "lucide-react";
 import { Button, cn } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
-import { PiononoLoader } from "../components/atoms/PiononoLoader";
 
 // Types
 import type { Project, Recommendation } from "../features/job-search/types";
 
 // Components
 import { JobSearchFilters, type FilterState } from "../features/job-search/components/JobSearchFilters";
-import { JobCard } from "../features/job-search/components/JobCard";
+import { JobCard, JobCardSkeleton } from "../features/job-search/components/JobCard";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -213,7 +212,11 @@ export function JobSearchPage() {
             </div>
 
             {loading ? (
-              <PiononoLoader message="Actualizando marketplace..." className="py-24" />
+              <div className="space-y-6">
+                {[1, 2, 3].map((i) => (
+                  <JobCardSkeleton key={i} />
+                ))}
+              </div>
             ) : paginatedProjects.length > 0 ? (
               <div className="space-y-6">
                 {paginatedProjects.map(project => {

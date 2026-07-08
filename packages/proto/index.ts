@@ -304,6 +304,7 @@ export interface Project {
   company_name?: string;
   match_score?: number;
   applicant_count?: number;
+  employer_avatar_url?: string;
 }
 
 export interface SkillRequirement {

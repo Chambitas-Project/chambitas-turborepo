@@ -203,7 +203,7 @@ export class ProjectsService implements OnModuleInit {
     };
   }
 
-  private mapToProto(project: Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string; applicant_count?: number }): Project {
+  private mapToProto(project: Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string; employer_avatar_url?: string; applicant_count?: number }): Project {
     return {
       id: project.id,
       title: project.title,
@@ -220,6 +220,7 @@ export class ProjectsService implements OnModuleInit {
       schedule_constraints: project.schedule_constraints ? JSON.stringify(project.schedule_constraints) : '',
       company_name: project.company_name || project.employer_name || '',
       applicant_count: project.applicant_count || 0,
+      employer_avatar_url: project.employer_avatar_url || '',
       created_at: project.created_at || '',
       updated_at: project.updated_at || '',
       deleted_at: project.deleted_at || '',

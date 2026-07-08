@@ -26,4 +26,5 @@ export interface Project {
   created_at?: string;
   service_category?: string;
   status?: "active" | "open" | "in_progress" | "closed" | "completed" | "pending" | "draft";
+  employer_avatar_url?: string;
 }

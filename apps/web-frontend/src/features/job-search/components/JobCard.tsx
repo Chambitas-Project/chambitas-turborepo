@@ -29,6 +29,17 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
   const daysAgo = Math.floor((new Date().getTime() - createdDate.getTime()) / (1000 * 3600 * 24));
   const timeAgoText = daysAgo === 0 ? 'hace unas horas' : `hace ${daysAgo} día${daysAgo !== 1 ? 's' : ''}`;
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
+  };
+
+  const initials = getInitials(company);
+
   return (
     <div
       onClick={handleNavigate}
@@ -39,7 +50,15 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
         <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
           <div className="flex items-start gap-4">
             <div className="shrink-0 h-14 w-14 rounded-xl bg-slate-900 flex items-center justify-center overflow-hidden border border-slate-100">
-              <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${company}&backgroundColor=0f172a`} alt={company} className="h-full w-full object-cover" />
+              {project.employer_avatar_url ? (
+                <img 
+                  src={project.employer_avatar_url} 
+                  alt={company} 
+                  className="h-full w-full object-cover" 
+                />
+              ) : (
+                <span className="text-white font-bold text-lg tracking-wider">{initials}</span>
+              )}
             </div>
             <div className="space-y-1 mt-0.5">
               <h4 className="text-[19px] font-bold text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors duration-300">
@@ -103,6 +122,42 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
               Postular ahora
             </Button>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function JobCardSkeleton() {
+  return (
+    <div className="bg-white rounded-[20px] p-6 border border-slate-200 animate-pulse">
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
+          <div className="flex items-start gap-4">
+            <div className="shrink-0 h-14 w-14 rounded-xl bg-slate-200" />
+            <div className="space-y-3 mt-1 w-48 sm:w-64">
+              <div className="h-5 bg-slate-200 rounded-md w-3/4" />
+              <div className="h-4 bg-slate-200 rounded-md w-full" />
+            </div>
+          </div>
+          <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
+            <div className="h-6 w-32 bg-slate-200 rounded-full" />
+            <div className="h-8 w-24 bg-slate-200 rounded-md mt-1" />
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <div className="h-4 bg-slate-200 rounded-md w-full" />
+          <div className="h-4 bg-slate-200 rounded-md w-5/6" />
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="h-8 w-16 bg-slate-200 rounded-md" />
+            <div className="h-8 w-20 bg-slate-200 rounded-md" />
+            <div className="h-8 w-14 bg-slate-200 rounded-md" />
+          </div>
+          <div className="h-10 w-32 bg-slate-200 rounded-md" />
         </div>
       </div>
     </div>
