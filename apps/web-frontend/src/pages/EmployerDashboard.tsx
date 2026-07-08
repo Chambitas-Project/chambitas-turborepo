@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { FileText, CheckCircle2 } from "lucide-react";
+import { FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button, Badge } from "@chambitas/ui";
+import { Button } from "@chambitas/ui";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { EmployerStatsCards } from "../widgets/dashboard/ui/EmployerStatsCards";
 import { employerApi } from "../api/employer.api";
@@ -32,9 +32,9 @@ export function EmployerDashboard() {
           employerApi.getRecentProjects(),
           employerApi.getRecentActivity()
         ]);
-        
+
         const validProjects = Array.isArray(projectsData) ? projectsData : [];
-        
+
         // Obtener aplicaciones para cada proyecto para sacar estadísticas reales
         const applicationsData = await Promise.all(
           validProjects.map(async (p) => {
@@ -42,7 +42,7 @@ export function EmployerDashboard() {
             return { projectId: p.id, apps };
           })
         );
-        
+
         // Obtener las reseñas escritas por este empleador para saber cuáles faltan
         let employerWrittenReviews: any[] = [];
         if (user?.id) {
@@ -53,25 +53,25 @@ export function EmployerDashboard() {
             console.error("Error fetching reviews for stats", e);
           }
         }
-        
+
         // Actualizar proyectos con contador real
         const projectsWithCounts = validProjects.map(p => {
-           const projApps = applicationsData.find(a => a.projectId === p.id)?.apps || [];
-           return { ...p, applicantCount: projApps.length, applicantsCount: projApps.length };
+          const projApps = applicationsData.find(a => a.projectId === p.id)?.apps || [];
+          return { ...p, applicantCount: projApps.length, applicantsCount: projApps.length };
         });
 
         // Calcular estadísticas dinámicas
         const activeJobs = validProjects.filter(p => p.status === 'open' || p.status === 'active').length;
         const allApps = applicationsData.flatMap(a => a.apps);
         const newApplicants = allApps.filter(a => a.status === 'pending').length;
-        
+
         // Calcular revisiones (reseñas) pendientes reales
         const pendingReviews = validProjects.filter(p => {
           if (p.status !== 'completed' && p.status !== 'closed') return false;
           const apps = applicationsData.find(a => a.projectId === p.id)?.apps || [];
           const acceptedApp = apps.find(a => a.status === 'accepted');
           if (!acceptedApp) return false; // Si no hay postulante aceptado, no hay a quién reseñar
-          
+
           // Verificar si el empleador ya dejó una reseña para esta postulación
           const hasReviewed = employerWrittenReviews.some(r => r.application_id === acceptedApp.id);
           return !hasReviewed;
@@ -118,15 +118,12 @@ export function EmployerDashboard() {
 
       {/* Perfil del Empleador */}
       <div className="bg-white rounded-md p-6 border border-slate-100 shadow-sm mb-12 flex flex-col md:flex-row items-start md:items-center gap-6">
-        <div className="h-20 w-20 bg-slate-900 rounded-md flex items-center justify-center shrink-0">
-           <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${(user as any)?.companyName || (user as any)?.commercialName || (user as any)?.fullName || 'E'}&backgroundColor=0f172a`} alt="Avatar" className="rounded-md" />
+        <div className="h-20 w-20 bg-slate-900 rounded-md flex items-center justify-center shrink-0 overflow-hidden">
+          <img src={(user as any)?.avatarUrl || (user as any)?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${(user as any)?.companyName || (user as any)?.commercialName || (user as any)?.fullName || 'E'}&backgroundColor=0f172a`} alt="Avatar" className="w-full h-full object-cover rounded-md" />
         </div>
         <div className="space-y-2 flex-1 w-full">
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-black text-slate-900">{(user as any)?.commercialName || (user as any)?.fullName || 'Usuario Anónimo'}</h2>
-            <Badge className="bg-emerald-100 text-emerald-700 font-black px-2 py-0.5 text-[10px] flex items-center gap-1 rounded-md shadow-none border-none">
-              <CheckCircle2 className="h-3 w-3" /> VERIFICADO
-            </Badge>
           </div>
           <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">{(user as any)?.companyName || 'Empleador Confidencial'}</p>
           <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-3xl line-clamp-2">
@@ -141,7 +138,7 @@ export function EmployerDashboard() {
       <EmployerStatsCards stats={stats} />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
+
         {/* Listado de Publicaciones (8 col) */}
         <div className="lg:col-span-8 space-y-6">
           <div className="flex items-center justify-between mb-2">
@@ -178,9 +175,9 @@ export function EmployerDashboard() {
 
       </div>
 
-      <ProfileModal 
-        isOpen={isProfileModalOpen} 
-        onClose={() => setIsProfileModalOpen(false)} 
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
       />
     </DashboardLayout>
   );
