@@ -156,6 +156,7 @@ export class UpdateStudentProfileDto {
   @ApiPropertyOptional() @IsString() @IsOptional() evidence_url?: string;
   @ApiPropertyOptional() @IsOptional() is_gpa_verified?: boolean;
   @ApiPropertyOptional() @IsString() @IsOptional() phone_number?: string;
+  @ApiPropertyOptional() @IsString() @IsOptional() avatar_url?: string;
 }
 
 export class UpdateEmployerProfileDto {
@@ -164,4 +165,5 @@ export class UpdateEmployerProfileDto {
   @ApiPropertyOptional() @IsString() @IsOptional() description?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() phone_number?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() industry?: string;
+  @ApiPropertyOptional() @IsString() @IsOptional() avatar_url?: string;
 }

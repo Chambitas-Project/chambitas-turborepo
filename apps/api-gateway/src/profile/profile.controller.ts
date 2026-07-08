@@ -1,36 +1,36 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Patch, 
-  Delete, 
-  Body, 
-  Param, 
-  Inject, 
-  OnModuleInit, 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Inject,
+  OnModuleInit,
   UseGuards,
-  Req, 
-  Query, 
+  Req,
+  Query,
   ParseUUIDPipe,
   HttpStatus
 } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { 
-  ApiTags, 
-  ApiOperation, 
-  ApiBody, 
-  ApiResponse, 
-  ApiBearerAuth, 
-  ApiParam, 
-  ApiExtraModels, 
-  getSchemaPath 
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBody,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiExtraModels,
+  getSchemaPath
 } from '@nestjs/swagger';
 import { Request } from 'express';
 import { firstValueFrom } from 'rxjs';
-import { 
-  CreateStudentProfileDto, 
-  CreateEmployerProfileDto 
+import {
+  CreateStudentProfileDto,
+  CreateEmployerProfileDto
 } from './dto/profile.dto';
 import { StudentOnboardingDto, EmployerOnboardingDto, UpdateStudentProfileDto, UpdateEmployerProfileDto } from './dto/onboarding.dto';
 import { IProfileService } from '@chambitas/proto';
@@ -45,7 +45,7 @@ import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
 export class ProfileController implements OnModuleInit {
   private profileService!: IProfileService;
 
-  constructor(@Inject('PROFILE_PACKAGE') private client: ClientGrpc) {}
+  constructor(@Inject('PROFILE_PACKAGE') private client: ClientGrpc) { }
 
   onModuleInit() {
     this.profileService = this.client.getService<IProfileService>('ProfileService');
@@ -63,12 +63,12 @@ export class ProfileController implements OnModuleInit {
     );
 
     // Desestructuramos todo lo que NO queremos que se repita en ...rest
-    const { 
-      full_name, 
-      university_name, 
+    const {
+      full_name,
+      university_name,
       university_logo,
-      academic_cycle, 
-      is_onboarded, 
+      academic_cycle,
+      is_onboarded,
       bio,
       company_name,
       commercial_name,
@@ -77,7 +77,7 @@ export class ProfileController implements OnModuleInit {
       gpa,
       is_gpa_verified,
       evidence_url,
-      ...rest 
+      ...rest
     } = profile;
 
     const response: any = {
@@ -92,7 +92,7 @@ export class ProfileController implements OnModuleInit {
       response.universityName = university_name;
       response.universityLogo = university_logo;
       response.academicCycle = academic_cycle;
-      response.availabilityBlocks = availability_blocks 
+      response.availabilityBlocks = availability_blocks
         ? (typeof availability_blocks === 'string' ? JSON.parse(availability_blocks) : availability_blocks)
         : null;
       response.skills = skills?.map(({ proficiency_level, ...s }) => ({
@@ -102,8 +102,8 @@ export class ProfileController implements OnModuleInit {
       response.gpa = gpa;
       response.isGpaVerified = is_gpa_verified;
       response.evidenceUrl = evidence_url;
-    } 
-    
+    }
+
     // Campos exclusivos de Empleadores
     else if (profile.role === 'employer') {
       response.companyName = company_name;
@@ -116,7 +116,7 @@ export class ProfileController implements OnModuleInit {
 
   @Patch('me')
   @ApiOperation({ summary: 'Actualización parcial del perfil del usuario actual' })
-  @ApiBody({ 
+  @ApiBody({
     schema: {
       oneOf: [
         { $ref: getSchemaPath(UpdateStudentProfileDto) },
@@ -127,9 +127,9 @@ export class ProfileController implements OnModuleInit {
   async updateMyProfile(@Body() dto: any, @Req() req: Request) {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
-    
+
     // Preparamos el payload para gRPC
-    const payload: any = { 
+    const payload: any = {
       ...dto,
       user_id: user.id,
       role: user.role
@@ -185,10 +185,10 @@ export class ProfileController implements OnModuleInit {
     const user = (req as any).user;
     const metadata = createGrpcMetadata(user);
     const result = await firstValueFrom(
-      this.profileService.CompleteOnboarding({ 
-        ...dto, 
+      this.profileService.CompleteOnboarding({
+        ...dto,
         user_id: user.id,
-        role: 'employer' 
+        role: 'employer'
       }, metadata)
     );
 
@@ -244,11 +244,11 @@ export class ProfileController implements OnModuleInit {
   ) {
     const metadata = createGrpcMetadata((req as any).user);
     return await firstValueFrom(
-      this.profileService.SearchProfiles({ 
-        query, 
-        role, 
-        limit: limit || 10, 
-        offset: offset || 0 
+      this.profileService.SearchProfiles({
+        query,
+        role,
+        limit: limit || 10,
+        offset: offset || 0
       }, metadata)
     );
   }

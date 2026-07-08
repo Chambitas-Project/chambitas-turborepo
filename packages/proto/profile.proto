@@ -222,6 +222,7 @@ message CompleteOnboardingRequest {
   optional bool is_gpa_verified = 14;
   optional string evidence_url = 15;
   optional string phone_number = 16;
+  optional string avatar_url = 17;
 }
 
 message ProfileResponse {
