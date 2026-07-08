@@ -203,7 +203,7 @@ def register_model_version_in_supabase(metrics, version="v12.0.0", n_comps=300):
     load_dotenv(dotenv_path=root_env)
     
     url = os.getenv("SUPABASE_URL")
-    key = os.getenv("SUPABASE_ANON_KEY")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
     
     if not url or not key:
         print("\n[SKIP] Supabase credentials not found. skipping version registration.")
