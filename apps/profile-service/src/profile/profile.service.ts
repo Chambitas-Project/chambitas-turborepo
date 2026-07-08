@@ -475,8 +475,22 @@ export class ProfileService implements OnModuleInit {
 
   private async deleteProfileInternal(user_id: string): Promise<ProfileResponse> {
     const supabase = this.supabaseService.getClient<Database>();
-    const { error } = await supabase.from('users').delete().eq('id', user_id); // Cambiado a delete real o desactivar
-    if (error) throw new RpcException({ code: status.INTERNAL, message: error.message });
+    const adminSupabase = this.supabaseService.getAdminClient<Database>();
+
+    // 1. Eliminar datos públicos (cascada a perfiles)
+    const { error } = await supabase.from('users').delete().eq('id', user_id);
+    if (error) {
+      console.error("Error deleting public user data:", error);
+      throw new RpcException({ code: status.INTERNAL, message: error.message });
+    }
+
+    // 2. Eliminar credenciales de Supabase Auth
+    const { error: authError } = await adminSupabase.auth.admin.deleteUser(user_id);
+    if (authError) {
+      console.error("Error deleting auth user:", authError);
+      throw new RpcException({ code: status.INTERNAL, message: authError.message });
+    }
+
     return { success: true, is_onboarded: false, message: 'Profile deleted' };
   }
 

@@ -18,6 +18,7 @@ interface AuthContextType {
   login: (credentials: any) => Promise<void>;
   register: (userData: any) => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   refreshUser: () => Promise<void>;
   loading: boolean;
 }
@@ -61,12 +62,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const deleteAccount = async () => {
+    try {
+      await apiClient.delete('/profile/me');
+      await apiClient.post('/auth/logout');
+    } finally {
+      setUser(null);
+    }
+  };
+
   const refreshUser = async () => {
     await fetchProfile();
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, logout, refreshUser, loading }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, logout, deleteAccount, refreshUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

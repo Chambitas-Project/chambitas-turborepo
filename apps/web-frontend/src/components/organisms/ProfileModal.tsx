@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button, Input } from "@chambitas/ui";
-import { X, Save, Upload, Loader2 } from "lucide-react";
+import { X, Save, Upload, Loader2, Trash2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { apiClient } from "../../api/api-client";
 import { toast } from "react-hot-toast";
@@ -11,7 +11,7 @@ interface ProfileModalProps {
 }
 
 export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, deleteAccount } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     companyName: "",
@@ -21,6 +21,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -72,6 +73,20 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
       console.error("Error updating profile", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteAccount();
+    } catch (error) {
+      console.error("Error al eliminar la cuenta:", error);
+      toast.error("Ocurrió un error al intentar eliminar la cuenta.");
+      setIsDeleting(false);
+      setShowConfirmDelete(false);
     }
   };
 
@@ -177,6 +192,46 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               />
             </div>
           </form>
+          
+          <div className="mt-8 pt-6 border-t border-slate-100 px-6">
+            <h4 className="text-sm font-bold text-red-600 mb-2">Zona de Peligro</h4>
+            <p className="text-xs text-slate-500 mb-4">
+              Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate de estar seguro.
+            </p>
+            {!showConfirmDelete ? (
+              <Button
+                onClick={() => setShowConfirmDelete(true)}
+                disabled={isLoading}
+                variant="outline"
+                className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 font-bold py-2.5 rounded-md text-sm transition-colors shadow-none"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <Trash2 className="h-4 w-4" /> Eliminar mi cuenta permanentemente
+                </span>
+              </Button>
+            ) : (
+              <div className="bg-red-50 border border-red-200 rounded-md p-4 flex flex-col items-center">
+                <p className="text-sm font-bold text-red-700 mb-3 text-center">¿Estás completamente seguro? Esta acción es irreversible.</p>
+                <div className="flex w-full gap-2">
+                  <Button
+                    onClick={() => setShowConfirmDelete(false)}
+                    disabled={isDeleting}
+                    variant="outline"
+                    className="flex-1 text-slate-600 border-slate-300 hover:bg-slate-100 font-bold text-sm shadow-none"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-none"
+                  >
+                    {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Sí, eliminar cuenta"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="p-6 border-t border-slate-50 flex justify-end gap-3 bg-white">
