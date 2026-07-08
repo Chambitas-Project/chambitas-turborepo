@@ -1,6 +1,7 @@
 import type { ProjectFormData } from "../types";
 import { Briefcase, LayoutGrid } from "lucide-react";
 import { Input } from "@chambitas/ui";
+import { SearchableSelect } from "../../../components/molecules/SearchableSelect";
 
 interface ProjectMainDetailsFormProps {
   formData: ProjectFormData;
@@ -34,22 +35,14 @@ export function ProjectMainDetailsForm({
         <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
           <LayoutGrid className="h-4 w-4 text-emerald-600" /> Categoría <span className="text-red-500">*</span>
         </label>
-        <Input
-          required
-          list="category-options-edit"
+        <SearchableSelect
           value={formData.service_category}
-          onChange={(e) => setFormData({ ...formData, service_category: e.target.value })}
+          onChange={(val) => setFormData({ ...formData, service_category: val })}
+          options={dynamicCategories.length > 0 ? dynamicCategories.map(cat => ({ id: cat, name: cat })) : [{ id: "Software y Tecnología", name: "Software y Tecnología" }]}
           placeholder="Escribe o selecciona una categoría"
-          className="w-full bg-white border border-slate-200 rounded-md h-12"
+          searchPlaceholder="Buscar categoría..."
+          noOptionsText="Categoría no encontrada"
         />
-        <datalist id="category-options-edit">
-          {dynamicCategories.map((cat) => (
-            <option key={cat} value={cat} />
-          ))}
-          {dynamicCategories.length === 0 && (
-            <option value="Software y Tecnología" />
-          )}
-        </datalist>
       </div>
 
       <div className="space-y-3">
