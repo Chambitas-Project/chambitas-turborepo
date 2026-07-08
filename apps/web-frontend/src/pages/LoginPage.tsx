@@ -43,7 +43,7 @@ export function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     setLoginError(null);
     try {
-      await login(data);
+      await login({ ...data, role });
       navigate("/");
     } catch (error: any) {
       const message = error.response?.data?.message || "Credenciales incorrectas o problema de conexión.";

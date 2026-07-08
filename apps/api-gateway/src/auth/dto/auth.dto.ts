@@ -56,6 +56,11 @@ export class LoginDto {
   @IsString()
   @IsNotEmpty()
   password!: string;
+
+  @ApiPropertyOptional({ example: 'student' })
+  @IsString()
+  @IsOptional()
+  role?: string;
 }
 
 export class ForgotPasswordDto {

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Inject, OnModuleInit, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Res, Inject, OnModuleInit, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import {
   ApiTags,
@@ -59,6 +59,11 @@ export class AuthController implements OnModuleInit {
   @ApiResponse({ status: 200, description: 'Sesión iniciada exitosamente' })
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const response = await firstValueFrom(this.authService.Login(loginDto));
+
+    if (loginDto.role && response.role !== loginDto.role) {
+      const roleName = loginDto.role === 'student' ? 'Estudiante' : 'Empleador';
+      throw new UnauthorizedException(`Esta cuenta no pertenece a un ${roleName}. Por favor, selecciona el rol correcto.`);
+    }
 
     // Extraer access_token y configurar cookie
     if (response.accessToken) {

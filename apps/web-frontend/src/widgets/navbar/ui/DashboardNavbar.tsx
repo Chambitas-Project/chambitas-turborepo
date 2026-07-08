@@ -30,8 +30,13 @@ export function DashboardNavbar({ role }: DashboardNavbarProps) {
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-10">
-          <span className="text-xl font-black text-emerald-700 tracking-tighter cursor-pointer" onClick={() => navigate("/")}>
+        <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate("/")}>
+          <img
+            src="/logo-chambitas.webp"
+            alt="Chambitas"
+            className="w-12 h-12 object-contain transition-transform group-hover:scale-110"
+          />
+          <span className="text-xl font-black text-emerald-700 tracking-tighter cursor-pointer">
             Chambitas
           </span>
         </div>
