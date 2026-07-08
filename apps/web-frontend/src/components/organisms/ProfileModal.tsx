@@ -22,6 +22,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -75,8 +76,6 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
       setIsLoading(false);
     }
   };
-
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
