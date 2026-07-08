@@ -454,6 +454,7 @@ export interface Review {
   comment: string;
   created_at: string;
   reviewer_name?: string;
+  reviewer_avatar_url?: string;
 }
 
 export interface CreateReviewRequest {

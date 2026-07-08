@@ -33,7 +33,7 @@ export function EmployerProfileModal({
         <div className="p-6 overflow-y-auto custom-scrollbar space-y-8">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 rounded-lg bg-slate-900 flex items-center justify-center text-white font-black text-xl shadow-sm shrink-0">
-              <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${companyName}&backgroundColor=0f172a`} alt="Avatar" className="rounded-lg" />
+              <img src={employerProfile?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${companyName}&backgroundColor=0f172a`} alt="Avatar" className="rounded-lg" />
             </div>
             <div className="space-y-1">
               <h3 className="text-lg font-black text-slate-900">{employerProfile?.full_name || employerName}</h3>

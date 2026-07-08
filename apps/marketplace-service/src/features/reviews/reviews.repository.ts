@@ -26,8 +26,8 @@ export class ReviewsRepository {
         reviewer:users!reviewer_id(
           id,
           role,
-          student_profiles(full_name),
-          employer_profiles(name, company_name)
+          student_profiles(full_name, avatar_url),
+          employer_profiles(name, company_name, avatar_url)
         )
       `)
       .single();
@@ -71,8 +71,8 @@ export class ReviewsRepository {
       reviewer:users!reviewer_id(
         id,
         role,
-        student_profiles(full_name),
-        employer_profiles(name, company_name)
+        student_profiles(full_name, avatar_url),
+        employer_profiles(name, company_name, avatar_url)
       ),
       ${applicationJoin}(
         project_id,
@@ -111,8 +111,8 @@ export class ReviewsRepository {
         reviewer:users!reviewer_id(
           id,
           role,
-          student_profiles(full_name),
-          employer_profiles(name, company_name)
+          student_profiles(full_name, avatar_url),
+          employer_profiles(name, company_name, avatar_url)
         )
       `)
       .single();

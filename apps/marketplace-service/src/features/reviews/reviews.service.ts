@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { status } from '@grpc/grpc-js';
-import { 
-  CreateReviewRequest, 
-  Review, 
-  ListReviewsRequest, 
+import {
+  CreateReviewRequest,
+  Review,
+  ListReviewsRequest,
   ListReviewsResponse,
   UpdateReviewRequest,
   DeleteReviewRequest
@@ -22,7 +22,7 @@ export class ReviewsService {
     private readonly reviewsRepository: ReviewsRepository,
     private readonly applicationsRepository: ApplicationsRepository,
     private readonly projectsRepository: ProjectsRepository,
-  ) {}
+  ) { }
 
   async createReview(request: CreateReviewRequest): Promise<Review> {
     this.logger.log(`Creating review for application ${request.application_id} by user ${request.reviewer_id}`);
@@ -38,7 +38,7 @@ export class ReviewsService {
     if (!project) {
       throw new RpcException({ code: status.NOT_FOUND, message: 'El proyecto asociado no existe' });
     }
-    
+
     // Solo permitir reseñas si el proyecto está cerrado o la postulación está completada
     if (project.status !== 'closed' && application.status !== 'completed') {
       throw new RpcException({ code: status.FAILED_PRECONDITION, message: 'Solo se pueden dejar reseñas en proyectos finalizados' });
@@ -46,7 +46,7 @@ export class ReviewsService {
 
     // 3. Determinar rol del revisor y validar pertenencia
     let reviewerRole: 'student' | 'employer';
-    
+
     if (request.reviewer_id === application.student_id) {
       reviewerRole = 'student';
     } else if (request.reviewer_id === project.employer_id) {
@@ -76,7 +76,7 @@ export class ReviewsService {
 
   async listReviews(request: ListReviewsRequest): Promise<ListReviewsResponse> {
     this.logger.log(`Listing reviews for filters: ${JSON.stringify(request)}`);
-    
+
     const reviewsData = await this.reviewsRepository.findByTargetId({
       student_id: request.student_id,
       employer_id: request.employer_id,
@@ -84,8 +84,8 @@ export class ReviewsService {
     });
 
     const reviews = reviewsData.map(r => this.mapToProto(r));
-    const averageRating = reviews.length > 0 
-      ? reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length 
+    const averageRating = reviews.length > 0
+      ? reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
       : 0;
 
     return {
@@ -147,10 +147,11 @@ export class ReviewsService {
       rating: review.rating,
       comment: review.comment || '',
       created_at: review.created_at || '',
-      reviewer_name: studentProfile?.full_name || 
-                     employerProfile?.name || 
-                     employerProfile?.company_name || 
-                     '',
+      reviewer_name: studentProfile?.full_name ||
+        employerProfile?.name ||
+        employerProfile?.company_name ||
+        '',
+      reviewer_avatar_url: studentProfile?.avatar_url || employerProfile?.avatar_url || '',
     };
   }
 }

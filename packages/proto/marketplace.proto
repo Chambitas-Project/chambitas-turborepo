@@ -206,6 +206,7 @@ message Review {
   string comment = 6;
   string created_at = 7;
   optional string reviewer_name = 8;
+  optional string reviewer_avatar_url = 9;
 }
 
 message CreateReviewRequest {

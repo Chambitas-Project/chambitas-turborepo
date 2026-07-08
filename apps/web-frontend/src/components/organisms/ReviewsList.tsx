@@ -94,7 +94,7 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
         {paginatedReviews.map((review) => (
           <div key={review.id} className="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 flex gap-4 transition-colors hover:bg-slate-50">
             <div className="h-10 w-10 rounded-full bg-slate-200 shrink-0 overflow-hidden border-2 border-white shadow-sm">
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${review.reviewer_id}`} alt="Avatar" />
+              <img src={review.reviewer_avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${review.reviewer_id}`} alt="Avatar" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">

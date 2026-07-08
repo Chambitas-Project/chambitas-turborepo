@@ -23,7 +23,7 @@ export function EmployerProfileCard({
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <div className="flex items-center gap-4">
           <div className="h-14 w-14 rounded-lg bg-slate-900 flex items-center justify-center text-white font-black text-xl shadow-sm">
-            <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${companyName}&backgroundColor=0f172a`} alt="Avatar" className="rounded-lg" />
+            <img src={employerProfile?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${companyName}&backgroundColor=0f172a`} alt="Avatar" className="rounded-lg" />
           </div>
           <div className="space-y-0.5">
             <h4 className="text-sm font-bold text-slate-900">{employerProfile?.full_name || employerName}</h4>
