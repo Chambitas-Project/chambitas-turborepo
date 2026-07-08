@@ -1,16 +1,20 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Inject, OnModuleInit, HttpException, HttpStatus, BadRequestException, Body } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, Inject, OnModuleInit, HttpException, HttpStatus, BadRequestException, Body, UseGuards, Req } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { lastValueFrom } from 'rxjs';
 import { IMediaService } from '@chambitas/proto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { createGrpcMetadata } from '../auth/utils/grpc-metadata.util';
+import { Request } from 'express';
 
 @ApiTags('Media')
+@UseGuards(JwtAuthGuard)
 @Controller('media')
 export class MediaController implements OnModuleInit {
   private mediaService!: IMediaService;
 
-  constructor(@Inject('MEDIA_PACKAGE') private client: ClientGrpc) {}
+  constructor(@Inject('MEDIA_PACKAGE') private client: ClientGrpc) { }
 
   onModuleInit() {
     this.mediaService = this.client.getService<IMediaService>('MediaService');
@@ -43,16 +47,17 @@ export class MediaController implements OnModuleInit {
       fileSize: 5 * 1024 * 1024, // 5MB
     },
     fileFilter: (req, file, cb) => {
-      // Permitir sólo imágenes (.png, .jpg, .jpeg) y videos (.mp4)
-      if (!file.mimetype.match(/\/(jpg|jpeg|png|mp4)$/)) {
-        return cb(new BadRequestException('Tipo de archivo no permitido. Solo se aceptan .jpg, .png, .mp4'), false);
+      // Permitir imágenes (.png, .jpg, .jpeg, .webp, .gif) y videos (.mp4)
+      if (!file.mimetype.match(/\/(jpg|jpeg|png|webp|gif)$/)) {
+        return cb(new BadRequestException('Tipo de archivo no permitido. Solo se aceptan .jpg, .png, .webp, .gif, .mp4'), false);
       }
       cb(null, true);
     }
   }))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Body('folder') folder: string
+    @Body('folder') folder: string,
+    @Req() req: Request
   ) {
     if (!file) {
       throw new BadRequestException('Archivo no proporcionado');
@@ -63,14 +68,17 @@ export class MediaController implements OnModuleInit {
     }
 
     try {
+      const metadata = createGrpcMetadata((req as any).user);
       const response = await lastValueFrom(
         this.mediaService.UploadFile({
+          fileBuffer: file.buffer,
           file_buffer: file.buffer,
+          mimeType: file.mimetype,
           mime_type: file.mimetype,
           folder,
-        })
+        } as any, metadata)
       );
-      
+
       return response;
     } catch (error: any) {
       throw new HttpException(

@@ -32,10 +32,15 @@ export class MediaController {
 
     try {
       // Convertir a Buffer en caso que gRPC lo mande en otro formato
-      const buffer = Buffer.from(data.fileBuffer);
+      const fileData = (data as any).fileBuffer || (data as any).file_buffer;
+      if (!fileData) {
+        this.logger.error('No file data received in gRPC payload');
+      }
+      const mime = (data as any).mimeType || (data as any).mime_type || 'application/octet-stream';
+      const buffer = Buffer.from(fileData);
       const url = await this.mediaService.uploadFileToCloudinary(
         buffer, 
-        data.mimeType, 
+        mime, 
         data.folder, 
         userId
       );

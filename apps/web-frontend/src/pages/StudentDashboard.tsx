@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { apiClient } from "../api/api-client";
 import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
 import { PiononoLoader } from "../components/atoms/PiononoLoader";
+import { toast } from "react-hot-toast";
 // Types and Constants
 import type { Profile, CatalogSkill } from "../features/student-dashboard/types";
 
@@ -139,7 +140,7 @@ export function StudentDashboard() {
       setTimeout(() => { fetchRecommendations(); }, 1500);
       setTimeout(() => { setShowEditModal(false); }, 1000);
     } catch {
-      alert("Error al actualizar el perfil.");
+      toast.error("Error al actualizar el perfil.");
     } finally {
       setUpdating(false);
     }
@@ -169,7 +170,7 @@ export function StudentDashboard() {
       await fetchProfile();
       setTimeout(() => { fetchRecommendations(); }, 1500);
     } catch (err) {
-      alert("Error al añadir habilidad.");
+      toast.error("Error al añadir habilidad.");
     } finally {
       setUpdating(false);
     }
@@ -191,7 +192,7 @@ export function StudentDashboard() {
       await fetchProfile();
       setTimeout(() => { fetchRecommendations(); }, 1500);
     } catch {
-      alert("Error al eliminar habilidad.");
+      toast.error("Error al eliminar habilidad.");
     }
   };
 

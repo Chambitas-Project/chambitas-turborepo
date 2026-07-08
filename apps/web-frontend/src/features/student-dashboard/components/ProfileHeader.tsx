@@ -3,6 +3,7 @@ import { GraduationCap, Calendar, Trophy, Phone, Upload, Loader2 } from "lucide-
 import { Badge, Button } from "@chambitas/ui";
 import type { Profile } from "../types";
 import { apiClient } from "../../../api/api-client";
+import { toast } from "react-hot-toast";
 
 interface ProfileHeaderProps {
   profile: Profile | null;
@@ -23,7 +24,7 @@ export function ProfileHeader({ profile, onEditClick, onProfileUpdate }: Profile
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("Por favor selecciona una imagen válida.");
+      toast.error("Por favor selecciona una imagen válida.");
       return;
     }
 
@@ -48,7 +49,7 @@ export function ProfileHeader({ profile, onEditClick, onProfileUpdate }: Profile
       }
     } catch (error) {
       console.error("Error uploading avatar:", error);
-      alert("Hubo un error al subir la imagen. Inténtalo de nuevo.");
+      toast.error("Hubo un error al subir la imagen. Inténtalo de nuevo.");
     } finally {
       setIsUploading(false);
     }

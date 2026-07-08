@@ -3,6 +3,7 @@ import { Button, Input } from "@chambitas/ui";
 import { X, Save, Upload, Loader2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { apiClient } from "../../api/api-client";
+import { toast } from "react-hot-toast";
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -115,7 +116,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                     const file = e.target.files?.[0];
                     if (!file) return;
                     if (!file.type.startsWith("image/")) {
-                      alert("Por favor selecciona una imagen válida.");
+                      toast.error("Por favor selecciona una imagen válida.");
                       return;
                     }
                     try {
@@ -132,7 +133,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                       }
                     } catch (err) {
                       console.error("Error uploading avatar", err);
-                      alert("Hubo un error al subir la imagen. Inténtalo de nuevo.");
+                      toast.error("Hubo un error al subir la imagen. Inténtalo de nuevo.");
                     } finally {
                       setIsUploadingAvatar(false);
                     }
