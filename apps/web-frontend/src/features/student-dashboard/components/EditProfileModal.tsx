@@ -109,7 +109,7 @@ export function EditProfileModal({
                 <label className="text-xs font-semibold text-slate-600">Celular</label>
                 <input
                   type="tel"
-                  placeholder="Ej. 936591720"
+                  placeholder="Ej. 987654321"
                   value={form.phoneNumber || ""}
                   onChange={(e) => setForm({ ...form, phoneNumber: e.target.value.replace(/\D/g, '').slice(0, 9) })}
                   className={cn(
@@ -174,7 +174,7 @@ export function EditProfileModal({
             <Button
               type="submit"
               disabled={
-                updating || 
+                updating ||
                 (!!form.phoneNumber && (form.phoneNumber.length !== 9 || !form.phoneNumber.startsWith('9'))) ||
                 (!!form.academicCycle && (!Number.isInteger(Number(form.academicCycle)) || Number(form.academicCycle) < 1 || Number(form.academicCycle) > 10)) ||
                 (!!form.gpa && (!/^\d+(\.\d{1,2})?$/.test(String(form.gpa)) || Number(form.gpa) < 0 || Number(form.gpa) > 20))
