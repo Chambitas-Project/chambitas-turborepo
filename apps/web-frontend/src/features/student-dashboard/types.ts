@@ -10,6 +10,7 @@ export interface Profile {
   weekly_availability?: number;
   availability_blocks?: any;
   phoneNumber?: string;
+  avatarUrl?: string;
 }
 
 export interface CatalogSkill {

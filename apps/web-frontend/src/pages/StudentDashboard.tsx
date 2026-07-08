@@ -72,6 +72,7 @@ export function StudentDashboard() {
         fullName: data.full_name || data.fullName,
         careerId: data.career_id || data.careerId,
         phoneNumber: data.phone_number || data.phoneNumber,
+        avatarUrl: data.avatar_url || data.avatarUrl,
         skills: normalizedSkills,
         availability_blocks: parsedBlocks,
         weekly_availability: data.weekly_availability || data.weeklyAvailability || 0
@@ -223,6 +224,7 @@ export function StudentDashboard() {
             <ProfileHeader
               profile={profile}
               onEditClick={() => setShowEditModal(true)}
+              onProfileUpdate={fetchProfile}
             />
             <AvailabilityGrid profile={profile} />
             {user?.id && <ReviewsList userId={user.id} role="student" />}

@@ -391,6 +391,7 @@ export class ProfileService implements OnModuleInit {
         if (data.is_gpa_verified !== undefined) updateData.is_gpa_verified = data.is_gpa_verified;
         if (data.evidence_url !== undefined) updateData.evidence_url = data.evidence_url;
         if (data.phone_number !== undefined) updateData.phone_number = data.phone_number;
+        if (data.avatar_url !== undefined) updateData.avatar_url = data.avatar_url;
         if (data.availability_blocks) {
           try {
             updateData.availability_blocks = typeof data.availability_blocks === 'string'
@@ -452,6 +453,7 @@ export class ProfileService implements OnModuleInit {
         if (data.company_name) updateData.company_name = data.company_name;
         if (data.name) updateData.name = data.name;
         if (data.description !== undefined) updateData.description = data.description;
+        if (data.avatar_url !== undefined) updateData.avatar_url = data.avatar_url;
 
         const { error } = await supabase
           .from('employer_profiles')
@@ -501,6 +503,7 @@ export class ProfileService implements OnModuleInit {
       availability_blocks: student.availability_blocks ? JSON.stringify(student.availability_blocks) : undefined,
       is_onboarded: student.user?.is_onboarded || false,
       phone_number: student.phone_number || undefined,
+      avatar_url: student.avatar_url || undefined,
       skills: (student.student_skills || []).map((ss: any) => ({
         id: ss.skill?.id,
         name: ss.skill?.name,
@@ -522,6 +525,7 @@ export class ProfileService implements OnModuleInit {
       is_onboarded: employer.user?.is_onboarded || false,
       is_gpa_verified: false,
       phone_number: employer.phone_number || undefined,
+      avatar_url: employer.avatar_url || undefined,
       skills: [],
       activity: [],
     };

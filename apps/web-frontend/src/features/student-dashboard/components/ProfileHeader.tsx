@@ -1,20 +1,89 @@
-import { GraduationCap, Calendar, Trophy, Phone } from "lucide-react";
+import { useState, useRef } from "react";
+import { GraduationCap, Calendar, Trophy, Phone, Upload, Loader2 } from "lucide-react";
 import { Badge, Button } from "@chambitas/ui";
 import type { Profile } from "../types";
+import { apiClient } from "../../../api/api-client";
 
 interface ProfileHeaderProps {
   profile: Profile | null;
   onEditClick: () => void;
+  onProfileUpdate?: () => void;
 }
 
-export function ProfileHeader({ profile, onEditClick }: ProfileHeaderProps) {
+export function ProfileHeader({ profile, onEditClick, onProfileUpdate }: ProfileHeaderProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Por favor selecciona una imagen válida.");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "profiles");
+
+      const response = await apiClient.post("/media/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      const url = response.data.url || response.data;
+      if (url) {
+        await apiClient.patch("/profile/me", { avatar_url: url });
+        if (onProfileUpdate) {
+          onProfileUpdate();
+        } else {
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      alert("Hubo un error al subir la imagen. Inténtalo de nuevo.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="space-y-10">
       <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
-        <div className="shrink-0 h-24 w-24 md:h-28 md:w-28 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm">
-          <span className="text-3xl md:text-4xl font-black text-emerald-600">
-            {profile?.fullName?.[0] || "U"}
-          </span>
+        <div 
+          onClick={handleAvatarClick}
+          className="relative shrink-0 h-24 w-24 md:h-28 md:w-28 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm cursor-pointer group hover:border-emerald-400 transition-all"
+        >
+          {isUploading ? (
+            <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+          ) : profile?.avatarUrl ? (
+            <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-3xl md:text-4xl font-black text-emerald-600">
+              {profile?.fullName?.[0] || "U"}
+            </span>
+          )}
+          
+          {!isUploading && (
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+              <Upload className="h-6 w-6 text-white" />
+            </div>
+          )}
+          
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            accept="image/*" 
+            className="hidden" 
+          />
         </div>
         <div className="flex-1 space-y-4 text-center md:text-left w-full">
           <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-4">

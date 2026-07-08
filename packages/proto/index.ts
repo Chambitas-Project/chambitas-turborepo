@@ -148,6 +148,7 @@ export interface UnifiedProfileResponse {
   is_gpa_verified: boolean;
   evidence_url?: string;
   phone_number?: string;
+  avatar_url?: string;
 }
 
 export interface CreateStudentProfileRequest {
@@ -178,6 +179,8 @@ export interface UpdateStudentProfileRequest {
   gpa?: number;
   is_gpa_verified?: boolean;
   evidence_url?: string;
+  phone_number?: string;
+  avatar_url?: string;
 }
 
 export interface CreateEmployerProfileRequest {
@@ -194,6 +197,7 @@ export interface UpdateEmployerProfileRequest {
   ruc?: string;
   sector?: string;
   description?: string;
+  avatar_url?: string;
 }
 
 export interface SkillInput {
@@ -218,6 +222,7 @@ export interface StudentOnboardingRequest extends BaseOnboardingRequest {
   is_gpa_verified?: boolean;
   evidence_url?: string;
   phone_number?: string;
+  avatar_url?: string;
 }
 
 export interface EmployerOnboardingRequest extends BaseOnboardingRequest {
@@ -225,6 +230,7 @@ export interface EmployerOnboardingRequest extends BaseOnboardingRequest {
   company_name: string;
   name: string;
   description: string;
+  avatar_url?: string;
 }
 
 export type CompleteOnboardingRequest = StudentOnboardingRequest | EmployerOnboardingRequest;
@@ -259,6 +265,8 @@ export interface StudentProfileResponse {
   evidence_url?: string;
   created_at: string;
   updated_at: string;
+  phone_number?: string;
+  avatar_url?: string;
 }
 
 export interface EmployerProfileResponse {
@@ -271,6 +279,7 @@ export interface EmployerProfileResponse {
   is_onboarded: boolean;
   created_at: string;
   updated_at: string;
+  avatar_url?: string;
 }
 
 // --- Marketplace Interfaces ---

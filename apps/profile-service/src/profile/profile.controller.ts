@@ -3,10 +3,10 @@ import { GrpcMethod, RpcException } from '@nestjs/microservices';
 import { status } from '@grpc/grpc-js';
 import { ProfileService } from './profile.service';
 import { ProfileOwnerGuard, CheckOwner } from '@chambitas/common';
-import { 
-  CreateStudentProfileRequest, 
-  UpdateStudentProfileRequest, 
-  CreateEmployerProfileRequest, 
+import {
+  CreateStudentProfileRequest,
+  UpdateStudentProfileRequest,
+  CreateEmployerProfileRequest,
   UpdateEmployerProfileRequest,
   ProfileResponse,
   StudentProfileResponse,
@@ -16,17 +16,8 @@ import {
 
 @Controller()
 export class ProfileController {
-  constructor(private readonly profileService: ProfileService) {}
+  constructor(private readonly profileService: ProfileService) { }
 
-  /**
-   * Extrae la identidad del usuario directamente desde los metadatos gRPC.
-   *
-   * NOTA ARQUITECTURAL: En NestJS los Guards se ejecutan ANTES que los Interceptors.
-   * Esto significa que cuando un método del controller corre, el GrpcContextInterceptor
-   * (que popula rpcContext.user) aún no ha corrido. Por eso @CurrentUser() retorna null.
-   * La solución correcta es leer user-id y role directo del objeto Metadata de gRPC,
-   * que sí está disponible desde el primer momento del request.
-   */
   private getUserFromMetadata(metadata: any): { userId: string; role: string } {
     const metadataMap = typeof metadata?.getMap === 'function' ? metadata.getMap() : {};
     const userId = metadataMap['user-id'] as string;

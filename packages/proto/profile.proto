@@ -97,6 +97,7 @@ message UnifiedProfileResponse {
   bool is_gpa_verified = 18;
   optional string evidence_url = 19;
   optional string phone_number = 20;
+  optional string avatar_url = 21;
 }
 
 message GetProfileRequest {
@@ -148,6 +149,7 @@ message UpdateStudentProfileRequest {
   optional bool is_gpa_verified = 9;
   optional string evidence_url = 10;
   optional string phone_number = 11;
+  optional string avatar_url = 12;  
 }
 
 message CreateEmployerProfileRequest {
@@ -164,6 +166,7 @@ message UpdateEmployerProfileRequest {
   optional string ruc = 3;
   optional string sector = 4;
   optional string description = 5;
+  optional string avatar_url = 6;
 }
 
 message StudentProfileResponse {
@@ -182,6 +185,7 @@ message StudentProfileResponse {
   string created_at = 13;
   string updated_at = 14;
   optional string phone_number = 15;
+  optional string avatar_url = 16;
 }
 
 message EmployerProfileResponse {
@@ -194,6 +198,7 @@ message EmployerProfileResponse {
   bool is_onboarded = 7;
   string created_at = 8;
   string updated_at = 9;
+  optional string avatar_url = 10;
 }
 
 message SkillInput {

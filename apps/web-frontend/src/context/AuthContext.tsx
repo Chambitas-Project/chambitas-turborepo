@@ -9,6 +9,7 @@ interface User {
   name?: string;
   company_name?: string;
   description?: string;
+  avatar_url?: string;
 }
 
 interface AuthContextType {

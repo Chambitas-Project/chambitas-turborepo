@@ -72,7 +72,7 @@ export function DashboardNavbar({ role }: DashboardNavbarProps) {
               className="h-9 w-9 rounded-md bg-slate-200 border border-slate-200 shadow-sm overflow-hidden cursor-pointer hover:ring-2 hover:ring-emerald-500 hover:ring-offset-1 transition-all"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-               <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`} alt="Avatar" className="w-full h-full object-cover" />
+               <img src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`} alt="Avatar" className="w-full h-full object-cover" />
             </div>
 
             {isDropdownOpen && (
