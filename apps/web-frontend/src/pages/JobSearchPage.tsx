@@ -222,12 +222,13 @@ export function JobSearchPage() {
                 {paginatedProjects.map(project => {
                   const projectId = project.id || (project as any).project_id || (project as any)._id;
                   const match = recommendations.find(r => r.jobId === projectId);
-                  const hasApplied = applications.some((app: any) => app.project_id === projectId);
+                  const appliedApp = applications.find((app: any) => app.project_id === projectId);
+                  const hasApplied = !!appliedApp;
                   return (
                     <JobCard
                       key={projectId}
                       project={project}
-                      matchScore={match?.score ?? 0}
+                      matchScore={appliedApp?.match_score ?? match?.score ?? 0}
                       hasApplied={hasApplied}
                     />
                   );
