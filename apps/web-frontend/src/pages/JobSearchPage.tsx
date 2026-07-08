@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Filter, ChevronRight, ChevronLeft, X, Loader2 } from "lucide-react";
+import { Search, Filter, ChevronRight, ChevronLeft, X } from "lucide-react";
 import { Button, cn } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
+import { PiononoLoader } from "../components/atoms/PiononoLoader";
 
 // Types
 import type { Project, Recommendation } from "../features/job-search/types";
@@ -74,7 +75,7 @@ export function JobSearchPage() {
           const apps = Array.isArray(data) ? data : (data.applications || []);
           setApplications(apps);
         }
-        
+
         if (skillsRes.status === "fulfilled") {
           const data = skillsRes.value.data;
           const skillsData = Array.isArray(data) ? data : (data.skills || []);
@@ -212,10 +213,7 @@ export function JobSearchPage() {
             </div>
 
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-24 space-y-4">
-                <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
-                <p className="text-slate-400 font-bold">Actualizando marketplace...</p>
-              </div>
+              <PiononoLoader message="Actualizando marketplace..." className="py-24" />
             ) : paginatedProjects.length > 0 ? (
               <div className="space-y-6">
                 {paginatedProjects.map(project => {

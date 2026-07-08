@@ -9,12 +9,12 @@ import {
   Search,
   ExternalLink,
   CalendarDays,
-  Loader2,
   Award
 } from "lucide-react";
 import { Button, Badge, cn } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
+import { PiononoLoader } from "../components/atoms/PiononoLoader";
 
 interface Application {
   id: string;
@@ -110,10 +110,7 @@ export function StudentApplicationsPage() {
 
         {/* Content Section */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 space-y-4">
-            <Loader2 className="h-10 w-10 text-emerald-500 animate-spin" />
-            <p className="text-slate-400 font-bold animate-pulse">Cargando tus postulaciones...</p>
-          </div>
+          <PiononoLoader message="Cargando tus postulaciones..." className="py-32" />
         ) : applications.length === 0 ? (
           <div className="bg-white rounded-xl border-2 border-dashed border-slate-200 p-16 text-center space-y-6">
             <div className="h-24 w-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto border-4 border-white shadow-sm">

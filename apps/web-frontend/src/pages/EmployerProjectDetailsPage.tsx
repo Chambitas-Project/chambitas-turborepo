@@ -13,6 +13,7 @@ import type { EmployerProject, ApplicationData } from "../features/employer-proj
 // Components
 import { EmployerProjectHeader } from "../features/employer-project/components/EmployerProjectHeader";
 import { ApplicantsList } from "../features/employer-project/components/ApplicantsList";
+import { PiononoLoader } from "../components/atoms/PiononoLoader";
 
 export function EmployerProjectDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -104,7 +105,7 @@ export function EmployerProjectDetailsPage() {
   if (isLoading) {
     return (
       <DashboardLayout role="employer">
-        <div className="min-h-screen flex items-center justify-center text-slate-500 font-medium">Cargando detalles...</div>
+        <PiononoLoader message="Cargando detalles..." className="min-h-[60vh]" />
       </DashboardLayout>
     );
   }

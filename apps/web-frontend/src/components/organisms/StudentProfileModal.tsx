@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { X, GraduationCap, Calendar, BookOpen, Loader2 } from "lucide-react";
+import { X, GraduationCap, Calendar, BookOpen } from "lucide-react";
 import { cn } from "@chambitas/ui";
 import { employerApi } from "../../api/employer.api";
 import { apiClient } from "../../api/api-client";
 import { ReviewsList } from "./ReviewsList";
+import { PiononoLoader } from "../atoms/PiononoLoader";
 
 interface StudentProfileModalProps {
   isOpen: boolean;
@@ -108,10 +109,7 @@ export function StudentProfileModal({ isOpen, onClose, studentId }: StudentProfi
         {/* Content */}
         <div className="p-6 md:p-8 overflow-y-auto bg-white flex flex-col gap-8 light-scrollbar">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 text-emerald-500 animate-spin mb-4" />
-              <p className="text-slate-400 font-bold">Cargando perfil...</p>
-            </div>
+            <PiononoLoader message="Cargando perfil..." className="py-20" />
           ) : !profile ? (
             <div className="text-center py-20">
               <p className="text-slate-500 font-medium">No se pudo cargar la información del estudiante.</p>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Star, MessageSquare, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button, cn } from "@chambitas/ui";
 import { reviewsApi, type ReviewData } from "../../api/reviews.api";
+import { PiononoLoader } from "../atoms/PiononoLoader";
 
 interface ReviewsListProps {
   userId: string;
@@ -45,8 +46,7 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-10 bg-white rounded-3xl border border-slate-100 shadow-sm">
-        <Loader2 className="h-6 w-6 text-emerald-500 animate-spin mb-2" />
-        <p className="text-sm font-bold text-slate-400">Cargando reseñas...</p>
+        <PiononoLoader message="Cargando reseñas..." className="py-0" />
       </div>
     );
   }

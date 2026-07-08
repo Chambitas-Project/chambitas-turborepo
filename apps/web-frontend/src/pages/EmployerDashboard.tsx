@@ -13,6 +13,7 @@ import { ReviewsList } from "../components/organisms/ReviewsList";
 import { ProfileModal } from "../components/organisms/ProfileModal";
 import { useAuth } from "../context/AuthContext";
 import { reviewsApi } from "../api/reviews.api";
+import { PiononoLoader } from "../components/atoms/PiononoLoader";
 
 export function EmployerDashboard() {
   const [stats, setStats] = useState<EmployerStats | null>(null);
@@ -100,7 +101,7 @@ export function EmployerDashboard() {
   if (isLoading) {
     return (
       <DashboardLayout role="employer">
-        <div className="min-h-screen flex items-center justify-center text-slate-500 font-medium">Cargando panel...</div>
+        <PiononoLoader message="Cargando panel..." className="min-h-[60vh]" />
       </DashboardLayout>
     );
   }

@@ -8,6 +8,7 @@ import { apiClient } from "../api/api-client";
 import type { EmployerProject } from "../api/employer.api";
 import { ProjectListItem } from "../components/organisms/ProjectListItem";
 import { MoreVertical, Edit2, Trash2 } from "lucide-react";
+import { PiononoLoader } from "../components/atoms/PiononoLoader";
 
 export function EmployerProjectsPage() {
   const [projects, setProjects] = useState<EmployerProject[]>([]);
@@ -110,7 +111,7 @@ export function EmployerProjectsPage() {
 
       <div className="space-y-4">
         {isLoading ? (
-          <div className="text-center py-20 text-slate-500 font-medium">Cargando publicaciones...</div>
+          <PiononoLoader message="Cargando publicaciones..." className="py-20" />
         ) : projects.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl border border-slate-100 shadow-sm">
             <div className="mx-auto w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">

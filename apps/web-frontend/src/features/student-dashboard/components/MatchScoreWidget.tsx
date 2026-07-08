@@ -36,36 +36,45 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
         </h3>
         {maxMatchScore !== null && maxMatchScore > 0 ? (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 group">
-              <img src={piononoImg} alt="Pionono IA" className="w-12 h-12 object-contain drop-shadow-sm group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-300 z-10 shrink-0" />
-              <div className="relative bg-white border border-emerald-100 rounded-2xl p-3 shadow-sm shadow-emerald-900/5 flex-1">
-                <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-3 bg-white border-l border-t border-emerald-100 transform -rotate-45 rounded-tl-xs"></div>
-                <p className="text-[11px] text-slate-600 leading-relaxed relative z-10">
-                  ¡Hola! Soy <span className="font-bold text-emerald-600">Pionono</span>. Mi motor de IA analizó tu perfil y estas son tus métricas.
+            <div className="flex items-start gap-4 group">
+              <img src={piononoImg} alt="Pionono IA" className="w-20 h-20 mt-1 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-300 z-10 shrink-0" />
+              <div className="relative bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm flex-1 space-y-4">
+                <div className="absolute top-10 -left-1.5 w-3 h-3 bg-white border-l border-t border-emerald-100 transform -rotate-45 rounded-tl-xs"></div>
+                <p className="text-[12px] text-slate-600 leading-relaxed relative z-10">
+                  ¡Hola! Soy <span className="font-bold text-emerald-700">Pionono</span>. Mi motor de IA analizó tu perfil y estas son tus métricas.
                 </p>
-              </div>
-            </div>
 
-            <div className="flex justify-between items-end">
-              <div className="space-y-1 w-full text-center md:text-left">
-                <span className="text-5xl font-black text-slate-900 tracking-tighter">
-                  {maxMatchScore}%
-                </span>
-                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
-                  Nivel de Compatibilidad
-                </p>
+                <div className="space-y-1">
+                  <span className="text-5xl font-black text-slate-900 tracking-tighter">
+                    {maxMatchScore}%
+                  </span>
+                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                    Nivel de Compatibilidad
+                  </p>
+                </div>
+
+                <div className="h-2.5 w-full bg-slate-100 rounded-md overflow-hidden p-0.5">
+                  <div
+                    className="h-full bg-emerald-600 rounded-sm shadow-sm"
+                    style={{ width: `${maxMatchScore}%` }}
+                  />
+                </div>
+
+                {maxMatchScore >= 80 ? (
+                  <p className="text-[11px] text-slate-500 font-bold leading-relaxed">
+                    ¡Excelente! Hay proyectos de <span className="text-slate-900">{profile?.career || 'tu área'}</span> que hacen un <span className="text-emerald-600">match casi perfecto</span> con tus habilidades actuales. ¡Aprovecha y postula!
+                  </p>
+                ) : maxMatchScore >= 40 ? (
+                  <p className="text-[11px] text-slate-500 font-bold leading-relaxed">
+                    Hemos encontrado tareas de <span className="text-slate-900">{profile?.career || 'tu área'}</span> con <span className="text-amber-600">compatibilidad media</span>. Añade más habilidades a tu perfil para encontrar tu trabajo ideal.
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-slate-500 font-bold leading-relaxed">
+                    Actualmente, los proyectos disponibles tienen <span className="text-indigo-500">poca compatibilidad</span> con tu perfil. ¡Sigue aprendiendo y agrega más skills para subir este porcentaje!
+                  </p>
+                )}
               </div>
             </div>
-            <div className="h-2.5 w-full bg-slate-100 rounded-md overflow-hidden p-0.5">
-              <div
-                className="h-full bg-emerald-600 rounded-sm shadow-sm"
-                style={{ width: `${maxMatchScore}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-slate-500 font-bold leading-relaxed text-center md:text-left px-4 md:px-0">
-              Tu perfil es altamente demandado para micro-tareas de{" "}
-              <span className="text-slate-900">{profile?.career}</span>.
-            </p>
             <Button
               onClick={() => (window.location.href = "/jobs")}
               className="w-full bg-slate-900 hover:bg-black text-white rounded-md h-12 font-bold text-sm shadow-sm shadow-slate-200 transition-all"
@@ -75,11 +84,11 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="flex items-center gap-3 group">
-              <img src={piononoImg} alt="Pionono IA" className="w-12 h-12 object-contain drop-shadow-sm opacity-80 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300 z-10 shrink-0" />
-              <div className="relative bg-slate-50 border border-slate-100 rounded-2xl p-3 shadow-sm flex-1">
+            <div className="flex items-center gap-4 group">
+              <img src={piononoImg} alt="Pionono IA" className="w-20 h-20 object-contain drop-shadow-md opacity-80 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300 z-10 shrink-0" />
+              <div className="relative bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-sm flex-1">
                 <div className="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-3 bg-slate-50 border-l border-t border-slate-100 transform -rotate-45 rounded-tl-xs"></div>
-                <p className="text-[11px] text-slate-600 leading-relaxed relative z-10">
+                <p className="text-[12px] text-slate-600 leading-relaxed relative z-10">
                   Soy <span className="font-bold text-slate-700">Pionono</span>. Aún no tengo suficientes datos tuyos para que mi IA pueda analizar tu compatibilidad.
                 </p>
               </div>

@@ -1,8 +1,8 @@
 import React, { Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
-import { Loader2 } from "lucide-react";
 import { GlobalErrorBoundary } from "./components/organisms/GlobalErrorBoundary";
+import { PiononoLoader } from "./components/atoms/PiononoLoader";
 
 // Lazy loaded pages
 const EmployerProjectsPage = React.lazy(() => import("./pages/EmployerProjectsPage").then(m => ({ default: m.EmployerProjectsPage })));
@@ -28,14 +28,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      <Loader2 className="h-10 w-10 text-emerald-600 animate-spin mb-4" />
-      <p className="text-slate-400 font-bold animate-pulse tracking-tight">Cargando...</p>
-    </div>
-  );
+  if (loading) return <PiononoLoader message="Cargando..." className="min-h-screen" />;
   if (!user) return <Navigate to="/login" replace />;
-  
+
   // Si no ha hecho onboarding, forzarlo a ir allá (a menos que ya esté en onboarding)
   if (!user.isOnboarded && location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
@@ -53,12 +48,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 // Fallback UI for Suspense
-const PageLoader = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-    <Loader2 className="h-10 w-10 text-emerald-600 animate-spin mb-4" />
-    <p className="text-slate-400 font-bold animate-pulse tracking-tight">Cargando página...</p>
-  </div>
-);
+const PageLoader = () => <PiononoLoader message="Cargando página..." className="min-h-screen" />;
 
 export const router = createBrowserRouter([
   {

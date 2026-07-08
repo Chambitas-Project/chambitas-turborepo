@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiClient } from "../api/api-client";
 import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
-import { Sparkles } from "lucide-react";
+import { PiononoLoader } from "../components/atoms/PiononoLoader";
 // Types and Constants
 import type { Profile, CatalogSkill } from "../features/student-dashboard/types";
 
@@ -210,11 +210,7 @@ export function StudentDashboard() {
     return Math.min(score, 100);
   })();
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <Sparkles className="h-6 w-6 text-emerald-600 animate-spin" />
-    </div>
-  );
+  if (loading) return <PiononoLoader message="Cargando tu panel..." className="min-h-screen" />;
 
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-emerald-100 selection:text-emerald-900 flex flex-col">

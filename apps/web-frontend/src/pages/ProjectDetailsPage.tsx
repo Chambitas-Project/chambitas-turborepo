@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, AlertCircle, Loader2, History } from "lucide-react";
+import { ArrowLeft, AlertCircle, History } from "lucide-react";
 import { Button, Badge } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 import { ReviewModal } from "../components/organisms/ReviewModal";
@@ -16,6 +16,7 @@ import { ProjectInfo } from "../features/project-details/components/ProjectInfo"
 import { EmployerProfileCard } from "../features/project-details/components/EmployerProfileCard";
 import { ApplicationWidget } from "../features/project-details/components/ApplicationWidget";
 import { useUxTelemetry } from "../hooks/useUxTelemetry";
+import { PiononoLoader } from "../components/atoms/PiononoLoader";
 
 export function ProjectDetailsPage() {
   const { id } = useParams();
@@ -117,12 +118,7 @@ export function ProjectDetailsPage() {
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      <Loader2 className="h-10 w-10 text-emerald-600 animate-spin mb-4" />
-      <p className="text-slate-400 font-bold animate-pulse tracking-tight">Cargando oportunidad...</p>
-    </div>
-  );
+  if (loading) return <PiononoLoader message="Cargando oportunidad..." className="min-h-screen" />;
 
   if (!project) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white p-6 text-center space-y-6">
@@ -205,7 +201,7 @@ export function ProjectDetailsPage() {
         applicationId={application?.id}
         targetName={companyName}
       />
-      
+
       <EmployerProfileModal
         isOpen={isEmployerProfileModalOpen}
         onClose={() => setIsEmployerProfileModalOpen(false)}
