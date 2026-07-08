@@ -119,7 +119,7 @@ export function StudentProfileModal({ isOpen, onClose, studentId }: StudentProfi
               {/* Header Info */}
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                 <div className="h-28 w-28 rounded-full bg-slate-100 overflow-hidden shadow-sm shrink-0">
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.full_name || profile.name || studentId}`} alt="Avatar" className="w-full h-full object-cover" />
+                  <img src={profile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.full_name || profile.name || studentId}`} alt="Avatar" className="w-full h-full object-cover" />
                 </div>
                 <div className="text-center md:text-left space-y-2 flex-1 pt-2">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">{profile.full_name || profile.name || 'Estudiante'}</h3>
