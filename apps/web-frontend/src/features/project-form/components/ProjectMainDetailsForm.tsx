@@ -47,7 +47,7 @@ export function ProjectMainDetailsForm({
             <option key={cat} value={cat} />
           ))}
           {dynamicCategories.length === 0 && (
-            <option value="Software Development" />
+            <option value="Software y Tecnología" />
           )}
         </datalist>
       </div>

@@ -41,9 +41,10 @@ CAREER_TO_SKILL_CAT = {
 }
 
 SERVICE_CATEGORIES = [
-    "Software Development", "Graphic Design", "Data Analysis", 
-    "Content Writing", "Business Consulting", "Architecture", 
-    "Legal Support", "Culinary Arts", "Translation"
+    "Software y Tecnología", "IA y Análisis de Datos", "Habilidades Blandas",
+    "Gestión y Negocios", "Arquitectura y Espacios", "Diseño y Creatividad",
+    "Leyes y Política", "Humanidades y Educación", "Marketing y Medios",
+    "Finanzas y Contabilidad", "Gastronomía y Turismo"
 ]
 
 UPC_UNIVERSITY_ID = "59a91332-e18f-4e68-8061-fe83f4c7610f"

@@ -25,7 +25,7 @@ export function CreateProjectPage() {
     title: "",
     description: "",
     budget: "",
-    service_category: "Software Development",
+    service_category: "Software y Tecnología",
     deadline: "",
     max_hours_week: ""
   });

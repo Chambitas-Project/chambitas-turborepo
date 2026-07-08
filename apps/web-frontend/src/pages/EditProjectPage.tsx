@@ -23,7 +23,7 @@ export function EditProjectPage() {
     title: "",
     description: "",
     budget: "",
-    service_category: "Software Development",
+    service_category: "Software y Tecnología",
     deadline: "",
     max_hours_week: ""
   });
@@ -67,7 +67,7 @@ export function EditProjectPage() {
           title: p.title || "",
           description: p.description || "",
           budget: p.budget ? String(p.budget) : "",
-          service_category: p.service_category || "Software Development",
+          service_category: p.service_category || "Software y Tecnología",
           deadline: p.deadline ? new Date(p.deadline).toISOString().split('T')[0] : "",
           max_hours_week: p.max_hours_week ? String(p.max_hours_week) : ""
         });
