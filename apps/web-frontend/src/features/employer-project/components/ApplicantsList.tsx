@@ -115,7 +115,7 @@ export function ApplicantsList({
                             </Badge>
                           )}
                         </h4>
-                        {app.match_score ? (
+                        {app.match_score != null ? (
                           <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
                             <CheckCircle2 className="h-3.5 w-3.5" /> {(app.match_score * 100).toFixed(0)}% de Coincidencia
                           </Badge>
