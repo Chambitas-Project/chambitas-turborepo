@@ -159,7 +159,7 @@ export function OnboardingPage() {
       await apiClient.post("/profile/onboarding/student", payload);
       await refreshUser();
       completeStep();
-      navigate("/");
+      navigate("/dashboard");
     } catch (err: any) {
       const respStatus = err.response?.status;
       if (respStatus === 500) setError("Error interno del servidor (500).");
@@ -187,7 +187,7 @@ export function OnboardingPage() {
       await apiClient.post("/profile/onboarding/employer", payload);
       await refreshUser();
       completeStep();
-      navigate("/");
+      navigate("/dashboard");
     } catch (err: any) {
       if (err.response?.status === 401) setError("Sesión expirada.");
       else setError(err.response?.data?.message || "Error al completar onboarding.");

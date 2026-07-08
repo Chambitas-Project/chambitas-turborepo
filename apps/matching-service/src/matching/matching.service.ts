@@ -32,7 +32,7 @@ export class MatchingService implements OnModuleInit {
       const { data: matches, error: rpcError } = await this.supabase.getClient<Database>()
         .rpc('match_projects_for_student' as any, {
           p_student_id: userId,
-          match_threshold: 0.2,
+          match_threshold: 0.0,
           match_limit: limit,
           page_offset: (page - 1) * limit
         } as any);
@@ -57,14 +57,25 @@ export class MatchingService implements OnModuleInit {
         error: (err) => this.logger.error(`[Analytics] Failed to log recommendation latency`, err.message)
       });
 
+      // Fetch student skills for hybrid overlap
+      const { data: student } = await this.supabase.getClient<Database>()
+        .from('student_profiles')
+        .select('skills')
+        .eq('id', userId)
+        .single();
+        
+      const studentSkills = (student?.skills || []).map((s: any) => 
+        (typeof s === 'string' ? s : s.skill_name || s.name || '').toLowerCase()
+      );
+
       // Filter matches to only include 'open' projects that the user hasn't applied to
       let finalMatches = matches || [];
       if (finalMatches.length > 0) {
         const matchIds = finalMatches.map((m: any) => m.id);
 
-        const { data: validProjects } = await this.supabase.getClient<Database>()
+        const { data: validProjects } = await this.supabase.getClient<any>()
           .from('projects')
-          .select('id')
+          .select('id, project_required_skills(skills(name))')
           .in('id', matchIds)
           .eq('status', 'open')
           .is('deleted_at', null);
@@ -75,21 +86,38 @@ export class MatchingService implements OnModuleInit {
           .eq('student_id', userId)
           .in('project_id', matchIds);
 
-        const validProjectIds = new Set((validProjects || []).map(p => p.id));
+        const validProjectMap = new Map((validProjects || []).map((p: any) => [p.id, p]));
         const appliedProjectIds = new Set((applications || []).map(a => a.project_id));
 
         finalMatches = finalMatches.filter((m: any) => 
-          validProjectIds.has(m.id) && !appliedProjectIds.has(m.id)
-        );
+          validProjectMap.has(m.id) && !appliedProjectIds.has(m.id)
+        ).map((m: any) => {
+          const project = validProjectMap.get(m.id);
+          const rawRequiredSkills = project?.project_required_skills || [];
+          const projectSkillsStr = rawRequiredSkills.map((prs: any) => 
+            (prs.skills?.name || '').toLowerCase()
+          ).filter(Boolean);
+          
+          let overlap = 0;
+          if (studentSkills.length > 0 && projectSkillsStr.length > 0) {
+            const matchCount = projectSkillsStr.filter((ps: string) => studentSkills.includes(ps)).length;
+            overlap = matchCount / projectSkillsStr.length;
+          }
+          
+          return {
+            ...m,
+            hybridScore: Math.max(m.similarity, overlap)
+          };
+        });
       }
 
       const finalRecommendations = finalMatches.map((m: any) => ({
         jobId: m.id,
-        score: m.similarity,
-        reason: `Compatibilidad híbrida del ${(m.similarity * 100).toFixed(0)}% (Habilidades + Horarios).`,
+        score: m.hybridScore,
+        reason: `Compatibilidad híbrida del ${(m.hybridScore * 100).toFixed(0)}% (Habilidades + Horarios).`,
         aiMetadata: JSON.stringify({
           cluster: 0,
-          skillMatch: m.similarity,
+          skillMatch: m.hybridScore,
           mandatoryOk: true
         }),
         matchId: ''

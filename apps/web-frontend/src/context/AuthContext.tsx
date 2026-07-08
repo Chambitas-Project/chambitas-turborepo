@@ -32,7 +32,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async () => {
     try {
       const response = await apiClient.get('/profile/me');
-      setUser(response.data);
+      const data = response.data;
+      setUser({
+        ...data,
+        isOnboarded: data.is_onboarded ?? data.isOnboarded ?? false
+      });
     } catch {
       setUser(null);
     } finally {
@@ -46,7 +50,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (credentials: any) => {
     const response = await apiClient.post('/auth/login', credentials);
-    setUser(response.data);
+    const data = response.data;
+    setUser({
+      ...data,
+      isOnboarded: data.isOnboarded ?? data.is_onboarded ?? false
+    });
     await fetchProfile();
   };
 

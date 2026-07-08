@@ -34,7 +34,7 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center md:text-left">
           Match de Mercado
         </h3>
-        {maxMatchScore !== null && maxMatchScore > 0 ? (
+        {maxMatchScore !== null && (maxMatchScore > 0 || strength >= 40) ? (
           <div className="space-y-6">
             <div className="flex items-start gap-4 group">
               <img src={piononoImg} alt="Pionono IA" className="w-20 h-20 mt-1 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-300 z-10 shrink-0" />
