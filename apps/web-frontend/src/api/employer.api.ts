@@ -47,6 +47,7 @@ export interface ApplicationData {
   student_academic_cycle?: number;
   student_phone?: string;
   student_email?: string;
+  student_avatar_url?: string;
 }
 
 export const employerApi = {

@@ -134,6 +134,7 @@ message Application {
   repeated SkillInfo student_skills = 16;
   optional string student_phone = 17;
   optional string student_email = 18;
+  optional string student_avatar_url = 19;
 }
 
 message SkillInfo {

@@ -151,6 +151,7 @@ export class ApplicationsService {
       })) || [],
       student_phone: app.status === 'accepted' ? app.student_profiles?.phone_number || undefined : undefined,
       student_email: app.status === 'accepted' ? app.student_profiles?.users?.email || undefined : undefined,
+      student_avatar_url: app.student_profiles?.users?.avatar_url || app.student_profiles?.avatar_url || undefined,
     };
   }
 }

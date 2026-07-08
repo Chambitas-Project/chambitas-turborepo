@@ -86,176 +86,176 @@ export function ApplicantsList({
               const isNew = (Date.now() - new Date(utcDateStr).getTime()) < 1000 * 60 * 60 * 24 * 2; // 48 horas
 
               return (
-              <div
-                key={app.id}
-                className={cn(
-                  "p-6 rounded-md border transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative",
-                  app.status === 'accepted'
-                    ? "bg-emerald-50 border-emerald-200"
-                    : app.status === 'rejected'
-                      ? "bg-red-50 border-red-100 opacity-60"
-                      : "bg-white border-slate-100 hover:border-emerald-200 shadow-sm group"
-                )}
-              >
-                {app.status === 'accepted' && (
-                  <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-500 rounded-l-md" />
-                )}
+                <div
+                  key={app.id}
+                  className={cn(
+                    "p-6 rounded-md border transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative",
+                    app.status === 'accepted'
+                      ? "bg-emerald-50 border-emerald-200"
+                      : app.status === 'rejected'
+                        ? "bg-red-50 border-red-100 opacity-60"
+                        : "bg-white border-slate-100 hover:border-emerald-200 shadow-sm group"
+                  )}
+                >
+                  {app.status === 'accepted' && (
+                    <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-500 rounded-l-md" />
+                  )}
 
-                <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-md bg-slate-200 border-2 border-white shadow-sm overflow-hidden shrink-0 mt-1 sm:mt-0">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${app.student_name || app.student_id}`} alt="Avatar" />
-                  </div>
-                  <div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h4 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-                        {app.student_name || `Estudiante #${(app.student_id || '').substring(0, 5)}`}
-                        {isNew && app.status === 'pending' && (
-                          <Badge className="bg-blue-100 text-blue-700 font-black px-2 py-0 rounded-full text-[9px] uppercase tracking-widest shadow-none border-none animate-pulse">
-                            Nuevo
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-md bg-slate-200 border-2 border-white shadow-sm overflow-hidden shrink-0 mt-1 sm:mt-0">
+                      <img src={app.student_avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${app.student_name || app.student_id}`} alt="Avatar" className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h4 className="font-bold text-slate-900 text-lg flex items-center gap-2">
+                          {app.student_name || `Estudiante #${(app.student_id || '').substring(0, 5)}`}
+                          {isNew && app.status === 'pending' && (
+                            <Badge className="bg-blue-100 text-blue-700 font-black px-2 py-0 rounded-full text-[9px] uppercase tracking-widest shadow-none border-none animate-pulse">
+                              Nuevo
+                            </Badge>
+                          )}
+                        </h4>
+                        {app.match_score ? (
+                          <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> {(app.match_score * 100).toFixed(0)}% de Coincidencia
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-slate-50 text-slate-500 border border-slate-200 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculando Coincidencia IA...
                           </Badge>
                         )}
-                      </h4>
-                      {app.match_score ? (
-                        <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> {(app.match_score * 100).toFixed(0)}% de Coincidencia
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-slate-50 text-slate-500 border border-slate-200 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculando Coincidencia IA...
-                        </Badge>
-                      )}
-                    </div>
-
-                    <p className="text-sm font-medium text-slate-600 mt-1 line-clamp-3 leading-relaxed">
-                      "{app.cover_note || "Sin carta de presentación"}"
-                    </p>
-                    {app.status === 'accepted' && (app.student_phone || app.student_email) && (
-                      <div className="mt-3 flex flex-col gap-2">
-                        {app.student_phone && (
-                          <div 
-                            onClick={() => handleCopy(app.student_phone!)}
-                            className="text-sm font-bold bg-emerald-100/50 text-emerald-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-emerald-200/50 w-fit cursor-pointer hover:bg-emerald-200 transition-colors group"
-                            title="Haz clic para copiar"
-                          >
-                            <Phone className="h-4 w-4" /> 
-                            {copiedText === app.student_phone ? "¡Copiado!" : `Celular: ${app.student_phone}`}
-                            <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
-                          </div>
-                        )}
-                        {app.student_email && (
-                          <div 
-                            onClick={() => handleCopy(app.student_email!)}
-                            className="text-sm font-bold bg-blue-100/50 text-blue-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-blue-200/50 w-fit cursor-pointer hover:bg-blue-200 transition-colors group"
-                            title="Haz clic para copiar"
-                          >
-                            <Mail className="h-4 w-4" /> 
-                            {copiedText === app.student_email ? "¡Copiado!" : `Email: ${app.student_email}`}
-                            <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
-                          </div>
-                        )}
                       </div>
-                    )}
-                    <div className="flex items-center gap-4 mt-3">
-                      <span className="text-xs font-bold text-slate-400">
-                        {app.applied_at || app.created_at
-                          ? (() => {
+
+                      <p className="text-sm font-medium text-slate-600 mt-1 line-clamp-3 leading-relaxed">
+                        "{app.cover_note || "Sin carta de presentación"}"
+                      </p>
+                      {app.status === 'accepted' && (app.student_phone || app.student_email) && (
+                        <div className="mt-3 flex flex-col gap-2">
+                          {app.student_phone && (
+                            <div
+                              onClick={() => handleCopy(app.student_phone!)}
+                              className="text-sm font-bold bg-emerald-100/50 text-emerald-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-emerald-200/50 w-fit cursor-pointer hover:bg-emerald-200 transition-colors group"
+                              title="Haz clic para copiar"
+                            >
+                              <Phone className="h-4 w-4" />
+                              {copiedText === app.student_phone ? "¡Copiado!" : `Celular: +51 ${app.student_phone}`}
+                              <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
+                            </div>
+                          )}
+                          {app.student_email && (
+                            <div
+                              onClick={() => handleCopy(app.student_email!)}
+                              className="text-sm font-bold bg-blue-100/50 text-blue-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-blue-200/50 w-fit cursor-pointer hover:bg-blue-200 transition-colors group"
+                              title="Haz clic para copiar"
+                            >
+                              <Mail className="h-4 w-4" />
+                              {copiedText === app.student_email ? "¡Copiado!" : `Email: ${app.student_email}`}
+                              <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-4 mt-3">
+                        <span className="text-xs font-bold text-slate-400">
+                          {app.applied_at || app.created_at
+                            ? (() => {
                               const dateStr = app.applied_at || app.created_at!;
                               const utcDateStr = dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : `${dateStr}Z`;
                               const d = new Date(utcDateStr);
                               return `Postuló el ${d.toLocaleDateString('es-PE')} a las ${d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`;
                             })()
-                          : ''}
-                      </span>
-                      {app.status === 'accepted' && (
-                        <span className="text-xs font-black text-emerald-600 flex items-center gap-1">
-                          <CheckCircle2 className="h-3.5 w-3.5" /> Aceptado
+                            : ''}
                         </span>
+                        {app.status === 'accepted' && (
+                          <span className="text-xs font-black text-emerald-600 flex items-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Aceptado
+                          </span>
+                        )}
+                        {app.status === 'rejected' && (
+                          <span className="text-xs font-black text-red-500 flex items-center gap-1">
+                            <XCircle className="h-3.5 w-3.5" /> Rechazado
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 pt-4 sm:pt-0 shrink-0">
+                    {app.match_score !== undefined && app.match_score > 0 && (
+                      <Badge className="bg-emerald-100 text-emerald-700 font-black px-3 py-1 text-xs flex items-center gap-1.5 rounded-md self-start sm:self-center">
+                        <Award className="h-4 w-4" /> MATCH {(app.match_score * 100).toFixed(0)}%
+                      </Badge>
+                    )}
+
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleViewProfile(app.student_id || '')}
+                        className="flex-1 sm:flex-none bg-slate-50 text-slate-600 font-bold hover:bg-slate-100 hover:text-slate-900 cursor-pointer rounded-md shadow-none border-none"
+                      >
+                        Ver Perfil
+                      </Button>
+
+                      {project.status === 'in_progress' && app.status === 'accepted' && (
+                        <Button
+                          onClick={handleCompleteProject}
+                          disabled={isCompleting}
+                          className="flex-1 sm:flex-none bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold cursor-pointer rounded-md shadow-none border-none"
+                        >
+                          {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
+                          Finalizar Proyecto
+                        </Button>
                       )}
-                      {app.status === 'rejected' && (
-                        <span className="text-xs font-black text-red-500 flex items-center gap-1">
-                          <XCircle className="h-3.5 w-3.5" /> Rechazado
-                        </span>
+
+                      {project.status === 'completed' && app.status === 'accepted' && (
+                        <Button
+                          onClick={() => handleOpenReview(app.id, app.student_name || '')}
+                          className="flex-1 sm:flex-none bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold cursor-pointer rounded-md shadow-none border-none"
+                        >
+                          Dejar Reseña
+                        </Button>
+                      )}
+
+                      {project.status !== 'in_progress' && project.status !== 'completed' && app.status === 'pending' && (
+                        <div className="relative">
+                          <Button
+                            variant="ghost"
+                            onClick={() => setOpenMenuId(openMenuId === app.id ? null : app.id)}
+                            className="p-2 h-10 w-10 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full flex items-center justify-center border-none shadow-none bg-transparent"
+                          >
+                            <MoreHorizontal className="h-5 w-5" />
+                          </Button>
+
+                          {openMenuId === app.id && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
+                              <div className="absolute right-0 top-full mt-2 min-w-max bg-white rounded-md shadow-md border border-slate-100 py-1.5 z-50 flex flex-col overflow-hidden">
+                                <button
+                                  onClick={() => { setOpenMenuId(null); handleUpdateStatus(app.id, 'accepted'); }}
+                                  disabled={isProcessingId === app.id}
+                                  className="w-full text-left px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors disabled:opacity-50 whitespace-nowrap"
+                                >
+                                  {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}
+                                  Aceptar Postulante
+                                </button>
+                                <button
+                                  onClick={() => { setOpenMenuId(null); handleUpdateStatus(app.id, 'rejected'); }}
+                                  disabled={isProcessingId === app.id}
+                                  className="w-full text-left px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors disabled:opacity-50 whitespace-nowrap"
+                                >
+                                  {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}
+                                  Rechazar Postulante
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
-
-                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 pt-4 sm:pt-0 shrink-0">
-                  {app.match_score !== undefined && app.match_score > 0 && (
-                    <Badge className="bg-emerald-100 text-emerald-700 font-black px-3 py-1 text-xs flex items-center gap-1.5 rounded-md self-start sm:self-center">
-                      <Award className="h-4 w-4" /> MATCH {(app.match_score * 100).toFixed(0)}%
-                    </Badge>
-                  )}
-
-                  <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleViewProfile(app.student_id || '')}
-                      className="flex-1 sm:flex-none bg-slate-50 text-slate-600 font-bold hover:bg-slate-100 hover:text-slate-900 cursor-pointer rounded-md shadow-none border-none"
-                    >
-                      Ver Perfil
-                    </Button>
-
-                    {project.status === 'in_progress' && app.status === 'accepted' && (
-                      <Button
-                        onClick={handleCompleteProject}
-                        disabled={isCompleting}
-                        className="flex-1 sm:flex-none bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold cursor-pointer rounded-md shadow-none border-none"
-                      >
-                        {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
-                        Finalizar Proyecto
-                      </Button>
-                    )}
-
-                    {project.status === 'completed' && app.status === 'accepted' && (
-                      <Button
-                        onClick={() => handleOpenReview(app.id, app.student_name || '')}
-                        className="flex-1 sm:flex-none bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold cursor-pointer rounded-md shadow-none border-none"
-                      >
-                        Dejar Reseña
-                      </Button>
-                    )}
-
-                    {project.status !== 'in_progress' && project.status !== 'completed' && app.status === 'pending' && (
-                      <div className="relative">
-                        <Button
-                          variant="ghost"
-                          onClick={() => setOpenMenuId(openMenuId === app.id ? null : app.id)}
-                          className="p-2 h-10 w-10 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full flex items-center justify-center border-none shadow-none bg-transparent"
-                        >
-                          <MoreHorizontal className="h-5 w-5" />
-                        </Button>
-
-                        {openMenuId === app.id && (
-                          <>
-                            <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
-                            <div className="absolute right-0 top-full mt-2 min-w-max bg-white rounded-md shadow-md border border-slate-100 py-1.5 z-50 flex flex-col overflow-hidden">
-                              <button
-                                onClick={() => { setOpenMenuId(null); handleUpdateStatus(app.id, 'accepted'); }}
-                                disabled={isProcessingId === app.id}
-                                className="w-full text-left px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors disabled:opacity-50 whitespace-nowrap"
-                              >
-                                {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}
-                                Aceptar Postulante
-                              </button>
-                              <button
-                                onClick={() => { setOpenMenuId(null); handleUpdateStatus(app.id, 'rejected'); }}
-                                disabled={isProcessingId === app.id}
-                                className="w-full text-left px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors disabled:opacity-50 whitespace-nowrap"
-                              >
-                                {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}
-                                Rechazar Postulante
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
 
           {/* Pagination Controls */}

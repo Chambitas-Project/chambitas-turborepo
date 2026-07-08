@@ -389,6 +389,7 @@ export interface Application {
   student_skills?: SkillInfo[];
   student_phone?: string;
   student_email?: string;
+  student_avatar_url?: string;
 }
 
 export interface CreateApplicationRequest {
