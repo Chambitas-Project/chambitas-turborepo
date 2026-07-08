@@ -71,6 +71,7 @@ export function StudentDashboard() {
         ...data,
         fullName: data.full_name || data.fullName,
         careerId: data.career_id || data.careerId,
+        phoneNumber: data.phone_number || data.phoneNumber,
         skills: normalizedSkills,
         availability_blocks: parsedBlocks,
         weekly_availability: data.weekly_availability || data.weeklyAvailability || 0

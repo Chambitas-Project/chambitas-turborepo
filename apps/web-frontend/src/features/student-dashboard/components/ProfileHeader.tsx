@@ -1,4 +1,4 @@
-import { GraduationCap, Calendar, Trophy } from "lucide-react";
+import { GraduationCap, Calendar, Trophy, Phone } from "lucide-react";
 import { Badge, Button } from "@chambitas/ui";
 import type { Profile } from "../types";
 
@@ -58,6 +58,12 @@ export function ProfileHeader({ profile, onEditClick }: ProfileHeaderProps) {
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Promedio General</p>
               <p className="text-sm font-bold text-slate-700 flex items-center justify-center md:justify-start gap-2">
                 <Trophy className="h-4 w-4 text-emerald-500 shrink-0" /> {profile?.gpa ? profile.gpa.toFixed(2) : "0.00"}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Teléfono</p>
+              <p className="text-sm font-bold text-slate-700 flex items-center justify-center md:justify-start gap-2">
+                <Phone className="h-4 w-4 text-emerald-500 shrink-0" /> +51 {profile?.phoneNumber || "-"}
               </p>
             </div>
           </div>

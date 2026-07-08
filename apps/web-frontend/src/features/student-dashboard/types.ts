@@ -9,6 +9,7 @@ export interface Profile {
   gpa?: number;
   weekly_availability?: number;
   availability_blocks?: any;
+  phoneNumber?: string;
 }
 
 export interface CatalogSkill {

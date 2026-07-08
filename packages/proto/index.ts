@@ -147,6 +147,7 @@ export interface UnifiedProfileResponse {
   commercial_name?: string;
   is_gpa_verified: boolean;
   evidence_url?: string;
+  phone_number?: string;
 }
 
 export interface CreateStudentProfileRequest {

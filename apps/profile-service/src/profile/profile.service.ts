@@ -500,6 +500,7 @@ export class ProfileService implements OnModuleInit {
       evidence_url: student.evidence_url,
       availability_blocks: student.availability_blocks ? JSON.stringify(student.availability_blocks) : undefined,
       is_onboarded: student.user?.is_onboarded || false,
+      phone_number: student.phone_number || undefined,
       skills: (student.student_skills || []).map((ss: any) => ({
         id: ss.skill?.id,
         name: ss.skill?.name,
@@ -520,6 +521,7 @@ export class ProfileService implements OnModuleInit {
       bio: employer.description,
       is_onboarded: employer.user?.is_onboarded || false,
       is_gpa_verified: false,
+      phone_number: employer.phone_number || undefined,
       skills: [],
       activity: [],
     };

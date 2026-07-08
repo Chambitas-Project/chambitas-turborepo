@@ -76,27 +76,52 @@ export function EditProfileModal({
                   type="number"
                   value={form.academicCycle}
                   onChange={(e) => setForm({ ...form, academicCycle: e.target.value })}
-                  className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-medium text-slate-800 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                  className={cn(
+                    "w-full px-3 py-2 rounded-md border bg-white font-medium text-slate-800 text-sm outline-none transition-colors",
+                    form.academicCycle && (!Number.isInteger(Number(form.academicCycle)) || Number(form.academicCycle) < 1 || Number(form.academicCycle) > 10)
+                      ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                      : "border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  )}
                 />
+                {form.academicCycle && (!Number.isInteger(Number(form.academicCycle)) || Number(form.academicCycle) < 1 || Number(form.academicCycle) > 10) && (
+                  <p className="text-[10px] text-red-500 font-medium">Debe ser un número entero entre 1 y 10.</p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-600">Promedio Ponderado</label>
                 <input
                   type="number"
-                  step="0.1"
+                  step="0.01"
                   value={form.gpa}
                   onChange={(e) => setForm({ ...form, gpa: e.target.value })}
-                  className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-medium text-slate-800 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                  className={cn(
+                    "w-full px-3 py-2 rounded-md border bg-white font-medium text-slate-800 text-sm outline-none transition-colors",
+                    form.gpa && (!/^\d+(\.\d{1,2})?$/.test(String(form.gpa)) || Number(form.gpa) < 0 || Number(form.gpa) > 20)
+                      ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                      : "border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  )}
                 />
+                {form.gpa && (!/^\d+(\.\d{1,2})?$/.test(String(form.gpa)) || Number(form.gpa) < 0 || Number(form.gpa) > 20) && (
+                  <p className="text-[10px] text-red-500 font-medium">Debe ser un número entre 0 y 20, con máximo 2 decimales.</p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-600">Celular</label>
                 <input
                   type="tel"
+                  placeholder="Ej. 936591720"
                   value={form.phoneNumber || ""}
-                  onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-                  className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white font-medium text-slate-800 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                  onChange={(e) => setForm({ ...form, phoneNumber: e.target.value.replace(/\D/g, '').slice(0, 9) })}
+                  className={cn(
+                    "w-full px-3 py-2 rounded-md border bg-white font-medium text-slate-800 text-sm outline-none transition-colors",
+                    form.phoneNumber && (form.phoneNumber.length !== 9 || !form.phoneNumber.startsWith('9'))
+                      ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                      : "border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  )}
                 />
+                {form.phoneNumber && (form.phoneNumber.length !== 9 || !form.phoneNumber.startsWith('9')) && (
+                  <p className="text-[10px] text-red-500 font-medium">Debe tener 9 dígitos y empezar con 9.</p>
+                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -148,7 +173,12 @@ export function EditProfileModal({
 
             <Button
               type="submit"
-              disabled={updating}
+              disabled={
+                updating || 
+                (!!form.phoneNumber && (form.phoneNumber.length !== 9 || !form.phoneNumber.startsWith('9'))) ||
+                (!!form.academicCycle && (!Number.isInteger(Number(form.academicCycle)) || Number(form.academicCycle) < 1 || Number(form.academicCycle) > 10)) ||
+                (!!form.gpa && (!/^\d+(\.\d{1,2})?$/.test(String(form.gpa)) || Number(form.gpa) < 0 || Number(form.gpa) > 20))
+              }
               className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded-md text-sm transition-colors mt-4"
             >
               {updating ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Guardar Cambios"}

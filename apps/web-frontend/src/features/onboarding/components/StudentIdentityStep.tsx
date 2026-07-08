@@ -117,11 +117,19 @@ export function StudentIdentityStep({
         </label>
         <Input
           type="tel"
-          placeholder="Ej. 987654321"
+          placeholder="Ej. 936591720"
           value={studentData.phoneNumber}
           onChange={(e) => setStudentData({ ...studentData, phoneNumber: e.target.value.replace(/\D/g, '').slice(0, 9) })}
-          className="h-12 border-slate-200 focus:border-emerald-500 bg-white text-slate-900"
+          className={cn(
+            "h-12 border bg-white text-slate-900",
+            studentData.phoneNumber && (studentData.phoneNumber.length !== 9 || !studentData.phoneNumber.startsWith('9'))
+              ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+              : "border-slate-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          )}
         />
+        {studentData.phoneNumber && (studentData.phoneNumber.length !== 9 || !studentData.phoneNumber.startsWith('9')) && (
+          <p className="text-[10px] text-red-500 font-medium mt-1">Debe tener 9 dígitos y empezar con 9.</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
