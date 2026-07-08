@@ -8,7 +8,7 @@ load_dotenv(dotenv_path=root_env)
 load_dotenv()
 
 SUPABASE_URL: str = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY: str = os.environ.get("SUPABASE_ANON_KEY")
+SUPABASE_KEY: str = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Las variables de entorno SUPABASE_URL y SUPABASE_KEY deben estar configuradas")
