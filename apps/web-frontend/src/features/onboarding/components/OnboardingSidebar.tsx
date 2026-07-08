@@ -17,7 +17,7 @@ export function OnboardingSidebar({ userRole, step, onLogout }: OnboardingSideba
           <div className="bg-white/10 p-2 rounded-xl backdrop-blur-md border border-white/10">
             {userRole === "student" ? <GraduationCap className="h-5 w-5" /> : <Building2 className="h-5 w-5" />}
           </div>
-          <h2 className="text-lg font-black tracking-tight">Onboarding</h2>
+          <h2 className="text-lg font-black text-white tracking-tight">Onboarding</h2>
         </div>
 
         <nav className="flex lg:flex-col gap-4 lg:gap-6 overflow-x-auto lg:overflow-visible no-scrollbar pb-2 lg:pb-0">
