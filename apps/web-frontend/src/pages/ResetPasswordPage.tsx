@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Lock, Eye, EyeOff, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
+import { Lock, Eye, EyeOff, ArrowRight, CheckCircle2, AlertCircle, KeyRound } from "lucide-react";
 import { Button, Input } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 
@@ -15,12 +15,10 @@ export function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  // Parse token from URL hash on mount
   useEffect(() => {
-    // Supabase Auth adds the session data to the URL hash (e.g. #access_token=123&...)
     const hash = location.hash;
     if (hash) {
-      const params = new URLSearchParams(hash.substring(1)); // remove '#'
+      const params = new URLSearchParams(hash.substring(1));
       const token = params.get("access_token");
       if (token) {
         setAccessToken(token);
@@ -63,86 +61,128 @@ export function ResetPasswordPage() {
     }
   };
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-6 font-sans">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8 space-y-8 text-center animate-in fade-in zoom-in duration-300">
-          <div className="h-20 w-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
-            <CheckCircle2 className="h-10 w-10 text-emerald-600" />
+  return (
+    <div className="flex min-h-screen w-full font-sans overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
+
+      {/* Left Panel */}
+      <div className="hidden lg:flex lg:w-[40%] relative items-center justify-center p-12" style={{ backgroundColor: '#065f46' }}>
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=1200"
+            alt="Workspace"
+            className="h-full w-full object-cover opacity-20 grayscale"
+          />
+          <div className="absolute inset-0 bg-[#065f46]/80" />
+        </div>
+
+        <Link
+          to="/"
+          className="absolute top-8 left-8 z-20 flex items-center gap-3 group hover:opacity-90 transition-opacity"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg">
+            <img src="/logo-chambitas.webp" alt="Chambitas" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
           </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl font-black text-slate-900">¡Contraseña actualizada!</h2>
-            <p className="text-slate-500 font-medium">
-              Tu contraseña se ha cambiado exitosamente. Ya puedes acceder a tu cuenta.
-            </p>
+          <h2 className="text-2xl font-black text-white tracking-tight">Chambitas</h2>
+        </Link>
+
+        <div className="relative z-10 w-full max-w-sm space-y-12 text-white">
+          <div className="space-y-4 mt-8">
+            <p className="text-4xl font-bold leading-tight italic">Una nueva clave para un nuevo comienzo.</p>
+            <p className="text-white/80 leading-relaxed text-lg">Crea una contraseña segura y vuelve a acceder a todas tus oportunidades.</p>
           </div>
-          <Button
-            onClick={() => navigate("/login")}
-            className="w-full h-12 text-lg font-bold bg-[#065f46] hover:bg-[#064e3b] text-white"
-          >
-            Ir a Iniciar Sesión
-          </Button>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-6 font-sans">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8 space-y-8">
+      {/* Right Panel */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-20 relative" style={{ backgroundColor: '#ffffff' }}>
 
-        <div className="space-y-2">
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Nueva Contraseña</h1>
-          <p className="text-slate-500 font-medium">
-            Ingresa tu nueva contraseña para proteger tu cuenta.
-          </p>
-        </div>
+        <div className="w-full max-w-104 space-y-8 mt-8 lg:mt-0">
 
-        {error && (
-          <div className="p-4 bg-red-50 text-red-600 rounded-md flex flex-col gap-1 border border-red-100">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4" />
-              <p className="text-[10px] font-black uppercase">Problema de seguridad</p>
+          {isSuccess ? (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="h-16 w-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: '#d1fae5' }}>
+                <CheckCircle2 className="h-8 w-8" style={{ color: '#065f46' }} />
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: '#0f172a' }}>¡Contraseña actualizada!</h1>
+                <p className="text-sm font-medium" style={{ color: '#64748b' }}>
+                  Tu contraseña se ha cambiado exitosamente. Ya puedes acceder a tu cuenta.
+                </p>
+              </div>
+              <Button
+                onClick={() => navigate("/login")}
+                className="w-full h-12 text-lg font-bold shadow-md shadow-emerald-900/10 active:scale-[0.98] transition-all rounded-md"
+                style={{ backgroundColor: '#064e3b', color: '#ffffff' }}
+              >
+                Ir a iniciar sesión
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
             </div>
-            <p className="text-xs font-medium leading-tight">{error}</p>
-          </div>
-        )}
+          ) : (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="space-y-2">
+                <div className="h-12 w-12 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: '#d1fae5' }}>
+                  <KeyRound className="h-6 w-6" style={{ color: '#065f46' }} />
+                </div>
+                <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: '#0f172a' }}>Nueva contraseña</h1>
+                <p className="text-sm font-medium" style={{ color: '#64748b' }}>
+                  Ingresa tu nueva contraseña para proteger tu cuenta.
+                </p>
+              </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-1.5">
-            <label className="text-sm font-bold ml-1 text-slate-700">Contraseña nueva</label>
-            <Input
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••••••"
-              icon={<Lock className="h-4 w-4" />}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={!accessToken}
-              rightElement={
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-slate-400 hover:text-slate-600 p-1">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              }
-            />
-          </div>
+              {error && (
+                <div className="p-4 rounded-xl border flex flex-col gap-1.5" style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca' }}>
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" style={{ color: '#dc2626' }} />
+                    <p className="text-xs font-black uppercase tracking-wider" style={{ color: '#dc2626' }}>Error de seguridad</p>
+                  </div>
+                  <p className="text-sm font-medium" style={{ color: '#b91c1c' }}>{error}</p>
+                </div>
+              )}
 
-          <Button
-            type="submit"
-            disabled={isSubmitting || !accessToken}
-            className="w-full h-12 text-lg font-bold shadow-sm active:scale-[0.98] transition-all rounded-md bg-[#065f46] hover:bg-[#064e3b] text-white disabled:bg-slate-300"
-          >
-            {isSubmitting ? "Guardando..." : "Guardar contraseña"}
-            <ArrowRight className="h-5 w-5 ml-2" />
-          </Button>
-        </form>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold ml-1 text-slate-700">Contraseña nueva</label>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••••••"
+                    icon={<Lock className="h-4 w-4" />}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={!accessToken}
+                    rightElement={
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-slate-400 hover:text-slate-600 p-1">
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    }
+                  />
+                  <p className="text-xs text-slate-400 ml-1 mt-1.5">Debe tener al menos 6 caracteres.</p>
+                </div>
 
-        {!accessToken && (
-          <div className="pt-4 text-center border-t border-slate-100">
-            <Link to="/forgot-password" className="text-sm font-bold text-[#065f46] hover:underline">
-              Volver a solicitar recuperación
-            </Link>
-          </div>
-        )}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !accessToken}
+                  className="w-full h-12 text-lg font-bold shadow-md shadow-emerald-900/10 active:scale-[0.98] transition-all rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: '#064e3b', color: '#ffffff' }}
+                >
+                  {isSubmitting ? "Guardando..." : "Confirmar contraseña"}
+                  {!isSubmitting && <ArrowRight className="h-5 w-5 ml-2" />}
+                </Button>
+              </form>
+
+              {!accessToken && (
+                <div className="pt-4 text-center border-t border-slate-100">
+                  <p className="text-sm font-bold text-slate-500">
+                    ¿El enlace expiró?{" "}
+                    <Link to="/forgot-password" className="font-extrabold hover:underline" style={{ color: '#065f46' }}>
+                      Solicitar uno nuevo
+                    </Link>
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
