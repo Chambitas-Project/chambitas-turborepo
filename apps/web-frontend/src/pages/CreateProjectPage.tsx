@@ -114,7 +114,12 @@ export function CreateProjectPage() {
       completeStep();
       navigate("/employer/projects");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Ocurrió un error al publicar el empleo. Revisa los datos.");
+      const rawError = err.response?.data?.message || err.message || "";
+      if (rawError.includes("Circuit Open") || err.response?.status === 503) {
+        setError("El servicio de publicación está temporalmente inactivo debido a alta demanda. Por favor, intenta de nuevo en unos minutos.");
+      } else {
+        setError(rawError || "Ocurrió un error al publicar el empleo. Revisa los datos.");
+      }
       setIsLoading(false);
     }
   };

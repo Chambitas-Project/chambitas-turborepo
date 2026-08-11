@@ -43,7 +43,7 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
   return (
     <div
       onClick={handleNavigate}
-      className="bg-white rounded-[20px] p-6 border border-slate-200 hover:border-emerald-200 transition-all group cursor-pointer"
+      className="bg-white rounded-[20px] p-6 border border-slate-200 hover:border-emerald-200 hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
     >
       <div className="flex flex-col gap-5">
         {/* Top Header Row */}

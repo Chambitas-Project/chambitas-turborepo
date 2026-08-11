@@ -30,7 +30,7 @@ export function ProjectListItem({ project }: { project: EmployerProject }) {
   const timeAgoStr = formatTimeAgo(project.createdAt || (project as any).created_at);
 
   return (
-    <Card className="bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden group">
+    <Card className="bg-white border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 rounded-xl overflow-hidden group">
       <CardContent className="p-6 flex items-center justify-between">
         <div className="space-y-3 flex-1 pr-4 sm:pr-8">
           <div className="flex items-center gap-3 flex-wrap">
