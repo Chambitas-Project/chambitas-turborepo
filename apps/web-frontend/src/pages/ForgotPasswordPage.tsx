@@ -34,11 +34,6 @@ export function ForgotPasswordPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-6 font-sans">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8 space-y-8">
         
-        <Link to="/login" className="inline-flex items-center text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Volver al inicio de sesión
-        </Link>
-
         {isSuccess ? (
           <div className="text-center space-y-6 py-8 animate-in fade-in zoom-in duration-300">
             <div className="h-20 w-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
@@ -49,6 +44,16 @@ export function ForgotPasswordPage() {
               <p className="text-slate-500 font-medium">
                 Hemos enviado un enlace de recuperación a <span className="text-slate-900 font-bold">{email}</span>.
               </p>
+            </div>
+            
+            <p className="text-sm text-slate-400 font-medium pt-2">
+              Si no lo encuentras, por favor revisa tu carpeta de spam.
+            </p>
+
+            <div className="pt-4">
+              <Link to="/login" className="w-full h-12 flex items-center justify-center text-lg font-bold shadow-sm active:scale-[0.98] transition-all rounded-md bg-[#065f46] hover:bg-[#064e3b] text-white">
+                Ir al inicio de sesión
+              </Link>
             </div>
           </div>
         ) : (
@@ -82,6 +87,13 @@ export function ForgotPasswordPage() {
                 {isSubmitting ? "Enviando..." : "Enviar enlace de recuperación"}
               </Button>
             </form>
+
+            <div className="pt-4 text-center border-t border-slate-100">
+              <Link to="/login" className="inline-flex items-center text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors mt-4">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Volver al inicio de sesión
+              </Link>
+            </div>
           </div>
         )}
       </div>

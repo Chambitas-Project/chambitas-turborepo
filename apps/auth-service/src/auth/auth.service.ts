@@ -328,7 +328,7 @@ export class AuthService implements OnModuleInit {
 
     const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
       // La URL de redirección debe apuntar al frontend que procesará el token
-      redirectTo: process.env.RESET_PASSWORD_URL || 'http://localhost:3000/reset-password',
+      redirectTo: process.env.RESET_PASSWORD_URL || 'http://localhost:5174/reset-password',
     });
 
     if (error) {
@@ -342,29 +342,27 @@ export class AuthService implements OnModuleInit {
   }
 
   async resetPassword(data: { password: string, access_token?: string }) {
-    // Si viene un token, necesitamos crear un cliente temporal con ese token
-    // para que Supabase sepa qué usuario está actualizando su contraseña.
-    let supabase = this.supabaseService.getClient<Database>();
-
-    if (data.access_token) {
-      // Nota: Aquí asumimos que el SupabaseService permite obtener un cliente con un token específico
-      // o que podemos usar setSession. 
-      // Si no, podemos usar el cliente actual si el Gateway ya pasó el token en el metadata
-      // y el interceptor de Supabase lo inyectó.
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: data.access_token,
-        refresh_token: '', // No es estrictamente necesario para un reset único
+    if (!data.access_token) {
+      throw new RpcException({
+        code: 16,
+        message: 'Token de recuperación requerido',
       });
-
-      if (sessionError) {
-        throw new RpcException({
-          code: 16, // UNAUTHENTICATED
-          message: 'Token de recuperación inválido o expirado',
-        });
-      }
     }
 
-    const { error } = await supabase.auth.updateUser({
+    const supabase = this.supabaseService.getAdminClient<Database>();
+
+    // 1. Validar el token provisto por el correo y obtener la identidad del usuario
+    const { data: userData, error: userError } = await supabase.auth.getUser(data.access_token);
+
+    if (userError || !userData.user) {
+      throw new RpcException({
+        code: 16, // UNAUTHENTICATED
+        message: 'Token de recuperación inválido o expirado',
+      });
+    }
+
+    // 2. Actualizar la contraseña de manera segura usando privilegios administrativos
+    const { error } = await supabase.auth.admin.updateUserById(userData.user.id, {
       password: data.password,
     });
 
