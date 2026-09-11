@@ -17,8 +17,8 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 px-4 py-2 space-y-2">
-        <NavLink 
-          to="/" 
+        <NavLink
+          to="/"
           className={({ isActive }) => `flex items-center px-4 py-2.5 mx-2 rounded-xl text-sm font-semibold transition-colors ${isActive ? 'bg-[#a0f5bd] text-[#002110]' : 'hover:bg-[#ebf0e8] text-[#414941] hover:text-[#181d19]'}`}
         >
           {({ isActive }) => (
@@ -28,19 +28,19 @@ export default function Sidebar() {
             </>
           )}
         </NavLink>
-        <NavLink 
-          to="/ml-engine" 
+        <NavLink
+          to="/ml-engine"
           className={({ isActive }) => `flex items-center px-4 py-2.5 mx-2 rounded-xl text-sm font-semibold transition-colors ${isActive ? 'bg-[#a0f5bd] text-[#002110]' : 'hover:bg-[#ebf0e8] text-[#414941] hover:text-[#181d19]'}`}
         >
           {({ isActive }) => (
             <>
               <Brain className={`mr-3 h-4 w-4 ${isActive ? 'text-[#002110]' : 'text-[#414941]'}`} />
-              Security & Compliance
+              ML Engine
             </>
           )}
         </NavLink>
-        <NavLink 
-          to="/infrastructure" 
+        <NavLink
+          to="/infrastructure"
           className={({ isActive }) => `flex items-center px-4 py-2.5 mx-2 rounded-xl text-sm font-semibold transition-colors ${isActive ? 'bg-[#a0f5bd] text-[#002110]' : 'hover:bg-[#ebf0e8] text-[#414941] hover:text-[#181d19]'}`}
         >
           {({ isActive }) => (
@@ -51,7 +51,7 @@ export default function Sidebar() {
           )}
         </NavLink>
       </nav>
-      
+
       <div className="p-6">
         <div className="flex items-center space-x-2 text-xs font-semibold text-[#0f6c41] bg-[#0f6c41]/10 px-4 py-2 rounded-xl border border-[#0f6c41]/10">
           <span className="w-2 h-2 rounded-full bg-[#0f6c41]"></span>

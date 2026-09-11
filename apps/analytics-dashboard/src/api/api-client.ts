@@ -39,6 +39,25 @@ export const apiClient = {
     }
   },
 
+  async runLatencyTest() {
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/test-latency`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error running latency test:', error);
+      throw error;
+    }
+  },
+
   async getInfrastructureKPIs() {
     try {
       const response = await fetch(`${this.baseURL}/analytics/infrastructure`, {

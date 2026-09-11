@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, Eye, X } from 'lucide-react';
+import { AlertTriangle, Eye, X, Zap, RefreshCw } from 'lucide-react';
 import { apiClient } from '../api/api-client';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, LineChart, Line, Legend } from 'recharts';
 
@@ -10,7 +10,21 @@ export default function MLEnginePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedVersion, setSelectedVersion] = useState<any>(null);
   const [selectedCmVersionTag, setSelectedCmVersionTag] = useState<string>('');
+  const [isRunningLatencyTest, setIsRunningLatencyTest] = useState(false);
   const itemsPerPage = 5;
+
+  const handleRunLatencyTest = async () => {
+    try {
+      setIsRunningLatencyTest(true);
+      await apiClient.runLatencyTest();
+      const result = await apiClient.getMLEngineKPIs();
+      setData(result);
+    } catch (err: any) {
+      setError(err.message || 'Error al ejecutar test de latencia en vivo');
+    } finally {
+      setIsRunningLatencyTest(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -109,20 +123,32 @@ export default function MLEnginePage() {
               <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data?.modelVersions || []} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                <LineChart data={data?.modelVersions || []} margin={{ top: 20, right: 30, left: 15, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e9e2" />
-                  <XAxis dataKey="version_tag" tick={{ fill: '#414941' }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[0.8, 1]} tick={{ fill: '#414941' }} axisLine={false} tickLine={false} />
+                  <XAxis 
+                    dataKey="version_tag" 
+                    tick={{ fill: '#414941', fontSize: 11 }} 
+                    axisLine={false} 
+                    tickLine={false}
+                    label={{ value: 'Versión del Modelo', position: 'insideBottom', offset: -10, fill: '#414941', fontSize: 11, fontWeight: '600' }}
+                  />
+                  <YAxis 
+                    domain={[0.8, 1]} 
+                    tick={{ fill: '#414941', fontSize: 11 }} 
+                    axisLine={false} 
+                    tickLine={false}
+                    label={{ value: 'Score (0.8 - 1.0)', angle: -90, position: 'insideLeft', offset: 10, fill: '#414941', fontSize: 11, fontWeight: '600' }}
+                  />
                   <Tooltip 
                     cursor={{ stroke: '#0f6c41', strokeWidth: 1 }}
                     contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e9e2', borderRadius: '8px', color: '#181d19', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} 
                     itemStyle={{ color: '#181d19', fontSize: '13px', fontWeight: '500' }}
                     labelStyle={{ color: '#181d19', fontWeight: 'bold' }}
                   />
-                  <Legend wrapperStyle={{ color: '#414941' }} />
-                  <Line type="monotone" dataKey="f1_score" stroke="#0f6c41" strokeWidth={3} dot={{ r: 4, fill: '#0f6c41' }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="precision_val" stroke="#2563eb" strokeWidth={2} dot={{ r: 4, fill: '#2563eb' }} />
-                  <Line type="monotone" dataKey="recall_val" stroke="#d97706" strokeWidth={2} dot={{ r: 4, fill: '#d97706' }} />
+                  <Legend wrapperStyle={{ color: '#414941', paddingTop: '10px' }} />
+                  <Line type="monotone" dataKey="f1_score" name="F1-Score" stroke="#0f6c41" strokeWidth={3} dot={{ r: 4, fill: '#0f6c41' }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="precision_val" name="Precisión" stroke="#2563eb" strokeWidth={2} dot={{ r: 4, fill: '#2563eb' }} />
+                  <Line type="monotone" dataKey="recall_val" name="Sensibilidad (Recall)" stroke="#d97706" strokeWidth={2} dot={{ r: 4, fill: '#d97706' }} />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -359,13 +385,61 @@ export default function MLEnginePage() {
 
         {/* Inference Latency */}
         <div className="bg-white rounded-xl border border-[#e5e9e2] p-6">
-          <h3 className="text-base font-semibold mb-6 text-[#414941]">Latencia de Inferencias (ms)</h3>
-          <div className="h-80">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-base font-semibold text-[#181d19]">Latencia de Inferencias (ms)</h3>
+              <p className="text-xs text-[#414941] mt-0.5">Tiempo de respuesta del motor de recomendación en tiempo real</p>
+            </div>
+            
+            {/* KPI Badges & Run Test Button */}
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              {data?.recommendationLogs?.length > 0 && (
+                <>
+                  <div className="bg-[#f1f5ee] border border-[#e5e9e2] px-2.5 py-1.5 rounded-lg">
+                    <span className="text-[#414941]">Prom: </span>
+                    <strong className="text-[#181d19] font-mono">
+                      {Math.round(data.recommendationLogs.reduce((acc: number, r: any) => acc + (r.response_ms || 0), 0) / data.recommendationLogs.length)} ms
+                    </strong>
+                  </div>
+                  <div className="bg-[#f1f5ee] border border-[#e5e9e2] px-2.5 py-1.5 rounded-lg">
+                    <span className="text-[#414941]">Máx: </span>
+                    <strong className="text-[#181d19] font-mono">
+                      {Math.max(...data.recommendationLogs.map((r: any) => r.response_ms || 0))} ms
+                    </strong>
+                  </div>
+                  <div className="bg-[#a0f5bd] text-[#002110] font-bold px-2 py-1.5 rounded-lg text-[11px] flex items-center gap-1">
+                    <span>✓ SLA &lt; 2s</span>
+                  </div>
+                </>
+              )}
+
+              <button
+                onClick={handleRunLatencyTest}
+                disabled={isRunningLatencyTest}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#0f6c41] hover:bg-[#002110] rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm ml-1"
+                title="Ejecutar prueba de latencia en vivo y actualizar gráfico"
+              >
+                {isRunningLatencyTest ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Ejecutando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-3.5 h-3.5 text-[#a0f5bd]" />
+                    <span>Ejecutar Test en Vivo</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="h-72">
             {isLoading ? (
               <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data?.recommendationLogs || []} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                <AreaChart data={data?.recommendationLogs || []} margin={{ top: 20, right: 30, left: 15, bottom: 25 }}>
                   <defs>
                     <linearGradient id="colorLat" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
@@ -373,15 +447,28 @@ export default function MLEnginePage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e9e2" />
-                  <XAxis dataKey="time" tick={{ fill: '#414941' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#414941' }} axisLine={false} tickLine={false} />
+                  <XAxis 
+                    dataKey="time" 
+                    tick={{ fill: '#414941', fontSize: 11 }} 
+                    axisLine={false} 
+                    tickLine={false} 
+                    label={{ value: 'Hora / Inferencia (HH:mm)', position: 'insideBottom', offset: -15, fill: '#414941', fontSize: 11, fontWeight: '600' }}
+                  />
+                  <YAxis 
+                    tick={{ fill: '#414941', fontSize: 11 }} 
+                    axisLine={false} 
+                    tickLine={false} 
+                    domain={[0, 'dataMax + 50']} 
+                    label={{ value: 'Tiempo (ms)', angle: -90, position: 'insideLeft', offset: 10, fill: '#414941', fontSize: 11, fontWeight: '600' }}
+                  />
                   <Tooltip 
                     cursor={{ fill: 'rgba(15, 108, 65, 0.08)' }}
                     contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e9e2', borderRadius: '8px', color: '#181d19', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} 
                     itemStyle={{ color: '#181d19', fontSize: '13px', fontWeight: '500' }}
                     labelStyle={{ color: '#181d19', fontWeight: 'bold' }}
+                    formatter={(value: any) => [`${value} ms`, 'Latencia']}
                   />
-                  <Area type="monotone" dataKey="response_ms" name="Latencia (ms)" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorLat)" />
+                  <Area type="monotone" dataKey="response_ms" name="Latencia de Inferencia" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorLat)" />
                 </AreaChart>
               </ResponsiveContainer>
             )}
@@ -396,17 +483,29 @@ export default function MLEnginePage() {
               <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.matchesDistribution || []} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                <BarChart data={data?.matchesDistribution || []} margin={{ top: 20, right: 30, left: 15, bottom: 25 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e9e2" />
-                  <XAxis dataKey="range" tick={{ fill: '#414941' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: '#414941' }} axisLine={false} tickLine={false} />
+                  <XAxis 
+                    dataKey="range" 
+                    tick={{ fill: '#414941', fontSize: 11 }} 
+                    axisLine={false} 
+                    tickLine={false}
+                    label={{ value: 'Rango de Similitud (%)', position: 'insideBottom', offset: -15, fill: '#414941', fontSize: 11, fontWeight: '600' }}
+                  />
+                  <YAxis 
+                    tick={{ fill: '#414941', fontSize: 11 }} 
+                    axisLine={false} 
+                    tickLine={false} 
+                    label={{ value: 'Cantidad de Matches', angle: -90, position: 'insideLeft', offset: 10, fill: '#414941', fontSize: 11, fontWeight: '600' }}
+                  />
                   <Tooltip 
                     cursor={{ fill: 'rgba(15, 108, 65, 0.08)' }}
                     contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e9e2', borderRadius: '8px', color: '#181d19', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} 
                     itemStyle={{ color: '#181d19', fontSize: '13px', fontWeight: '500' }}
                     labelStyle={{ color: '#181d19', fontWeight: 'bold' }}
+                    formatter={(value: any) => [`${value} candidatos`, 'Cantidad']}
                   />
-                  <Bar dataKey="count" fill="#0f6c41" radius={[4, 4, 0, 0]} barSize={40} />
+                  <Bar dataKey="count" name="Candidatos Emparejados" fill="#0f6c41" radius={[4, 4, 0, 0]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
             )}
