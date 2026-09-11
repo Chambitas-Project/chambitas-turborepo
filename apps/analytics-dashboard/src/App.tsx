@@ -33,11 +33,11 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex h-screen w-full bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50 font-inter">
+  <div className="flex h-screen w-full bg-[#f1f5ee] text-[#181d19] font-inter selection:bg-[#a0f5bd]">
     <Sidebar />
     <div className="flex-1 flex flex-col overflow-hidden">
       <Header />
-      <main className="flex-1 p-8 bg-slate-50 dark:bg-slate-950 overflow-auto">
+      <main className="flex-1 p-8 bg-[#f1f5ee] overflow-auto">
         <div className="max-w-7xl mx-auto space-y-8">
           {children}
         </div>
@@ -70,7 +70,7 @@ const OverviewContent = () => {
   return (
     <>
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-center text-red-700 dark:text-red-400 mb-8">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center text-red-700 mb-8">
           <AlertTriangle className="h-5 w-5 mr-3 shrink-0" />
           <p>Ocurrió un error al cargar las métricas. Intentando reconectar... ({error})</p>
         </div>
