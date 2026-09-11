@@ -156,10 +156,17 @@ def train_tesis_v10_hybrid():
     prec = precision_score(y_test, y_pred)
     rec = recall_score(y_test, y_pred)
     
+    cm = confusion_matrix(y_test, y_pred)
     metrics = {
         'precision': round(prec, 3),
         'recall': round(rec, 3),
-        'f1_score': round(f1, 3)
+        'f1_score': round(f1, 3),
+        'confusion_matrix': {
+            'tn': int(cm[0][0]),
+            'fp': int(cm[0][1]),
+            'fn': int(cm[1][0]),
+            'tp': int(cm[1][1])
+        }
     }
     
     print("\n" + "="*50)
@@ -168,7 +175,7 @@ def train_tesis_v10_hybrid():
     print(f"Precision: {prec:.3f}")
     print(f"Recall:    {rec:.3f}")
     print("\n--- MATRIZ DE CONFUSIÓN ---")
-    print(confusion_matrix(y_test, y_pred))
+    print(cm)
     print("\n--- REPORTE DE CLASIFICACIÓN ---")
     print(classification_report(y_test, y_pred, digits=3))
     print("="*50)
@@ -220,7 +227,8 @@ def register_model_version_in_supabase(metrics, version="v12.0.0", n_comps=300):
             "scenario": "upc_standard_academic_limits",
             "gpa_range": [13, 20],
             "n_samples": 20000,
-            "skills_per_student": [3, 10]
+            "skills_per_student": [3, 10],
+            "confusion_matrix": metrics.get('confusion_matrix')
         }
 
         data = {
