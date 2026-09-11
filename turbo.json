@@ -52,6 +52,12 @@
         "coverage/**"
       ]
     },
+    "test:latency": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "test/latency.spec.ts"
+      ]
+    },
     "dev": {
       "cache": false,
       "persistent": true

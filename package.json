@@ -6,6 +6,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "test:latency": "turbo run test:latency",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "db:gen": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > libs/shared-types/src/supabase.ts"
   },
