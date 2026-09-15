@@ -6,6 +6,7 @@ interface User {
   email: string;
   role: string;
   isOnboarded: boolean;
+  test_group?: string;
   name?: string;
   company_name?: string;
   description?: string;
@@ -33,12 +34,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await apiClient.get('/profile/me');
       const data = response.data;
-      setUser({
+      const fullUser = {
         ...data,
-        isOnboarded: data.is_onboarded ?? data.isOnboarded ?? false
-      });
+        isOnboarded: data.is_onboarded ?? data.isOnboarded ?? false,
+        test_group: data.test_group || 'EXPERIMENTAL'
+      };
+      setUser(fullUser);
+      localStorage.setItem('chambitas_user', JSON.stringify(fullUser));
     } catch {
       setUser(null);
+      localStorage.removeItem('chambitas_user');
     } finally {
       setLoading(false);
     }
@@ -51,10 +56,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (credentials: any) => {
     const response = await apiClient.post('/auth/login', credentials);
     const data = response.data;
-    setUser({
+    const fullUser = {
       ...data,
-      isOnboarded: data.isOnboarded ?? data.is_onboarded ?? false
-    });
+      isOnboarded: data.isOnboarded ?? data.is_onboarded ?? false,
+      test_group: data.test_group || 'EXPERIMENTAL'
+    };
+    setUser(fullUser);
+    localStorage.setItem('chambitas_user', JSON.stringify(fullUser));
     await fetchProfile();
   };
 

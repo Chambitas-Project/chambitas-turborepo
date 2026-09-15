@@ -29,6 +29,44 @@ export class MatchingService implements OnModuleInit {
 
     try {
       const startTime = Date.now();
+
+      // 1. Obtener perfil del estudiante para verificar su cohorte (test_group)
+      const { data: student } = await this.supabase.getClient<Database>()
+        .from('student_profiles')
+        .select('skills, test_group')
+        .eq('id', userId)
+        .single();
+
+      const isControlGroup = student?.test_group === 'CONTROL';
+
+      // ========================================================================
+      // CASO CONTROL: Consulta SQL directa cronológica plana sin IA/pgvector
+      // ========================================================================
+      if (isControlGroup) {
+        this.logger.log(`Usuario ${userId} es GRUPO CONTROL. Ejecutando consulta SQL directa cronológica.`);
+        
+        const { data: rawProjects } = await this.supabase.getClient<Database>()
+          .from('projects')
+          .select('id, created_at')
+          .eq('status', 'open')
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .range((page - 1) * limit, page * limit - 1);
+
+        const controlRecommendations = (rawProjects || []).map((p: any) => ({
+          jobId: p.id,
+          score: 0,
+          reason: 'Orden cronológico estándar (Grupo Control).',
+          aiMetadata: JSON.stringify({ isControl: true }),
+          matchId: ''
+        }));
+
+        return { recommendations: controlRecommendations };
+      }
+
+      // ========================================================================
+      // CASO EXPERIMENTAL: Invocar RPC match_projects_for_student (IA + pgvector)
+      // ========================================================================
       const { data: matches, error: rpcError } = await this.supabase.getClient<Database>()
         .rpc('match_projects_for_student' as any, {
           p_student_id: userId,
@@ -56,13 +94,6 @@ export class MatchingService implements OnModuleInit {
       }).subscribe({
         error: (err) => this.logger.error(`[Analytics] Failed to log recommendation latency`, err.message)
       });
-
-      // Fetch student skills for hybrid overlap
-      const { data: student } = await this.supabase.getClient<Database>()
-        .from('student_profiles')
-        .select('skills')
-        .eq('id', userId)
-        .single();
 
       const studentSkills = (student?.skills || []).map((s: any) =>
         (typeof s === 'string' ? s : s.skill_name || s.name || '').toLowerCase()
