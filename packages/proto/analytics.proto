@@ -7,6 +7,7 @@ service AnalyticsService {
   rpc GetOverviewKPIs (GetOverviewKPIsRequest) returns (GetOverviewKPIsResponse) {}
   rpc GetMLEngineKPIs (GetMLEngineKPIsRequest) returns (GetMLEngineKPIsResponse) {}
   rpc GetInfrastructureKPIs (GetInfrastructureKPIsRequest) returns (GetInfrastructureKPIsResponse) {}
+  rpc GetABTestingKPIs (GetABTestingKPIsRequest) returns (GetABTestingKPIsResponse) {}
 }
 
 message TrackEventRequest {
@@ -48,4 +49,10 @@ message GetInfrastructureKPIsResponse {
   string performanceMetricsJson = 1;
   string uxFunnelJson = 2;
   string securityAlertsJson = 3;
+}
+
+message GetABTestingKPIsRequest {}
+
+message GetABTestingKPIsResponse {
+  string abTestingMetricsJson = 1;
 }

@@ -83,6 +83,8 @@ const OverviewContent = () => {
   );
 };
 
+import ABTestingPage from './pages/ABTestingPage';
+
 export default function App() {
   return (
     <Routes>
@@ -90,6 +92,7 @@ export default function App() {
       
       <Route path="/" element={<ProtectedRoute><DashboardLayout><OverviewContent /></DashboardLayout></ProtectedRoute>} />
       <Route path="/ml-engine" element={<ProtectedRoute><DashboardLayout><MLEnginePage /></DashboardLayout></ProtectedRoute>} />
+      <Route path="/ab-testing" element={<ProtectedRoute><DashboardLayout><ABTestingPage /></DashboardLayout></ProtectedRoute>} />
       <Route path="/infrastructure" element={<ProtectedRoute><DashboardLayout><InfrastructurePage /></DashboardLayout></ProtectedRoute>} />
     </Routes>
   );

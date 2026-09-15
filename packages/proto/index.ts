@@ -725,11 +725,18 @@ export interface GetInfrastructureKPIsResponse {
   securityAlertsJson: string;
 }
 
+export interface GetABTestingKPIsRequest { }
+
+export interface GetABTestingKPIsResponse {
+  abTestingMetricsJson: string;
+}
+
 export interface IAnalyticsService {
   TrackEvent(data: TrackEventRequest, metadata?: any): Observable<TrackEventResponse>;
   GetOverviewKPIs(data: GetOverviewKPIsRequest, metadata?: any): Observable<GetOverviewKPIsResponse>;
   GetMLEngineKPIs(data: GetMLEngineKPIsRequest, metadata?: any): Observable<GetMLEngineKPIsResponse>;
   GetInfrastructureKPIs(data: GetInfrastructureKPIsRequest, metadata?: any): Observable<GetInfrastructureKPIsResponse>;
+  GetABTestingKPIs(data: GetABTestingKPIsRequest, metadata?: any): Observable<GetABTestingKPIsResponse>;
 }
 
 export interface EmbeddingResponse {

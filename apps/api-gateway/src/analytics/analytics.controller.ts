@@ -74,6 +74,16 @@ export class AnalyticsController implements OnModuleInit {
   }
 
   @Public()
+  @Get('ab-testing')
+  @ApiOperation({ summary: 'Obtener métricas comparativas del experimento A/B (Fase 3 y 4)' })
+  async getABTestingKPIs() {
+    const response = await firstValueFrom(this.analyticsService.GetABTestingKPIs({}));
+    return {
+      metrics: JSON.parse(response.abTestingMetricsJson || '[]')
+    };
+  }
+
+  @Public()
   @Post('test-latency')
   @ApiOperation({ summary: 'Ejecutar test de latencia en vivo y registrar resultados en tiempo real' })
   async runLatencyTest() {

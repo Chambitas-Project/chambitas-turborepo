@@ -1,4 +1,4 @@
-import { LayoutDashboard, Brain, Server } from 'lucide-react';
+import { LayoutDashboard, Brain, Server, FlaskConical } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 export default function Sidebar() {
@@ -36,6 +36,17 @@ export default function Sidebar() {
             <>
               <Brain className={`mr-3 h-4 w-4 ${isActive ? 'text-[#002110]' : 'text-[#414941]'}`} />
               ML Engine
+            </>
+          )}
+        </NavLink>
+        <NavLink
+          to="/ab-testing"
+          className={({ isActive }) => `flex items-center px-4 py-2.5 mx-2 rounded-xl text-sm font-semibold transition-colors ${isActive ? 'bg-[#a0f5bd] text-[#002110]' : 'hover:bg-[#ebf0e8] text-[#414941] hover:text-[#181d19]'}`}
+        >
+          {({ isActive }) => (
+            <>
+              <FlaskConical className={`mr-3 h-4 w-4 ${isActive ? 'text-[#002110]' : 'text-[#414941]'}`} />
+              Experimentos A/B
             </>
           )}
         </NavLink>

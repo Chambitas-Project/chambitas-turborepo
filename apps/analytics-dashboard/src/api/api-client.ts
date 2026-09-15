@@ -77,6 +77,25 @@ export const apiClient = {
     }
   },
 
+  async getABTestingKPIs() {
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/ab-testing`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching AB-Testing KPIs:', error);
+      throw error;
+    }
+  },
+
   async trackEvent(eventType: string, payload: any, source: string = 'analytics-dashboard') {
     try {
       const response = await fetch(`${this.baseURL}/analytics/track`, {
