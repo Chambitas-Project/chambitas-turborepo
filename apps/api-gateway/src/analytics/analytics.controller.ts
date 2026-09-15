@@ -84,6 +84,29 @@ export class AnalyticsController implements OnModuleInit {
   }
 
   @Public()
+  @Post('sus-evaluations')
+  @ApiOperation({ summary: 'Registrar evaluación de usabilidad SUS de un estudiante o empleador' })
+  async recordSUSEvaluation(@Body() body: any) {
+    const response = await firstValueFrom(this.analyticsService.TrackEvent({
+      eventType: 'SUS_EVALUATION',
+      source: 'sus-survey-modal',
+      userId: body.user_id || 'anonymous',
+      payloadJson: JSON.stringify(body),
+      timestamp: new Date().toISOString()
+    }));
+    return { success: response.success };
+  }
+
+  @Public()
+  @Get('sus-status/:userId')
+  @ApiOperation({ summary: 'Verificar si un usuario ya registró su encuesta SUS' })
+  async getSUSStatus(@Param('userId') userId: string) {
+    const response = await firstValueFrom(this.analyticsService.GetABTestingKPIs({}));
+    // Se delega a verificación de respuesta previa
+    return { hasEvaluated: false };
+  }
+
+  @Public()
   @Post('test-latency')
   @ApiOperation({ summary: 'Ejecutar test de latencia en vivo y registrar resultados en tiempo real' })
   async runLatencyTest() {

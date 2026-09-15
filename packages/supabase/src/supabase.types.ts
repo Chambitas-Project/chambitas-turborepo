@@ -1024,6 +1024,44 @@ export type Database = {
           },
         ]
       }
+      sus_evaluations: {
+        Row: {
+          calculated_score: number
+          created_at: string
+          id: string
+          responses: number[]
+          test_group: Database["public"]["Enums"]["ab_test_group"]
+          user_id: string
+          user_role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          calculated_score: number
+          created_at?: string
+          id?: string
+          responses: number[]
+          test_group?: Database["public"]["Enums"]["ab_test_group"]
+          user_id: string
+          user_role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          calculated_score?: number
+          created_at?: string
+          id?: string
+          responses?: number[]
+          test_group?: Database["public"]["Enums"]["ab_test_group"]
+          user_id?: string
+          user_role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sus_evaluations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       universities: {
         Row: {
           created_at: string | null

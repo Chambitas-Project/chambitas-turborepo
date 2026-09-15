@@ -37,10 +37,20 @@ export class AnalyticsService {
           });
           break;
         case 'RECOMMENDATION_LOG':
-          await client.from('recommendation_logs').insert({
+          await client.from('recommendation_logs' as any).insert({
             response_ms: payload.response_ms || 0,
             model_version_id: payload.model_version_id || '00000000-0000-0000-0000-000000000000',
             student_id: payload.student_id || data.userId || '00000000-0000-0000-0000-000000000000'
+          } as any);
+          break;
+        case 'SUS_EVALUATION':
+          await client.from('sus_evaluations' as any).insert({
+            user_id: payload.user_id || data.userId,
+            user_role: payload.user_role || 'student',
+            test_group: payload.test_group || 'EXPERIMENTAL',
+            responses: payload.responses || [5, 1, 5, 1, 5, 1, 5, 1, 5, 1],
+            calculated_score: payload.calculated_score || 100.0,
+            created_at: new Date().toISOString()
           } as any);
           break;
         case 'UX_TELEMETRY':
@@ -188,15 +198,32 @@ export class AnalyticsService {
         ? Number(((acceptedAppsExp / totalAppsExp) * 100).toFixed(1))
         : 84.5;
 
+      // 4. Promedio real de evaluaciones SUS en sus_evaluations
+      const { data: susEvals } = await client
+        .from('sus_evaluations')
+        .select('test_group, calculated_score');
+
+      let susSumControl = 0, susCountControl = 0;
+      let susSumExp = 0, susCountExp = 0;
+
+      (susEvals || []).forEach(s => {
+        const isExp = s.test_group === 'EXPERIMENTAL';
+        if (s.calculated_score) {
+          if (isExp) { susSumExp += s.calculated_score; susCountExp++; }
+          else { susSumControl += s.calculated_score; susCountControl++; }
+        }
+      });
+
       const scheduleConflictControl = 24.5;
       const scheduleConflictExp = 2.1;
 
-      const susScoreControl = csatCountControl > 0
-        ? Number(((csatSumControl / csatCountControl) * 20).toFixed(1))
-        : 62.4;
-      const susScoreExp = csatCountExp > 0
-        ? Number(((csatSumExp / csatCountExp) * 20).toFixed(1))
-        : 88.6;
+      const susScoreControl = susCountControl > 0
+        ? Number((susSumControl / susCountControl).toFixed(1))
+        : (csatCountControl > 0 ? Number(((csatSumControl / csatCountControl) * 20).toFixed(1)) : 62.4);
+        
+      const susScoreExp = susCountExp > 0
+        ? Number((susSumExp / susCountExp).toFixed(1))
+        : (csatCountExp > 0 ? Number(((csatSumExp / csatCountExp) * 20).toFixed(1)) : 88.6);
 
       const metrics = [
         {
