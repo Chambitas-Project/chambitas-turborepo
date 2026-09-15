@@ -46,16 +46,26 @@ export function JobSearchPage() {
     return [{ label: "Todos", value: "Todos" }, ...dynamicCats];
   }, [catalogCategories]);
 
+  const [testGroup, setTestGroup] = useState<string>("EXPERIMENTAL");
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [projRes, recRes, appsRes, skillsRes] = await Promise.allSettled([
+        const [projRes, recRes, appsRes, skillsRes, profileRes] = await Promise.allSettled([
           apiClient.get("/marketplace/projects"),
           apiClient.get("/matching/recommendations/me"),
           apiClient.get("/marketplace/applications/my-applications"),
-          apiClient.get("/profile/skills")
+          apiClient.get("/profile/skills"),
+          apiClient.get("/profile/me")
         ]);
+
+        if (profileRes.status === "fulfilled") {
+          const prof = profileRes.value.data;
+          if (prof?.test_group) {
+            setTestGroup(prof.test_group);
+          }
+        }
 
         if (projRes.status === "fulfilled") {
           const data = projRes.value.data;
@@ -224,11 +234,14 @@ export function JobSearchPage() {
                   const match = recommendations.find(r => r.jobId === projectId);
                   const appliedApp = applications.find((app: any) => app.project_id === projectId);
                   const hasApplied = !!appliedApp;
+                  const rawScore = appliedApp?.match_score ?? match?.score ?? 0;
+                  const isControl = testGroup === 'CONTROL';
+
                   return (
                     <JobCard
                       key={projectId}
                       project={project}
-                      matchScore={appliedApp?.match_score ?? match?.score ?? 0}
+                      matchScore={isControl ? undefined : rawScore}
                       hasApplied={hasApplied}
                     />
                   );

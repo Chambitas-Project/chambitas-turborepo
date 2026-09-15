@@ -98,6 +98,7 @@ message UnifiedProfileResponse {
   optional string evidence_url = 19;
   optional string phone_number = 20;
   optional string avatar_url = 21;
+  optional string test_group = 22;
 }
 
 message GetProfileRequest {

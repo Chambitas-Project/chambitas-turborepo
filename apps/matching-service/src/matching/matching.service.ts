@@ -63,8 +63,8 @@ export class MatchingService implements OnModuleInit {
         .select('skills')
         .eq('id', userId)
         .single();
-        
-      const studentSkills = (student?.skills || []).map((s: any) => 
+
+      const studentSkills = (student?.skills || []).map((s: any) =>
         (typeof s === 'string' ? s : s.skill_name || s.name || '').toLowerCase()
       );
 
@@ -89,21 +89,21 @@ export class MatchingService implements OnModuleInit {
         const validProjectMap = new Map((validProjects || []).map((p: any) => [p.id, p]));
         const appliedProjectIds = new Set((applications || []).map(a => a.project_id));
 
-        finalMatches = finalMatches.filter((m: any) => 
+        finalMatches = finalMatches.filter((m: any) =>
           validProjectMap.has(m.id) && !appliedProjectIds.has(m.id)
         ).map((m: any) => {
           const project = validProjectMap.get(m.id);
           const rawRequiredSkills = project?.project_required_skills || [];
-          const projectSkillsStr = rawRequiredSkills.map((prs: any) => 
+          const projectSkillsStr = rawRequiredSkills.map((prs: any) =>
             (prs.skills?.name || '').toLowerCase()
           ).filter(Boolean);
-          
+
           let overlap = 0;
           if (studentSkills.length > 0 && projectSkillsStr.length > 0) {
             const matchCount = projectSkillsStr.filter((ps: string) => studentSkills.includes(ps)).length;
             overlap = matchCount / projectSkillsStr.length;
           }
-          
+
           return {
             ...m,
             hybridScore: Math.max(m.similarity, overlap)

@@ -149,6 +149,7 @@ export interface UnifiedProfileResponse {
   evidence_url?: string;
   phone_number?: string;
   avatar_url?: string;
+  test_group?: string;
 }
 
 export interface CreateStudentProfileRequest {

@@ -61,12 +61,14 @@ export class AnalyticsService {
             event_type: dbEventType as any,
             flow_name: dbFlowName as any,
             step_name: payload.step_name || payload.step || 'Unknown',
+            test_group: payload.test_group || null,
+            user_id: payload.user_id || data.userId || null,
             abandonment_rate: payload.abandonment_rate || 0,
             time_on_step_ms: payload.time_on_step_ms || 0,
             session_id: payload.session_id || 'unknown-session',
             recorded_at: new Date().toISOString()
           });
-          
+
           if (uxError) {
             this.logger.error(`Failed to insert UX_TELEMETRY: ${uxError.message}`);
           }
@@ -126,18 +128,18 @@ export class AnalyticsService {
       .limit(100);
 
     const now = new Date();
-    const formattedRecLogs = (!err2 && recLogs?.length) 
+    const formattedRecLogs = (!err2 && recLogs?.length)
       ? recLogs.map((r: any, idx: number) => ({
-          time: r.created_at ? new Date(r.created_at).toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }) : `Req #${idx+1}`,
-          response_ms: Math.round(r.response_ms || 0)
-        }))
+        time: r.created_at ? new Date(r.created_at).toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }) : `Req #${idx + 1}`,
+        response_ms: Math.round(r.response_ms || 0)
+      }))
       : Array.from({ length: 20 }).map((_, i) => {
-          const d = new Date(now.getTime() - (20 - i) * 60000);
-          return {
-            time: d.toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }),
-            response_ms: Math.floor(Math.random() * 35) + 365
-          };
-        });
+        const d = new Date(now.getTime() - (20 - i) * 60000);
+        return {
+          time: d.toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }),
+          response_ms: Math.floor(Math.random() * 35) + 365
+        };
+      });
 
     let recommendationLogsJson = JSON.stringify(formattedRecLogs);
 
