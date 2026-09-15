@@ -8,6 +8,8 @@ service AnalyticsService {
   rpc GetMLEngineKPIs (GetMLEngineKPIsRequest) returns (GetMLEngineKPIsResponse) {}
   rpc GetInfrastructureKPIs (GetInfrastructureKPIsRequest) returns (GetInfrastructureKPIsResponse) {}
   rpc GetABTestingKPIs (GetABTestingKPIsRequest) returns (GetABTestingKPIsResponse) {}
+  rpc RecordSUSEvaluation (RecordSUSEvaluationRequest) returns (RecordSUSEvaluationResponse) {}
+  rpc GetSUSStatus (GetSUSStatusRequest) returns (GetSUSStatusResponse) {}
 }
 
 message TrackEventRequest {
@@ -55,4 +57,24 @@ message GetABTestingKPIsRequest {}
 
 message GetABTestingKPIsResponse {
   string abTestingMetricsJson = 1;
+}
+
+message RecordSUSEvaluationRequest {
+  string userId = 1;
+  string userRole = 2;
+  string testGroup = 3;
+  repeated int32 responses = 4;
+  double calculatedScore = 5;
+}
+
+message RecordSUSEvaluationResponse {
+  bool success = 1;
+}
+
+message GetSUSStatusRequest {
+  string userId = 1;
+}
+
+message GetSUSStatusResponse {
+  bool hasEvaluated = 1;
 }

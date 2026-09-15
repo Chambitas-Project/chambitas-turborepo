@@ -731,12 +731,34 @@ export interface GetABTestingKPIsResponse {
   abTestingMetricsJson: string;
 }
 
+export interface RecordSUSEvaluationRequest {
+  userId: string;
+  userRole: string;
+  testGroup: string;
+  responses: number[];
+  calculatedScore: number;
+}
+
+export interface RecordSUSEvaluationResponse {
+  success: boolean;
+}
+
+export interface GetSUSStatusRequest {
+  userId: string;
+}
+
+export interface GetSUSStatusResponse {
+  hasEvaluated: boolean;
+}
+
 export interface IAnalyticsService {
   TrackEvent(data: TrackEventRequest, metadata?: any): Observable<TrackEventResponse>;
   GetOverviewKPIs(data: GetOverviewKPIsRequest, metadata?: any): Observable<GetOverviewKPIsResponse>;
   GetMLEngineKPIs(data: GetMLEngineKPIsRequest, metadata?: any): Observable<GetMLEngineKPIsResponse>;
   GetInfrastructureKPIs(data: GetInfrastructureKPIsRequest, metadata?: any): Observable<GetInfrastructureKPIsResponse>;
   GetABTestingKPIs(data: GetABTestingKPIsRequest, metadata?: any): Observable<GetABTestingKPIsResponse>;
+  RecordSUSEvaluation(data: RecordSUSEvaluationRequest, metadata?: any): Observable<RecordSUSEvaluationResponse>;
+  GetSUSStatus(data: GetSUSStatusRequest, metadata?: any): Observable<GetSUSStatusResponse>;
 }
 
 export interface EmbeddingResponse {
