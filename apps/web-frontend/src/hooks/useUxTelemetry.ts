@@ -12,10 +12,23 @@ export function useUxTelemetry(flowName: string, stepName: string) {
     hasCompleted.current = true;
     const timeSpent = Date.now() - startTime.current;
     
+    const userJson = localStorage.getItem('chambitas_user');
+    let testGroup = null;
+    let userId = null;
+    if (userJson) {
+      try {
+        const u = JSON.parse(userJson);
+        testGroup = u.test_group || null;
+        userId = u.id || null;
+      } catch (e) {}
+    }
+
     trackEvent('UX_TELEMETRY', {
       event_type: 'step_completed',
       flow_name: flowName,
       step_name: stepName,
+      test_group: testGroup,
+      user_id: userId,
       abandonment_rate: 0,
       time_on_step_ms: timeSpent,
       session_id: localStorage.getItem('session_id') || 'session-' + Math.floor(Math.random()*10000)
@@ -27,10 +40,23 @@ export function useUxTelemetry(flowName: string, stepName: string) {
     return () => {
       if (!hasCompleted.current) {
         const timeSpent = Date.now() - startTime.current;
+        const userJson = localStorage.getItem('chambitas_user');
+        let testGroup = null;
+        let userId = null;
+        if (userJson) {
+          try {
+            const u = JSON.parse(userJson);
+            testGroup = u.test_group || null;
+            userId = u.id || null;
+          } catch (e) {}
+        }
+
         trackEvent('UX_TELEMETRY', {
           event_type: 'step_abandoned',
           flow_name: flowName,
           step_name: stepName,
+          test_group: testGroup,
+          user_id: userId,
           abandonment_rate: 100, // Marcador de abandono
           time_on_step_ms: timeSpent,
           session_id: localStorage.getItem('session_id') || 'session-' + Math.floor(Math.random()*10000)
