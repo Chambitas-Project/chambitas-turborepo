@@ -180,23 +180,23 @@ export class AnalyticsService {
         }
       });
 
-      // Cálculos con fallbacks realistas para datos vacíos o piloto inicial
-      const sampleSizeControl = Math.max(nControl, 45);
-      const sampleSizeExp = Math.max(nExperimental, 48);
+      // Cálculos con datos reales de la base de datos Supabase
+      const sampleSizeControl = nControl;
+      const sampleSizeExp = nExperimental;
 
       const avgSearchTimeMinControl = searchTimeCountControl > 0
         ? Number((searchTimeSumControl / searchTimeCountControl / 60000).toFixed(1))
-        : 18.5;
+        : 0;
       const avgSearchTimeMinExp = searchTimeCountExp > 0
         ? Number((searchTimeSumExp / searchTimeCountExp / 60000).toFixed(1))
-        : 6.2;
+        : 0;
 
       const matchRateControl = totalAppsControl > 0
         ? Number(((acceptedAppsControl / totalAppsControl) * 100).toFixed(1))
-        : 42.0;
+        : 0;
       const matchRateExp = totalAppsExp > 0
         ? Number(((acceptedAppsExp / totalAppsExp) * 100).toFixed(1))
-        : 84.5;
+        : 0;
 
       // 4. Promedio real de evaluaciones SUS en sus_evaluations
       const { data: susEvals } = await client
@@ -214,16 +214,16 @@ export class AnalyticsService {
         }
       });
 
-      const scheduleConflictControl = 24.5;
-      const scheduleConflictExp = 2.1;
+      const scheduleConflictControl = 0;
+      const scheduleConflictExp = 0;
 
       const susScoreControl = susCountControl > 0
         ? Number((susSumControl / susCountControl).toFixed(1))
-        : (csatCountControl > 0 ? Number(((csatSumControl / csatCountControl) * 20).toFixed(1)) : 62.4);
+        : (csatCountControl > 0 ? Number(((csatSumControl / csatCountControl) * 20).toFixed(1)) : 0);
         
       const susScoreExp = susCountExp > 0
         ? Number((susSumExp / susCountExp).toFixed(1))
-        : (csatCountExp > 0 ? Number(((csatSumExp / csatCountExp) * 20).toFixed(1)) : 88.6);
+        : (csatCountExp > 0 ? Number(((csatSumExp / csatCountExp) * 20).toFixed(1)) : 0);
 
       const metrics = [
         {
