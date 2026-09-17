@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Inject, OnModuleInit } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Inject, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { IAnalyticsService, TrackEventRequest } from '@chambitas/proto';
