@@ -27,4 +27,9 @@ export class AnalyticsController {
   getInfrastructureKPIs(data: GetInfrastructureKPIsRequest): Observable<GetInfrastructureKPIsResponse> {
     return this.analyticsService.getInfrastructureKPIs(data);
   }
+
+  @GrpcMethod('AnalyticsService', 'GetABTestingKPIs')
+  getABTestingKPIs(data: any): Observable<any> {
+    return this.analyticsService.getABTestingKPIs(data);
+  }
 }
