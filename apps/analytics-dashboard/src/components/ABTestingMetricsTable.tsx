@@ -199,7 +199,15 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
             Síntesis Estadística para el Capítulo IV (Discusión de Resultados):
           </p>
           <p>
-            Los datos muestran una ventaja estadísticamente significativa en el <strong>Grupo Experimental</strong>, reduciendo el tiempo medio de búsqueda en <strong>66.4%</strong> y elevando la satisfacción usabilística (SUS) a <strong>88.6 puntos</strong>. La eliminación del conflicto horario demuestra la efectividad del filtrado determinista en PostgreSQL.
+            {dataToRender.some(r => r.experimental > 0) ? (
+              <>
+                Se están registrando datos reales en vivo para la cohorte <strong>Grupo Experimental</strong> (con {dataToRender.find(r => r.metric.includes('Muestra Total'))?.experimental || 0} estudiante(s) activo(s)). Las métricas acumuladas de tiempo de búsqueda, tasa de match y evaluación usabilística (SUS) se recalculan dinámicamente conforme los usuarios completan sus interacciones.
+              </>
+            ) : (
+              <>
+                Los datos acumulados de telemetría y encuestas psicométricas SUS alimentarán este reporte en tiempo real comparando la muestra control vs experimental conforme los estudiantes realicen búsquedas y postulaciones en la plataforma.
+              </>
+            )}
           </p>
         </div>
       </div>
