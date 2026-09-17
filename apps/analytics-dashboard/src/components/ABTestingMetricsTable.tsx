@@ -71,8 +71,15 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
       return { text: `${diff > 0 ? '+' : ''}${diff}`, isPositive: diff >= 0 };
     }
 
+    if (!control || control === 0) {
+      if (experimental > 0) {
+        return { text: '+100.0%', isPositive: true };
+      }
+      return { text: '0.0%', isPositive: true };
+    }
+
     // Para métricas donde MENOS es mejor (Tiempo de Búsqueda y Conflictos)
-    const lowerIsBetter = unit === 'minutos' || (unit === '%' && control > experimental && control === 24.5);
+    const lowerIsBetter = unit === 'minutos' || (unit === '%' && control > experimental);
 
     const percentChange = ((experimental - control) / control) * 100;
     const formatted = `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}%`;
