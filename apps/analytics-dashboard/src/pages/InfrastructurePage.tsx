@@ -61,8 +61,31 @@ export default function InfrastructurePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Performance Metrics */}
-        <div className="bg-white rounded-xl border border-[#e5e9e2] shadow-sm p-6 lg:col-span-2">
-          <h3 className="text-base font-semibold mb-6 text-[#414941]">Latencia por Microservicio (ms)</h3>
+        <div className="bg-white rounded-xl border border-[#e5e9e2] shadow-sm p-6 lg:col-span-2 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+            <div>
+              <h3 className="text-base font-bold text-[#181d19]">Latencia por Microservicio (ms)</h3>
+              <p className="text-xs text-slate-500">Monitoreo de tiempos de respuesta del API Gateway y consultas a la base de datos PostgreSQL</p>
+            </div>
+          </div>
+
+          {/* Leyenda Explicativa de Métricas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#f8faf7] p-3.5 rounded-xl border border-[#0f6c41]/10 text-xs">
+            <div className="flex items-start space-x-2.5">
+              <span className="w-3.5 h-3.5 rounded bg-[#0f6c41] shrink-0 mt-0.5"></span>
+              <div>
+                <span className="font-bold text-[#181d19]">Endpoint (ms) [Verde Oscuro]:</span>
+                <p className="text-slate-600">Tiempo total de procesamiento de la petición HTTP/gRPC (Latencia de red + lógica del servidor).</p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-2.5">
+              <span className="w-3.5 h-3.5 rounded bg-[#4ade80] shrink-0 mt-0.5"></span>
+              <div>
+                <span className="font-bold text-[#181d19]">DB Query (ms) [Verde Claro]:</span>
+                <p className="text-slate-600">Tiempo gastado exclusivamente ejecutando consultas SQL en Supabase/PostgreSQL.</p>
+              </div>
+            </div>
+          </div>
           <div className="h-80">
             {isLoading ? (
               <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
