@@ -88,7 +88,7 @@ export default function InfrastructurePage() {
           </div>
           <div className="h-80">
             {isLoading ? (
-              <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
+              <div className="w-full h-full bg-slate-100 rounded-xl animate-pulse"></div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data?.performanceMetrics || []} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
@@ -123,10 +123,10 @@ export default function InfrastructurePage() {
 
           <div className="h-80">
             {isLoading ? (
-              <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
-            ) : (
+              <div className="w-full h-full bg-slate-100 rounded-xl animate-pulse"></div>
+            ) : data?.uxFunnel?.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.uxFunnel || []} layout="vertical" margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
+                <BarChart data={data?.uxFunnel} layout="vertical" margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e9e2" />
                   <XAxis type="number" tick={{ fill: '#414941', fontSize: 11 }} axisLine={false} tickLine={false} unit="%" />
                   <YAxis type="category" dataKey="step" tick={{ fill: '#414941', fontSize: 11 }} axisLine={false} tickLine={false} width={90} />
@@ -140,6 +140,14 @@ export default function InfrastructurePage() {
                   <Bar dataKey="abandonment_rate" name="Abandono (%)" fill="#0f6c41" radius={[0, 4, 4, 0]} barSize={30} />
                 </BarChart>
               </ResponsiveContainer>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full border-2 border-dashed border-slate-200 rounded-xl text-center p-6 space-y-2">
+                <span className="text-2xl">📊</span>
+                <p className="text-xs font-bold text-slate-700">Sin datos de telemetría de navegación aún</p>
+                <p className="text-[11px] text-slate-500 max-w-xs">
+                  Haz clic en <strong className="text-[#0f6c41]">⚡ Simular Tráfico Multiservicio</strong> arriba para registrar eventos de usabilidad en tiempo real.
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -149,7 +157,7 @@ export default function InfrastructurePage() {
           <h3 className="text-base font-semibold mb-6 text-[#414941]">Auditoría y Seguridad</h3>
           <div className="overflow-auto h-80 space-y-4">
             {isLoading ? (
-              <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
+              <div className="w-full h-full bg-slate-100 rounded-xl animate-pulse"></div>
             ) : (
               data?.securityAlerts?.map((alert: any) => (
                 <div key={alert.id} className="flex items-start p-4 rounded-xl bg-[#f7fbf3] border border-[#e5e9e2]">
