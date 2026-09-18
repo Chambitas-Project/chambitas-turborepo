@@ -20,7 +20,7 @@ export default function Charts({ data, isLoading }: ChartsProps) {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data?.funnelData || []} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e9e2" />
-                <XAxis dataKey="stage" tick={{ fill: '#414941' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="step" tick={{ fill: '#414941' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#414941' }} axisLine={false} tickLine={false} />
                 <Tooltip 
                   cursor={{ fill: 'rgba(15, 108, 65, 0.08)' }}

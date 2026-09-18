@@ -23,7 +23,7 @@ export default function KPICards({ data, isLoading }: KPICardsProps) {
       <div className="bg-white p-6 rounded-xl border border-[#e5e9e2] relative overflow-hidden text-[#181d19]">
         <div className="text-sm font-medium text-[#414941] mb-2 flex items-center">
           <Briefcase className="h-4 w-4 mr-2" />
-          Liquidez (Proyectos/Apps)
+          Liquidez (Proyectos/Aplicaciones)
         </div>
         {isLoading ? (
           <div className="h-8 w-32 bg-[#d3d8d0] rounded animate-pulse"></div>
