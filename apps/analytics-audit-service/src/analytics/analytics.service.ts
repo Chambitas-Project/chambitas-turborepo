@@ -385,15 +385,26 @@ export class AnalyticsService {
     }
     let performanceMetricsJson = JSON.stringify(formattedInfra);
 
-    // UX Telemetry
+    // UX Telemetry (Agrupado dinámicamente por paso con promedio real)
     const { data: uxLogs, error: err2 } = await client.from('ux_usability_telemetry' as any).select('*');
     
     let formattedUxFunnel: any[] = [];
     if (!err2 && uxLogs?.length) {
-      formattedUxFunnel = uxLogs.map((u: any) => ({
-        step: u.step_name || u.flow_name || 'Desconocido',
-        abandonment_rate: u.abandonment_rate || 0,
-        time_on_step_ms: u.time_on_step_ms || 0
+      const stepMap = new Map<string, { count: number; totalRate: number; totalTime: number }>();
+      
+      (uxLogs as any[]).forEach(u => {
+        const step = u.step_name || u.flow_name || 'Desconocido';
+        const curr = stepMap.get(step) || { count: 0, totalRate: 0, totalTime: 0 };
+        curr.count += 1;
+        curr.totalRate += Number(u.abandonment_rate || (u.event_type === 'abandoned' ? 100 : 0));
+        curr.totalTime += Number(u.time_on_step_ms || 0);
+        stepMap.set(step, curr);
+      });
+
+      formattedUxFunnel = Array.from(stepMap.entries()).map(([step, val]) => ({
+        step: step,
+        abandonment_rate: Math.round(val.totalRate / val.count),
+        time_on_step_ms: Math.round(val.totalTime / val.count)
       }));
     } else {
       formattedUxFunnel = [
