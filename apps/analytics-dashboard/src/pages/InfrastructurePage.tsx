@@ -111,22 +111,31 @@ export default function InfrastructurePage() {
         </div>
 
         {/* UX Funnel */}
-        <div className="bg-white rounded-xl border border-[#e5e9e2] shadow-sm p-6">
-          <h3 className="text-base font-semibold mb-6 text-[#414941]">Tasas de Abandono (UX Funnel)</h3>
+        <div className="bg-white rounded-xl border border-[#e5e9e2] shadow-sm p-6 flex flex-col justify-between">
+          <div>
+            <h3 className="text-base font-bold text-[#181d19] mb-1">Tasas de Abandono (UX Funnel)</h3>
+            <p className="text-xs text-slate-500 mb-4">Porcentaje de usuarios que abandonan el flujo en cada etapa del sistema</p>
+            
+            <div className="bg-[#f8faf7] p-2.5 rounded-lg border border-[#0f6c41]/10 text-xs text-slate-600 mb-4">
+              <span className="font-bold text-[#181d19]">💡 Explicación:</span> Muestra en qué pantalla o paso del onboarding/registro se pierde mayor cantidad de usuarios para detectar fricciones de usabilidad.
+            </div>
+          </div>
+
           <div className="h-80">
             {isLoading ? (
               <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.uxFunnel || []} layout="vertical" margin={{ top: 20, right: 30, left: 20, bottom: 0 }}>
+                <BarChart data={data?.uxFunnel || []} layout="vertical" margin={{ top: 10, right: 30, left: 40, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e9e2" />
-                  <XAxis type="number" tick={{ fill: '#414941' }} axisLine={false} tickLine={false} unit="%" />
-                  <YAxis type="category" dataKey="step" tick={{ fill: '#414941' }} axisLine={false} tickLine={false} />
+                  <XAxis type="number" tick={{ fill: '#414941', fontSize: 11 }} axisLine={false} tickLine={false} unit="%" />
+                  <YAxis type="category" dataKey="step" tick={{ fill: '#414941', fontSize: 11 }} axisLine={false} tickLine={false} width={90} />
                   <Tooltip 
                     cursor={{ fill: 'rgba(15, 108, 65, 0.08)' }} 
                     contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e9e2', borderRadius: '8px', color: '#181d19', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} 
                     itemStyle={{ color: '#181d19', fontSize: '13px', fontWeight: '500' }}
                     labelStyle={{ color: '#181d19', fontWeight: 'bold' }}
+                    formatter={(value: any) => [`${value}% de abandono`, 'Tasa']}
                   />
                   <Bar dataKey="abandonment_rate" name="Abandono (%)" fill="#0f6c41" radius={[0, 4, 4, 0]} barSize={30} />
                 </BarChart>

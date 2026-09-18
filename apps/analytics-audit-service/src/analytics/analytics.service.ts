@@ -387,12 +387,23 @@ export class AnalyticsService {
 
     // UX Telemetry
     const { data: uxLogs, error: err2 } = await client.from('ux_usability_telemetry' as any).select('*');
-    let uxFunnelJson = JSON.stringify(!err2 && uxLogs?.length ? uxLogs : [
-      { step: 'Landing', abandonment_rate: 10, time_on_step_ms: 5000 },
-      { step: 'Registro', abandonment_rate: 45, time_on_step_ms: 45000 },
-      { step: 'Onboarding', abandonment_rate: 20, time_on_step_ms: 120000 },
-      { step: 'Dashboard', abandonment_rate: 5, time_on_step_ms: 300000 }
-    ]);
+    
+    let formattedUxFunnel: any[] = [];
+    if (!err2 && uxLogs?.length) {
+      formattedUxFunnel = uxLogs.map((u: any) => ({
+        step: u.step_name || u.flow_name || 'Desconocido',
+        abandonment_rate: u.abandonment_rate || 0,
+        time_on_step_ms: u.time_on_step_ms || 0
+      }));
+    } else {
+      formattedUxFunnel = [
+        { step: 'Landing', abandonment_rate: 10, time_on_step_ms: 5000 },
+        { step: 'Registro', abandonment_rate: 45, time_on_step_ms: 45000 },
+        { step: 'Onboarding', abandonment_rate: 20, time_on_step_ms: 120000 },
+        { step: 'Dashboard', abandonment_rate: 5, time_on_step_ms: 300000 }
+      ];
+    }
+    let uxFunnelJson = JSON.stringify(formattedUxFunnel);
 
     // Security Alerts
     const { data: alerts, error: err3 } = await client.from('security_audit_logs' as any).select('*').limit(10).order('created_at', { ascending: false });
