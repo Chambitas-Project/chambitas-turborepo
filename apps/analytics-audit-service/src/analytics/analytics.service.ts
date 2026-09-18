@@ -460,15 +460,38 @@ export class AnalyticsService {
       { step: 'Contrataciones', value: hiredCount }
     ];
 
-    // Income progress (curva real basada en el acumulado de ingresos)
-    const incomeProgress = [
-      { month: 'Ene', income: Math.round(totalIncomeGenerated * 0.15) },
-      { month: 'Feb', income: Math.round(totalIncomeGenerated * 0.3) },
-      { month: 'Mar', income: Math.round(totalIncomeGenerated * 0.45) },
-      { month: 'Abr', income: Math.round(totalIncomeGenerated * 0.65) },
-      { month: 'May', income: Math.round(totalIncomeGenerated * 0.85) },
-      { month: 'Jun', income: Math.round(totalIncomeGenerated) }
-    ];
+    // Group income dynamically by actual application month (Ene - Dic)
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic'];
+    const monthlyMap = new Map<number, number>();
+    
+    // Initialize last 6 months dynamically up to current month
+    const nowMonth = new Date().getMonth();
+    const monthsToDisplay: { monthIdx: number; label: string }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const mIdx = (nowMonth - i + 12) % 12;
+      monthsToDisplay.push({ monthIdx: mIdx, label: monthNames[mIdx] || 'Ene' });
+      monthlyMap.set(mIdx, 0);
+    }
+
+    (acceptedApps || []).forEach((app: any) => {
+      const budget = Number(app.projects?.budget || 0);
+      const dateStr = app.updated_at || app.created_at;
+      if (dateStr) {
+        const appMonth = new Date(dateStr).getMonth();
+        monthlyMap.set(appMonth, (monthlyMap.get(appMonth) || 0) + budget);
+      }
+    });
+
+    // Compute cumulative or monthly growth for the chart
+    let runningTotal = 0;
+    const incomeProgress = monthsToDisplay.map(m => {
+      const monthInc = monthlyMap.get(m.monthIdx) || 0;
+      runningTotal += monthInc;
+      return {
+        month: m.label,
+        income: runningTotal > 0 ? runningTotal : monthInc
+      };
+    });
 
     return {
       activeStudents: activeStudents || 0,

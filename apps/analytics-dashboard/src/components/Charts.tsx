@@ -9,10 +9,20 @@ export default function Charts({ data, isLoading }: ChartsProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Funnel Chart */}
-      <div className="bg-white rounded-xl border border-[#e5e9e2] p-6">
-        <h3 className="text-base font-semibold mb-6 flex items-center text-[#414941]">
-          Embudo de Conversión
-        </h3>
+      <div className="bg-white rounded-xl border border-[#e5e9e2] p-6 flex flex-col justify-between">
+        <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-100">
+            <div>
+              <h3 className="text-base font-bold text-[#181d19]">Embudo de Conversión</h3>
+              <p className="text-xs text-slate-500">Transición de ofertas desde su publicación hasta su contratación efectiva</p>
+            </div>
+          </div>
+
+          <div className="bg-[#f8faf7] p-2.5 rounded-lg border border-[#0f6c41]/10 text-xs text-slate-600 mb-4">
+            <span className="font-bold text-[#181d19]">💡 Leyenda del Embudo:</span> Muestra la tasa de conversión paso a paso: <strong>Proyectos creados</strong> ➔ <strong>Postulaciones enviadas</strong> ➔ <strong>Contrataciones concretadas</strong>.
+          </div>
+        </div>
+
         <div className="h-80">
           {isLoading ? (
             <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
@@ -36,10 +46,20 @@ export default function Charts({ data, isLoading }: ChartsProps) {
       </div>
 
       {/* Income Progress Area Chart */}
-      <div className="bg-white rounded-xl border border-[#e5e9e2] p-6">
-        <h3 className="text-base font-semibold mb-6 flex items-center text-[#414941]">
-          Crecimiento de Ingresos (S/.)
-        </h3>
+      <div className="bg-white rounded-xl border border-[#e5e9e2] p-6 flex flex-col justify-between">
+        <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-100">
+            <div>
+              <h3 className="text-base font-bold text-[#181d19]">Crecimiento de Ingresos (S/.)</h3>
+              <p className="text-xs text-slate-500">Monto acumulado pagado a estudiantes según el mes de contratación</p>
+            </div>
+          </div>
+
+          <div className="bg-[#f8faf7] p-2.5 rounded-lg border border-[#0f6c41]/10 text-xs text-slate-600 mb-4">
+            <span className="font-bold text-[#181d19]">📈 Leyenda de Ingresos:</span> Tendencia acumulada de dinero ganado (en soles S/.) calculado a partir de la fecha exacta (`created_at`/`updated_at`) de las contrataciones registradas.
+          </div>
+        </div>
+
         <div className="h-80">
           {isLoading ? (
             <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
