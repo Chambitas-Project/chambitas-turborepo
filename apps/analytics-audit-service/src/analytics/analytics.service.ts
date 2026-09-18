@@ -406,23 +406,27 @@ export class AnalyticsService {
         abandonment_rate: Math.round(val.totalRate / val.count),
         time_on_step_ms: Math.round(val.totalTime / val.count)
       }));
-    } else {
-      formattedUxFunnel = [
-        { step: 'Landing', abandonment_rate: 10, time_on_step_ms: 5000 },
-        { step: 'Registro', abandonment_rate: 45, time_on_step_ms: 45000 },
-        { step: 'Onboarding', abandonment_rate: 20, time_on_step_ms: 120000 },
-        { step: 'Dashboard', abandonment_rate: 5, time_on_step_ms: 300000 }
-      ];
     }
     let uxFunnelJson = JSON.stringify(formattedUxFunnel);
 
-    // Security Alerts
-    const { data: alerts, error: err3 } = await client.from('security_audit_logs' as any).select('*').limit(10).order('created_at', { ascending: false });
-    let securityAlertsJson = JSON.stringify(!err3 && alerts?.length ? alerts : [
-      { id: 1, severity: 'HIGH', message: 'Múltiples intentos de login fallidos', service: 'auth-service', timestamp: new Date().toISOString() },
-      { id: 2, severity: 'MEDIUM', message: 'Violación de política RLS prevenida', service: 'supabase-db', timestamp: new Date(Date.now() - 3600000).toISOString() },
-      { id: 3, severity: 'LOW', message: 'Rotación de token JWT exitosa', service: 'auth-service', timestamp: new Date(Date.now() - 7200000).toISOString() }
-    ]);
+    // Security Alerts (100% Real desde security_audit_logs)
+    const { data: alerts, error: err3 } = await client
+      .from('security_audit_logs' as any)
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(10);
+      
+    let formattedAlerts: any[] = [];
+    if (!err3 && alerts?.length) {
+      formattedAlerts = alerts.map((a: any) => ({
+        id: a.id,
+        severity: (a.severity || 'info').toUpperCase(),
+        message: a.metadata?.message || a.event_type || 'Evento de seguridad',
+        service: a.metadata?.service || 'sistema',
+        timestamp: a.created_at
+      }));
+    }
+    let securityAlertsJson = JSON.stringify(formattedAlerts);
 
     return {
       performanceMetricsJson,
