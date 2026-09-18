@@ -56,7 +56,7 @@ export class AnalyticsService {
         case 'UX_TELEMETRY':
           // Map event type
           let dbEventType = 'step_completed';
-          if (payload.event_type === 'step_abandoned') dbEventType = 'abandoned';
+          if (payload.event_type === 'step_abandoned' || payload.event_type === 'abandoned') dbEventType = 'abandoned';
           else if (payload.event_type === 'error_shown') dbEventType = 'error_shown';
           else if (payload.event_type === 'step_started') dbEventType = 'step_started';
 
@@ -67,15 +67,19 @@ export class AnalyticsService {
           else if (rawFlow.includes('profile') || rawFlow.includes('onboarding')) dbFlowName = 'profile_setup';
           else if (rawFlow.includes('project')) dbFlowName = 'project_search';
 
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+          const validUserId = uuidRegex.test(payload.user_id) ? payload.user_id : (uuidRegex.test(data.userId) ? data.userId : null);
+          const validSessionId = uuidRegex.test(payload.session_id) ? payload.session_id : null;
+
           const { error: uxError } = await client.from('ux_usability_telemetry').insert({
             event_type: dbEventType as any,
             flow_name: dbFlowName as any,
             step_name: payload.step_name || payload.step || 'Unknown',
             test_group: payload.test_group || null,
-            user_id: payload.user_id || data.userId || null,
+            user_id: validUserId,
             abandonment_rate: payload.abandonment_rate || 0,
             time_on_step_ms: payload.time_on_step_ms || 0,
-            session_id: payload.session_id || 'unknown-session',
+            session_id: validSessionId,
             recorded_at: new Date().toISOString()
           });
 
