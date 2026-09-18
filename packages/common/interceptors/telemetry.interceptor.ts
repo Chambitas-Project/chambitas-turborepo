@@ -35,8 +35,10 @@ export class TelemetryInterceptor implements NestInterceptor {
             if (className.toLowerCase().includes('profile')) serviceName = 'profile';
             else if (className.toLowerCase().includes('project') || className.toLowerCase().includes('application')) serviceName = 'marketplace';
             else if (className.toLowerCase().includes('matching')) serviceName = 'matching';
-            else if (className.toLowerCase().includes('media')) serviceName = 'media';
+            else if (className.toLowerCase().includes('ml') || className.toLowerCase().includes('recommend')) serviceName = 'ml';
+            else if (className.toLowerCase().includes('media')) serviceName = 'analytics-audit';
             else if (className.toLowerCase().includes('notification')) serviceName = 'notification';
+            else if (className.toLowerCase().includes('analytics') || className.toLowerCase().includes('audit')) serviceName = 'analytics-audit';
             else if (className.toLowerCase().includes('auth')) serviceName = 'auth';
             else serviceName = 'auth';
           }
