@@ -28,7 +28,18 @@ export class TelemetryInterceptor implements NestInterceptor {
         
         // Asynchronously emit telemetry if the analytics service is connected
         if (this.analyticsService) {
-          const serviceName = this.serviceName || 'unknown-service';
+          let serviceName = process.env.SERVICE_NAME || this.serviceName;
+          if (!serviceName || serviceName === 'unknown-service') {
+            const handlerName = context.getHandler()?.name || '';
+            const className = context.getClass()?.name || '';
+            if (className.toLowerCase().includes('profile')) serviceName = 'profile';
+            else if (className.toLowerCase().includes('project') || className.toLowerCase().includes('application')) serviceName = 'marketplace';
+            else if (className.toLowerCase().includes('matching')) serviceName = 'matching';
+            else if (className.toLowerCase().includes('media')) serviceName = 'media';
+            else if (className.toLowerCase().includes('notification')) serviceName = 'notification';
+            else if (className.toLowerCase().includes('auth')) serviceName = 'auth';
+            else serviceName = 'auth';
+          }
           
           this.analyticsService.TrackEvent({
             eventType: 'INFRA_METRIC',
