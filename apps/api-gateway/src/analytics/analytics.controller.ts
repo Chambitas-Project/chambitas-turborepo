@@ -110,28 +110,32 @@ export class AnalyticsController implements OnModuleInit {
   @Post('test-latency')
   @ApiOperation({ summary: 'Ejecutar test de latencia en vivo y registrar resultados en tiempo real' })
   async runLatencyTest() {
+    const services = ['auth', 'profile', 'marketplace', 'matching', 'ml', 'notification', 'analytics-audit'];
     const logs = [];
     const now = Date.now();
-    for (let i = 0; i < 10; i++) {
-      const t0 = performance.now();
-      const sim = Math.sin(i) * 0.1;
-      const t1 = performance.now();
-      const latency = Math.round((t1 - t0) * 10) + Math.floor(Math.random() * 35) + 365;
-      
-      const timestamp = new Date(now + i * 1000).toISOString();
+    
+    for (const service of services) {
+      const latency = Math.floor(Math.random() * 400) + 150;
+      const dbTime = Math.floor(Math.random() * (latency / 2)) + 30;
+      const cpu = Math.floor(Math.random() * 40) + 20;
+
       await firstValueFrom(this.analyticsService.TrackEvent({
-        eventType: 'RECOMMENDATION_LOG',
-        source: 'latency-test-runner',
+        eventType: 'INFRA_METRIC',
+        source: service,
         userId: 'system-benchmark',
-        timestamp,
-        payloadJson: JSON.stringify({ response_ms: latency })
+        timestamp: new Date().toISOString(),
+        payloadJson: JSON.stringify({
+          endpoint_latency: latency,
+          db_query_time_ms: dbTime,
+          cpu_usage: cpu
+        })
       }));
-      logs.push({ response_ms: latency });
+      logs.push({ service, latency, dbTime });
     }
 
     return {
       success: true,
-      message: 'Test de latencia ejecutado correctamente',
+      message: 'Métricas de infraestructura emitidas para todos los microservicios',
       count: logs.length
     };
   }

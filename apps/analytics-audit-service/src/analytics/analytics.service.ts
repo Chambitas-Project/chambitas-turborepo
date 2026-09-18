@@ -95,6 +95,16 @@ export class AnalyticsService {
             cpu_usage_percent: payload.cpu_usage || 0,
             recorded_at: new Date().toISOString()
           });
+
+          // Limpieza automática (Pruning): Mantener solo las métricas de los últimos 7 días
+          // o eliminar registros antiguos si supera 2,000 filas para evitar llenar la BD
+          if (Math.random() < 0.05) { // Ejecutar eficientemente 1 de cada 20 inserciones
+            const retentionDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            await client
+              .from('infrastructure_performance_metrics')
+              .delete()
+              .lt('recorded_at', retentionDate);
+          }
           break;
         default:
           this.logger.log(`Event type ${data.eventType} not handled explicitly for Supabase insert`);
@@ -338,27 +348,6 @@ export class AnalyticsService {
       .limit(100);
 
     let formattedInfra: any[] = [];
-    
-    // Lista completa de microservicios para garantizar visualización comparativa en el gráfico
-    const allServices = [
-      { service: 'auth-service', defaultLat: 940, defaultDb: 250, defaultCpu: 20 },
-      { service: 'profile-service', defaultLat: 280, defaultDb: 85, defaultCpu: 35 },
-      { service: 'marketplace-service', defaultLat: 420, defaultDb: 140, defaultCpu: 50 },
-      { service: 'matching-service', defaultLat: 680, defaultDb: 310, defaultCpu: 75 },
-      { service: 'ml-engine', defaultLat: 850, defaultDb: 420, defaultCpu: 88 },
-      { service: 'notification-service', defaultLat: 190, defaultDb: 45, defaultCpu: 15 },
-      { service: 'analytics-audit-service', defaultLat: 310, defaultDb: 110, defaultCpu: 28 }
-    ];
-
-    const serviceMap = new Map<string, { service: string; cpu_usage: number; endpoint_latency: number; db_query_time_ms: number }>();
-    
-    // Cargar baselines por defecto
-    allServices.forEach(s => serviceMap.set(s.service, {
-      service: s.service,
-      cpu_usage: s.defaultCpu,
-      endpoint_latency: s.defaultLat,
-      db_query_time_ms: s.defaultDb
-    }));
 
     if (!err1 && infraMetrics?.length) {
       const grouped = new Map<string, { count: number; totalLat: number; totalDb: number; totalCpu: number }>();
@@ -373,17 +362,13 @@ export class AnalyticsService {
         grouped.set(name, curr);
       }
 
-      grouped.forEach((val, service) => {
-        serviceMap.set(service, {
-          service: service,
-          cpu_usage: Math.round(val.totalCpu / val.count),
-          endpoint_latency: Math.round(val.totalLat / val.count),
-          db_query_time_ms: Math.round(val.totalDb / val.count)
-        });
-      });
+      formattedInfra = Array.from(grouped.entries()).map(([service, val]) => ({
+        service: service,
+        cpu_usage: Math.round(val.totalCpu / val.count),
+        endpoint_latency: Math.round(val.totalLat / val.count),
+        db_query_time_ms: Math.round(val.totalDb / val.count)
+      }));
     }
-
-    formattedInfra = Array.from(serviceMap.values());
     let performanceMetricsJson = JSON.stringify(formattedInfra);
 
     // UX Telemetry

@@ -24,8 +24,34 @@ export default function InfrastructurePage() {
     fetchData();
   }, []);
 
+  const handleSimulateTraffic = async () => {
+    try {
+      setIsLoading(true);
+      await apiClient.runLatencyTest();
+      const refreshed = await apiClient.getInfrastructureKPIs();
+      setData(refreshed);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
+      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-[#e5e9e2] shadow-sm">
+        <div>
+          <h2 className="text-lg font-bold text-[#181d19]">Observabilidad de Infraestructura</h2>
+          <p className="text-xs text-[#414941]">Métricas en tiempo real desde Supabase (`infrastructure_performance_metrics`)</p>
+        </div>
+        <button
+          onClick={handleSimulateTraffic}
+          className="px-4 py-2 bg-[#0f6c41] text-white font-semibold text-xs rounded-lg hover:bg-[#0c5734] transition-colors"
+        >
+          ⚡ Simular Tráfico Multiservicio
+        </button>
+      </div>
+
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center text-red-700">
           <AlertTriangle className="h-5 w-5 mr-3 shrink-0" />
