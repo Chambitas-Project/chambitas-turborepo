@@ -63,8 +63,9 @@ export default function KPICards({ data, isLoading }: KPICardsProps) {
           formula: 'SUM(projects.budget) WHERE application.status IN ("accepted", "completed")',
           details: [
             { label: 'Ingresos Acumulados Generados', val: `S/. ${data?.totalIncomeGenerated?.toLocaleString() || '0'}` },
+            { label: 'Estudiantes Beneficiados (con Contratación)', val: `${data?.funnelData?.find((f: any) => f.step === 'Contrataciones')?.value || 0} contrataciones concretadas` },
             { label: 'Moneda de Registro', val: 'Soles Peruanos (PEN)' },
-            { label: 'Impacto Directo por Alumno', val: `S/. ${data?.activeStudents ? (data.totalIncomeGenerated / data.activeStudents).toFixed(0) : 0} promedio` }
+            { label: 'Impacto Directo Promedio por Alumno Activo', val: `S/. ${data?.activeStudents ? (data.totalIncomeGenerated / data.activeStudents).toFixed(0) : 0} / estudiante` }
           ]
         });
         break;

@@ -431,15 +431,19 @@ export class AnalyticsService {
     // 4. Income, Hires & Time to Hire (Calculado directamente desde aplicaciones aceptadas/completadas y proyectos)
     const { data: acceptedApps } = await client
       .from('applications')
-      .select('created_at, updated_at, status, projects!inner(budget, status)')
+      .select('student_id, created_at, updated_at, status, projects!inner(budget, status)')
       .in('status', ['accepted', 'completed']);
 
     let totalIncomeGenerated = 0;
     let totalTimeHireDays = 0;
     let hiredCount = 0;
+    const uniqueStudentsSet = new Set<string>();
 
     (acceptedApps || []).forEach((app: any) => {
       hiredCount++;
+      if (app.student_id) {
+        uniqueStudentsSet.add(app.student_id);
+      }
       const projectBudget = Number(app.projects?.budget || 0);
       totalIncomeGenerated += projectBudget;
 
@@ -451,6 +455,7 @@ export class AnalyticsService {
       }
     });
 
+    const uniqueHiredStudents = uniqueStudentsSet.size;
     const avgTimeToHireDays = hiredCount > 0 ? Number((totalTimeHireDays / hiredCount).toFixed(1)) : 0;
 
     // Funnel Data (datos 100% reales)
