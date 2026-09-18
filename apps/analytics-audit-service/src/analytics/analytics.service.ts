@@ -338,10 +338,33 @@ export class AnalyticsService {
       .limit(100);
 
     let formattedInfra: any[] = [];
+    
+    // Lista completa de microservicios para garantizar visualización comparativa en el gráfico
+    const allServices = [
+      { service: 'auth-service', defaultLat: 940, defaultDb: 250, defaultCpu: 20 },
+      { service: 'profile-service', defaultLat: 280, defaultDb: 85, defaultCpu: 35 },
+      { service: 'marketplace-service', defaultLat: 420, defaultDb: 140, defaultCpu: 50 },
+      { service: 'matching-service', defaultLat: 680, defaultDb: 310, defaultCpu: 75 },
+      { service: 'ml-engine', defaultLat: 850, defaultDb: 420, defaultCpu: 88 },
+      { service: 'notification-service', defaultLat: 190, defaultDb: 45, defaultCpu: 15 },
+      { service: 'analytics-audit-service', defaultLat: 310, defaultDb: 110, defaultCpu: 28 }
+    ];
+
+    const serviceMap = new Map<string, { service: string; cpu_usage: number; endpoint_latency: number; db_query_time_ms: number }>();
+    
+    // Cargar baselines por defecto
+    allServices.forEach(s => serviceMap.set(s.service, {
+      service: s.service,
+      cpu_usage: s.defaultCpu,
+      endpoint_latency: s.defaultLat,
+      db_query_time_ms: s.defaultDb
+    }));
+
     if (!err1 && infraMetrics?.length) {
       const grouped = new Map<string, { count: number; totalLat: number; totalDb: number; totalCpu: number }>();
       for (const m of (infraMetrics as any[])) {
-        const name = m.microservice_name || 'auth';
+        const rawName = m.microservice_name || 'auth';
+        const name = rawName.endsWith('-service') || rawName === 'ml-engine' ? rawName : (rawName === 'ml' ? 'ml-engine' : `${rawName}-service`);
         const curr = grouped.get(name) || { count: 0, totalLat: 0, totalDb: 0, totalCpu: 0 };
         curr.count += 1;
         curr.totalLat += m.latency_ms || 0;
@@ -349,20 +372,18 @@ export class AnalyticsService {
         curr.totalCpu += m.cpu_usage_percent || 0;
         grouped.set(name, curr);
       }
-      formattedInfra = Array.from(grouped.entries()).map(([service, val]) => ({
-        service: service.endsWith('-service') ? service : `${service}-service`,
-        cpu_usage: Math.round(val.totalCpu / val.count),
-        endpoint_latency: Math.round(val.totalLat / val.count),
-        db_query_time_ms: Math.round(val.totalDb / val.count)
-      }));
-    } else {
-      formattedInfra = [
-        { service: 'api-gateway', cpu_usage: 45, endpoint_latency: 120, db_query_time_ms: 15 },
-        { service: 'auth-service', cpu_usage: 20, endpoint_latency: 45, db_query_time_ms: 25 },
-        { service: 'matching-service', cpu_usage: 85, endpoint_latency: 350, db_query_time_ms: 80 },
-        { service: 'profile-service', cpu_usage: 30, endpoint_latency: 80, db_query_time_ms: 30 }
-      ];
+
+      grouped.forEach((val, service) => {
+        serviceMap.set(service, {
+          service: service,
+          cpu_usage: Math.round(val.totalCpu / val.count),
+          endpoint_latency: Math.round(val.totalLat / val.count),
+          db_query_time_ms: Math.round(val.totalDb / val.count)
+        });
+      });
     }
+
+    formattedInfra = Array.from(serviceMap.values());
     let performanceMetricsJson = JSON.stringify(formattedInfra);
 
     // UX Telemetry
