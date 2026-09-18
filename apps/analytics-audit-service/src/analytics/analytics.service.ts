@@ -1,7 +1,30 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TrackEventRequest, TrackEventResponse, GetOverviewKPIsRequest, GetOverviewKPIsResponse, GetMLEngineKPIsRequest, GetMLEngineKPIsResponse, GetInfrastructureKPIsRequest, GetInfrastructureKPIsResponse } from '@chambitas/proto';
-import { of, Observable, from } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { SupabaseService, Database } from '@chambitas/supabase';
+
+interface EventPayload {
+  event_type?: string;
+  severity?: Database['public']['Enums']['audit_severity'];
+  message?: string;
+  response_ms?: number;
+  model_version_id?: string;
+  student_id?: string;
+  user_id?: string;
+  user_role?: Database['public']['Enums']['user_role'];
+  test_group?: Database['public']['Enums']['ab_test_group'];
+  responses?: number[];
+  calculated_score?: number;
+  flow_name?: string;
+  step_name?: string;
+  step?: string;
+  session_id?: string;
+  abandonment_rate?: number;
+  time_on_step_ms?: number;
+  endpoint_latency?: number;
+  db_query_time_ms?: number;
+  cpu_usage?: number;
+}
 
 @Injectable()
 export class AnalyticsService {
@@ -16,11 +39,11 @@ export class AnalyticsService {
   private async _handleTrackEvent(data: TrackEventRequest): Promise<TrackEventResponse> {
     this.logger.log(`Tracking event: ${data.eventType} from ${data.source}`);
     const client = this.supabase.getAdminClient<Database>();
-    let payload: any = {};
+    let payload: EventPayload = {};
 
     try {
       if (data.payloadJson) {
-        payload = JSON.parse(data.payloadJson);
+        payload = JSON.parse(data.payloadJson) as EventPayload;
       }
     } catch (e) {
       this.logger.warn('Failed to parse payloadJson in trackEvent');
@@ -30,50 +53,48 @@ export class AnalyticsService {
       switch (data.eventType) {
         case 'SECURITY_ALERT':
           await client.from('security_audit_logs').insert({
-            event_type: payload.event_type || 'regex_fail',
+            event_type: (payload.event_type as Database['public']['Enums']['audit_event_type']) || 'regex_fail',
             severity: payload.severity || 'warning',
             metadata: { message: payload.message || 'Security Event', service: data.source },
             created_at: new Date().toISOString()
           });
           break;
         case 'RECOMMENDATION_LOG':
-          await client.from('recommendation_logs' as any).insert({
+          await client.from('recommendation_logs').insert({
             response_ms: payload.response_ms || 0,
             model_version_id: payload.model_version_id || '00000000-0000-0000-0000-000000000000',
             student_id: payload.student_id || data.userId || '00000000-0000-0000-0000-000000000000'
-          } as any);
+          });
           break;
         case 'SUS_EVALUATION':
-          await client.from('sus_evaluations' as any).insert({
-            user_id: payload.user_id || data.userId,
+          await client.from('sus_evaluations').insert({
+            user_id: payload.user_id || data.userId || '00000000-0000-0000-0000-000000000000',
             user_role: payload.user_role || 'student',
             test_group: payload.test_group || 'EXPERIMENTAL',
             responses: payload.responses || [5, 1, 5, 1, 5, 1, 5, 1, 5, 1],
             calculated_score: payload.calculated_score || 100.0,
             created_at: new Date().toISOString()
-          } as any);
+          });
           break;
         case 'UX_TELEMETRY':
-          // Map event type
-          let dbEventType = 'step_completed';
+          let dbEventType: Database['public']['Enums']['ux_event_type'] = 'step_completed';
           if (payload.event_type === 'step_abandoned' || payload.event_type === 'abandoned') dbEventType = 'abandoned';
           else if (payload.event_type === 'error_shown') dbEventType = 'error_shown';
           else if (payload.event_type === 'step_started') dbEventType = 'step_started';
 
-          // Map flow name
-          let dbFlowName = 'application'; // Default valid flow
+          let dbFlowName: Database['public']['Enums']['flow_name'] = 'application';
           const rawFlow = (payload.flow_name || '').toLowerCase();
           if (rawFlow.includes('registration')) dbFlowName = 'registration';
           else if (rawFlow.includes('profile') || rawFlow.includes('onboarding')) dbFlowName = 'profile_setup';
           else if (rawFlow.includes('project')) dbFlowName = 'project_search';
 
           const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-          const validUserId = uuidRegex.test(payload.user_id) ? payload.user_id : (uuidRegex.test(data.userId) ? data.userId : null);
-          const validSessionId = uuidRegex.test(payload.session_id) ? payload.session_id : null;
+          const validUserId = uuidRegex.test(payload.user_id || '') ? payload.user_id : (uuidRegex.test(data.userId) ? data.userId : null);
+          const validSessionId = uuidRegex.test(payload.session_id || '') ? payload.session_id! : '00000000-0000-0000-0000-000000000000';
 
           const { error: uxError } = await client.from('ux_usability_telemetry').insert({
-            event_type: dbEventType as any,
-            flow_name: dbFlowName as any,
+            event_type: dbEventType,
+            flow_name: dbFlowName,
             step_name: payload.step_name || payload.step || 'Unknown',
             test_group: payload.test_group || null,
             user_id: validUserId,
@@ -88,21 +109,19 @@ export class AnalyticsService {
           }
           break;
         case 'INFRA_METRIC':
-          let microservice = data.source;
-          if (!['auth', 'profile', 'analytics-audit', 'marketplace', 'matching', 'ml', 'notification'].includes(microservice)) {
-            microservice = 'auth';
+          let microservice: Database['public']['Enums']['microservice_name'] = 'auth';
+          if (['auth', 'profile', 'analytics-audit', 'marketplace', 'matching', 'ml', 'notification'].includes(data.source)) {
+            microservice = data.source as Database['public']['Enums']['microservice_name'];
           }
           await client.from('infrastructure_performance_metrics').insert({
-            microservice_name: microservice as any,
+            microservice_name: microservice,
             latency_ms: payload.endpoint_latency || 0,
             db_query_time_ms: payload.db_query_time_ms || 0,
             cpu_usage_percent: payload.cpu_usage || 0,
             recorded_at: new Date().toISOString()
           });
 
-          // Limpieza automática (Pruning): Mantener solo las métricas de los últimos 7 días
-          // o eliminar registros antiguos si supera 2,000 filas para evitar llenar la BD
-          if (Math.random() < 0.05) { // Ejecutar eficientemente 1 de cada 20 inserciones
+          if (Math.random() < 0.05) {
             const retentionDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
             await client
               .from('infrastructure_performance_metrics')
@@ -132,7 +151,7 @@ export class AnalyticsService {
     return from(this._getInfrastructureKPIs());
   }
 
-  getABTestingKPIs(data: any): Observable<any> {
+  getABTestingKPIs(data: unknown): Observable<{ abTestingMetricsJson: string }> {
     return from(this._getABTestingKPIs());
   }
 
@@ -140,7 +159,6 @@ export class AnalyticsService {
     const client = this.supabase.getAdminClient<Database>();
 
     try {
-      // 1. Conteo de muestra N por cohorte
       const { data: profileCounts } = await client
         .from('student_profiles')
         .select('test_group');
@@ -153,7 +171,6 @@ export class AnalyticsService {
         else nExperimental++;
       });
 
-      // 2. Tiempos de búsqueda y CSAT desde ux_usability_telemetry
       const { data: telemetry } = await client
         .from('ux_usability_telemetry')
         .select('test_group, time_on_step_ms, satisfaction_score_csat, flow_name');
@@ -175,16 +192,25 @@ export class AnalyticsService {
         }
       });
 
-      // 3. Tasa de Matchitos Exitosos (Aplicaciones aceptadas / Aplicaciones totales)
       const { data: apps } = await client
         .from('applications')
-        .select('status, student_profiles!inner(test_group)');
+        .select('status, student_id');
+
+      const { data: studentProfiles } = await client
+        .from('student_profiles')
+        .select('id, test_group');
+
+      const studentGroupMap = new Map<string, string>();
+      (studentProfiles || []).forEach(sp => {
+        studentGroupMap.set(sp.id, sp.test_group);
+      });
 
       let totalAppsControl = 0, acceptedAppsControl = 0;
       let totalAppsExp = 0, acceptedAppsExp = 0;
 
-      (apps || []).forEach((a: any) => {
-        const isExp = a.student_profiles?.test_group === 'EXPERIMENTAL';
+      (apps || []).forEach(a => {
+        const group = studentGroupMap.get(a.student_id);
+        const isExp = group === 'EXPERIMENTAL';
         if (isExp) {
           totalAppsExp++;
           if (a.status === 'accepted' || a.status === 'completed') acceptedAppsExp++;
@@ -194,7 +220,6 @@ export class AnalyticsService {
         }
       });
 
-      // Cálculos con datos reales de la base de datos Supabase
       const sampleSizeControl = nControl;
       const sampleSizeExp = nExperimental;
 
@@ -212,7 +237,6 @@ export class AnalyticsService {
         ? Number(((acceptedAppsExp / totalAppsExp) * 100).toFixed(1))
         : 0;
 
-      // 4. Promedio real de evaluaciones SUS en sus_evaluations
       const { data: susEvals } = await client
         .from('sus_evaluations')
         .select('test_group, calculated_score');
@@ -234,7 +258,7 @@ export class AnalyticsService {
       const susScoreControl = susCountControl > 0
         ? Number((susSumControl / susCountControl).toFixed(1))
         : (csatCountControl > 0 ? Number(((csatSumControl / csatCountControl) * 20).toFixed(1)) : 0);
-        
+
       const susScoreExp = susCountExp > 0
         ? Number((susSumExp / susCountExp).toFixed(1))
         : (csatCountExp > 0 ? Number(((csatSumExp / csatCountExp) * 20).toFixed(1)) : 0);
@@ -283,8 +307,9 @@ export class AnalyticsService {
       ];
 
       return { abTestingMetricsJson: JSON.stringify(metrics) };
-    } catch (e: any) {
-      this.logger.error(`Error en _getABTestingKPIs: ${e.message}`);
+    } catch (e) {
+      const err = e as Error;
+      this.logger.error(`Error en _getABTestingKPIs: ${err.message}`);
       return { abTestingMetricsJson: '[]' };
     }
   }
@@ -292,8 +317,7 @@ export class AnalyticsService {
   private async _getMLEngineKPIs(): Promise<GetMLEngineKPIsResponse> {
     const client = this.supabase.getAdminClient<Database>();
 
-    // ML Model Versions (Mock with fallback)
-    const { data: modelVersions, error: err1 } = await client.from('ml_model_versions' as any).select('*').order('trained_at', { ascending: true });
+    const { data: modelVersions, error: err1 } = await client.from('ml_model_versions').select('*').order('trained_at', { ascending: true });
     let modelVersionsJson = JSON.stringify(!err1 && modelVersions?.length ? modelVersions : [
       { version_tag: 'v1.0', f1_score: 0.72, precision_val: 0.75, recall_val: 0.70 },
       { version_tag: 'v1.1', f1_score: 0.78, precision_val: 0.81, recall_val: 0.76 },
@@ -301,16 +325,15 @@ export class AnalyticsService {
       { version_tag: 'v2.0', f1_score: 0.92, precision_val: 0.94, recall_val: 0.90 }
     ]);
 
-    // Recommendation Logs (Latencia real de Inferencias)
     const { data: recLogs, error: err2 } = await client
-      .from('recommendation_logs' as any)
+      .from('recommendation_logs')
       .select('response_ms, created_at')
       .order('created_at', { ascending: true })
       .limit(100);
 
     const now = new Date();
     const formattedRecLogs = (!err2 && recLogs?.length)
-      ? recLogs.map((r: any, idx: number) => ({
+      ? recLogs.map((r, idx) => ({
         time: r.created_at ? new Date(r.created_at).toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }) : `Req #${idx + 1}`,
         response_ms: Math.round(r.response_ms || 0)
       }))
@@ -324,10 +347,9 @@ export class AnalyticsService {
 
     let recommendationLogsJson = JSON.stringify(formattedRecLogs);
 
-    // Matches Distribution (Similitud real agrupada por rango de compatibilidad pgvector)
-    const { data: appsWithScore } = await client
-      .from('applications')
-      .select('compatibility_score');
+    const { data: matchesWithScore } = await client
+      .from('matches')
+      .select('score');
 
     const ranges = [
       { range: '0-20%', count: 0 },
@@ -337,8 +359,8 @@ export class AnalyticsService {
       { range: '81-100%', count: 0 }
     ];
 
-    (appsWithScore || []).forEach((a: any) => {
-      const score = (a.compatibility_score || 0) * 100; // si está normalizado 0.0 - 1.0 o en %
+    (matchesWithScore || []).forEach(m => {
+      const score = (m.score || 0) * 100;
       if (score <= 20 && ranges[0]) ranges[0].count++;
       else if (score <= 40 && ranges[1]) ranges[1].count++;
       else if (score <= 60 && ranges[2]) ranges[2].count++;
@@ -358,20 +380,19 @@ export class AnalyticsService {
   private async _getInfrastructureKPIs(): Promise<GetInfrastructureKPIsResponse> {
     const client = this.supabase.getAdminClient<Database>();
 
-    // Infra Metrics
     const { data: infraMetrics, error: err1 } = await client
-      .from('infrastructure_performance_metrics' as any)
+      .from('infrastructure_performance_metrics')
       .select('microservice_name, latency_ms, db_query_time_ms, cpu_usage_percent, recorded_at')
       .order('recorded_at', { ascending: false })
       .limit(100);
 
-    let formattedInfra: any[] = [];
+    let formattedInfra: { service: string; cpu_usage: number; endpoint_latency: number; db_query_time_ms: number }[] = [];
 
     if (!err1 && infraMetrics?.length) {
       const grouped = new Map<string, { count: number; totalLat: number; totalDb: number; totalCpu: number }>();
-      for (const m of (infraMetrics as any[])) {
+      for (const m of infraMetrics) {
         const rawName = m.microservice_name || 'auth';
-        const name = rawName.endsWith('-service') || rawName === 'ml-engine' ? rawName : (rawName === 'ml' ? 'ml-engine' : `${rawName}-service`);
+        const name = rawName.endsWith('-service') || rawName === 'ml' ? rawName : `${rawName}-service`;
         const curr = grouped.get(name) || { count: 0, totalLat: 0, totalDb: 0, totalCpu: 0 };
         curr.count += 1;
         curr.totalLat += m.latency_ms || 0;
@@ -389,14 +410,13 @@ export class AnalyticsService {
     }
     let performanceMetricsJson = JSON.stringify(formattedInfra);
 
-    // UX Telemetry (Agrupado dinámicamente por paso con promedio real)
-    const { data: uxLogs, error: err2 } = await client.from('ux_usability_telemetry' as any).select('*');
-    
-    let formattedUxFunnel: any[] = [];
+    const { data: uxLogs, error: err2 } = await client.from('ux_usability_telemetry').select('*');
+
+    let formattedUxFunnel: { step: string; abandonment_rate: number; time_on_step_ms: number }[] = [];
     if (!err2 && uxLogs?.length) {
       const stepMap = new Map<string, { count: number; totalRate: number; totalTime: number }>();
-      
-      (uxLogs as any[]).forEach(u => {
+
+      uxLogs.forEach(u => {
         const step = u.step_name || u.flow_name || 'Desconocido';
         const curr = stepMap.get(step) || { count: 0, totalRate: 0, totalTime: 0 };
         curr.count += 1;
@@ -413,20 +433,19 @@ export class AnalyticsService {
     }
     let uxFunnelJson = JSON.stringify(formattedUxFunnel);
 
-    // Security Alerts (100% Real desde security_audit_logs)
     const { data: alerts, error: err3 } = await client
-      .from('security_audit_logs' as any)
+      .from('security_audit_logs')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(10);
-      
-    let formattedAlerts: any[] = [];
+
+    let formattedAlerts: { id: string; severity: string; message: string; service: string; timestamp: string }[] = [];
     if (!err3 && alerts?.length) {
-      formattedAlerts = alerts.map((a: any) => ({
+      formattedAlerts = alerts.map(a => ({
         id: a.id,
         severity: (a.severity || 'info').toUpperCase(),
-        message: a.metadata?.message || a.event_type || 'Evento de seguridad',
-        service: a.metadata?.service || 'sistema',
+        message: (a.metadata as { message?: string } | null)?.message || a.event_type || 'Evento de seguridad',
+        service: (a.metadata as { service?: string } | null)?.service || 'sistema',
         timestamp: a.created_at
       }));
     }
@@ -442,39 +461,44 @@ export class AnalyticsService {
   private async _getOverviewKPIs(): Promise<GetOverviewKPIsResponse> {
     const client = this.supabase.getAdminClient<Database>();
 
-    // 1. Active Students
     const { count: activeStudents } = await client
       .from('users')
       .select('id', { count: 'exact', head: true })
       .eq('role', 'student');
 
-    // 2. Total Projects
     const { count: totalProjects } = await client
       .from('projects')
       .select('id', { count: 'exact', head: true });
 
-    // 3. Total Applications
     const { count: totalApplications } = await client
       .from('applications')
       .select('id', { count: 'exact', head: true });
 
-    // 4. Income, Hires & Time to Hire (Calculado directamente desde aplicaciones aceptadas/completadas y proyectos)
     const { data: acceptedApps } = await client
       .from('applications')
-      .select('student_id, created_at, updated_at, status, projects!inner(budget, status)')
+      .select('student_id, created_at, updated_at, status, project_id')
       .in('status', ['accepted', 'completed']);
+
+    const { data: projects } = await client
+      .from('projects')
+      .select('id, budget');
+
+    const projectBudgetMap = new Map<string, number>();
+    (projects || []).forEach(p => {
+      projectBudgetMap.set(p.id, p.budget || 0);
+    });
 
     let totalIncomeGenerated = 0;
     let totalTimeHireDays = 0;
     let hiredCount = 0;
     const uniqueStudentsSet = new Set<string>();
 
-    (acceptedApps || []).forEach((app: any) => {
+    (acceptedApps || []).forEach(app => {
       hiredCount++;
       if (app.student_id) {
         uniqueStudentsSet.add(app.student_id);
       }
-      const projectBudget = Number(app.projects?.budget || 0);
+      const projectBudget = projectBudgetMap.get(app.project_id) || 0;
       totalIncomeGenerated += projectBudget;
 
       if (app.created_at && app.updated_at) {
@@ -485,21 +509,17 @@ export class AnalyticsService {
       }
     });
 
-    const uniqueHiredStudents = uniqueStudentsSet.size;
     const avgTimeToHireDays = hiredCount > 0 ? Number((totalTimeHireDays / hiredCount).toFixed(1)) : 0;
 
-    // Funnel Data (datos 100% reales)
     const funnelData = [
       { step: 'Proyectos', value: totalProjects || 0 },
       { step: 'Postulaciones', value: totalApplications || 0 },
       { step: 'Contrataciones', value: hiredCount }
     ];
 
-    // Group income dynamically by actual application month (Ene - Dic)
     const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic'];
     const monthlyMap = new Map<number, number>();
-    
-    // Initialize last 6 months dynamically up to current month
+
     const nowMonth = new Date().getMonth();
     const monthsToDisplay: { monthIdx: number; label: string }[] = [];
     for (let i = 5; i >= 0; i--) {
@@ -508,8 +528,8 @@ export class AnalyticsService {
       monthlyMap.set(mIdx, 0);
     }
 
-    (acceptedApps || []).forEach((app: any) => {
-      const budget = Number(app.projects?.budget || 0);
+    (acceptedApps || []).forEach(app => {
+      const budget = projectBudgetMap.get(app.project_id) || 0;
       const dateStr = app.updated_at || app.created_at;
       if (dateStr) {
         const appMonth = new Date(dateStr).getMonth();
@@ -517,7 +537,6 @@ export class AnalyticsService {
       }
     });
 
-    // Compute cumulative or monthly growth for the chart
     let runningTotal = 0;
     const incomeProgress = monthsToDisplay.map(m => {
       const monthInc = monthlyMap.get(m.monthIdx) || 0;
