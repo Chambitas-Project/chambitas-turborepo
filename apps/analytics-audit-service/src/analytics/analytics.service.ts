@@ -320,15 +320,29 @@ export class AnalyticsService {
 
     let recommendationLogsJson = JSON.stringify(formattedRecLogs);
 
-    // Matches Distribution (Similitud)
-    const { data: matches, error: err3 } = await client.from('matches' as any).select('similarity_score');
-    let matchesDistributionJson = JSON.stringify(!err3 && matches?.length ? matches : [
-      { range: '0-20%', count: 50 },
-      { range: '21-40%', count: 120 },
-      { range: '41-60%', count: 450 },
-      { range: '61-80%', count: 890 },
-      { range: '81-100%', count: 1240 }
-    ]);
+    // Matches Distribution (Similitud real agrupada por rango de compatibilidad pgvector)
+    const { data: appsWithScore } = await client
+      .from('applications')
+      .select('compatibility_score');
+
+    const ranges = [
+      { range: '0-20%', count: 0 },
+      { range: '21-40%', count: 0 },
+      { range: '41-60%', count: 0 },
+      { range: '61-80%', count: 0 },
+      { range: '81-100%', count: 0 }
+    ];
+
+    (appsWithScore || []).forEach((a: any) => {
+      const score = (a.compatibility_score || 0) * 100; // si está normalizado 0.0 - 1.0 o en %
+      if (score <= 20 && ranges[0]) ranges[0].count++;
+      else if (score <= 40 && ranges[1]) ranges[1].count++;
+      else if (score <= 60 && ranges[2]) ranges[2].count++;
+      else if (score <= 80 && ranges[3]) ranges[3].count++;
+      else if (ranges[4]) ranges[4].count++;
+    });
+
+    let matchesDistributionJson = JSON.stringify(ranges);
 
     return {
       modelVersionsJson,
