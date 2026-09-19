@@ -26,7 +26,7 @@ export function EmployerProjectHeader({ project }: EmployerProjectHeaderProps) {
                 onClick={() => navigate(`/employer/projects/${project.id}/edit`)}
                 className="flex items-center gap-1.5 border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs rounded-lg cursor-pointer"
               >
-                <Edit2 className="h-3.5 w-3.5" /> Editar Proyecto
+                <Edit2 className="h-3.5 w-3.5" />
               </Button>
             )}
           </div>
