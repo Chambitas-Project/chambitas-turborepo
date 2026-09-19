@@ -117,20 +117,20 @@ export function EmployerDashboard() {
       </div>
 
       {/* Perfil del Empleador */}
-      <div className="bg-white rounded-md p-6 border border-slate-100 shadow-sm mb-12 flex flex-col md:flex-row items-start md:items-center gap-6">
-        <div className="h-20 w-20 bg-slate-900 rounded-md flex items-center justify-center shrink-0 overflow-hidden">
-          <img src={(user as any)?.avatarUrl || (user as any)?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${(user as any)?.companyName || (user as any)?.commercialName || (user as any)?.fullName || 'E'}&backgroundColor=0f172a`} alt="Avatar" className="w-full h-full object-cover rounded-md" />
+      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm mb-8 flex flex-col md:flex-row items-start md:items-center gap-6">
+        <div className="h-20 w-20 bg-slate-900 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden border border-slate-100 shadow-inner">
+          <img src={(user as any)?.avatarUrl || (user as any)?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${(user as any)?.companyName || (user as any)?.commercialName || (user as any)?.fullName || 'E'}&backgroundColor=0f172a`} alt="Avatar" className="w-full h-full object-cover" />
         </div>
-        <div className="space-y-2 flex-1 w-full">
+        <div className="space-y-1.5 flex-1 w-full">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-black text-slate-900">{(user as any)?.commercialName || (user as any)?.fullName || 'Usuario Anónimo'}</h2>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">{(user as any)?.commercialName || (user as any)?.fullName || 'Usuario Anónimo'}</h2>
           </div>
-          <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">{(user as any)?.companyName || 'Empleador Confidencial'}</p>
+          <p className="text-xs font-bold text-emerald-700 uppercase tracking-widest">{(user as any)?.companyName || 'Empleador Confidencial'}</p>
           <p className="text-sm text-slate-600 font-medium leading-relaxed max-w-3xl line-clamp-2">
             {(user as any)?.description || 'Aún no has agregado una descripción a tu perfil. Completa tu perfil para atraer a los mejores talentos a tus proyectos.'}
           </p>
         </div>
-        <Button onClick={() => setIsProfileModalOpen(true)} variant="outline" className="shrink-0 rounded-md font-bold text-slate-700 border-slate-200 hover:bg-slate-50 shadow-none w-full md:w-auto">
+        <Button onClick={() => setIsProfileModalOpen(true)} variant="outline" className="shrink-0 rounded-xl font-bold text-slate-700 border-slate-200 hover:bg-slate-50 shadow-none w-full md:w-auto cursor-pointer">
           Editar Perfil
         </Button>
       </div>
