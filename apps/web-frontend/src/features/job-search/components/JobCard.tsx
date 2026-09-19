@@ -20,14 +20,31 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
   const budget = project.budget || 0;
   const company = project.company_name || project.employer_name || "Empleador Confidencial";
 
-  const statusText = project.status === 'active' ? 'Abierto' :
+  const statusText = project.status === 'active' || project.status === 'open' || !project.status ? 'Abierto' :
     project.status === 'in_progress' ? 'En Progreso' :
       project.status === 'pending' ? 'Pendiente' :
         project.status === 'completed' ? 'Completado' : 'Abierto';
 
-  const createdDate = project.created_at ? new Date(project.created_at) : new Date();
-  const daysAgo = Math.floor((new Date().getTime() - createdDate.getTime()) / (1000 * 3600 * 24));
-  const timeAgoText = daysAgo === 0 ? 'hace unas horas' : `hace ${daysAgo} día${daysAgo !== 1 ? 's' : ''}`;
+  const formatTimeAgo = (dateString?: string) => {
+    if (!dateString) return 'hace poco';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'hace poco';
+    
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'hace unos segundos';
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `hace ${diffInMinutes} min`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `hace ${diffInHours} ${diffInHours === 1 ? 'hora' : 'horas'}`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `hace ${diffInDays} día${diffInDays !== 1 ? 's' : ''}`;
+    const diffInMonths = Math.floor(diffInDays / 30);
+    return `hace ${diffInMonths} mes${diffInMonths !== 1 ? 'es' : ''}`;
+  };
+
+  const timeAgoText = formatTimeAgo(project.created_at);
 
   const getInitials = (name: string) => {
     return name
@@ -109,15 +126,15 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
           </div>
           {hasApplied ? (
             <span className="w-full sm:w-auto bg-slate-50 text-slate-600 font-bold px-6 h-11 flex items-center justify-center rounded-lg border border-slate-200 cursor-default">
-              Postulaste
+              Postulado
             </span>
           ) : (
             <Button
+              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 h-11 rounded-lg shadow-sm hover:shadow-emerald-500/20 transition-all duration-200"
               onClick={(e) => {
                 e.stopPropagation();
-                if (projectId) navigate(`/projects/${projectId}`);
+                handleNavigate();
               }}
-              className="w-full sm:w-auto bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold px-6 h-11 rounded-md transition-colors shadow-none hover:shadow-none border-0"
             >
               Postular ahora
             </Button>
@@ -132,34 +149,29 @@ export function JobCardSkeleton() {
   return (
     <div className="bg-white rounded-[20px] p-6 border border-slate-200 animate-pulse">
       <div className="flex flex-col gap-5">
-        <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
+        <div className="flex justify-between items-start gap-4">
           <div className="flex items-start gap-4">
-            <div className="shrink-0 h-14 w-14 rounded-xl bg-slate-200" />
-            <div className="space-y-3 mt-1 w-48 sm:w-64">
-              <div className="h-5 bg-slate-200 rounded-md w-3/4" />
-              <div className="h-4 bg-slate-200 rounded-md w-full" />
+            <div className="h-14 w-14 rounded-xl bg-slate-200 shrink-0" />
+            <div className="space-y-2">
+              <div className="h-5 w-64 bg-slate-200 rounded" />
+              <div className="h-4 w-40 bg-slate-200 rounded" />
             </div>
           </div>
-          <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
-            <div className="h-6 w-32 bg-slate-200 rounded-full" />
-            <div className="h-8 w-24 bg-slate-200 rounded-md mt-1" />
-          </div>
+          <div className="h-6 w-24 bg-slate-200 rounded-full" />
         </div>
-        
         <div className="space-y-2">
-          <div className="h-4 bg-slate-200 rounded-md w-full" />
-          <div className="h-4 bg-slate-200 rounded-md w-5/6" />
+          <div className="h-4 w-full bg-slate-200 rounded" />
+          <div className="h-4 w-3/4 bg-slate-200 rounded" />
         </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="h-8 w-16 bg-slate-200 rounded-md" />
-            <div className="h-8 w-20 bg-slate-200 rounded-md" />
-            <div className="h-8 w-14 bg-slate-200 rounded-md" />
+        <div className="flex justify-between items-center pt-1">
+          <div className="flex gap-2">
+            <div className="h-8 w-16 bg-slate-200 rounded-lg" />
+            <div className="h-8 w-20 bg-slate-200 rounded-lg" />
           </div>
-          <div className="h-10 w-32 bg-slate-200 rounded-md" />
+          <div className="h-11 w-32 bg-slate-200 rounded-lg" />
         </div>
       </div>
     </div>
   );
 }
+

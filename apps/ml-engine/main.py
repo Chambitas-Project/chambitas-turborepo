@@ -123,19 +123,35 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
 
     def _bg_student_embedding(self, student_id):
         try:
-            s_resp = supabase.table("student_profiles").select("id").eq("id", student_id).execute()
+            s_resp = supabase.table("student_profiles").select("id, bio, careers(name)").eq("id", student_id).execute()
             if not s_resp.data: return
+            s = s_resp.data[0]
             
+            career_name = ""
+            if s.get('careers') and isinstance(s['careers'], dict):
+                career_name = s['careers'].get('name', '')
+            elif s.get('careers') and isinstance(s['careers'], list) and len(s['careers']) > 0:
+                career_name = s['careers'][0].get('name', '')
+
             r_resp = supabase.table("student_skills").select("skills(name)").eq("student_id", student_id).execute()
             nm_skills = []
             if r_resp.data:
                 for row in r_resp.data:
-                    if row.get('skills') and isinstance(row['skills'], dict) and 'name' in row['skills']:
-                        nm_skills.append(row['skills']['name'])
+                    sk = row.get('skills')
+                    if isinstance(sk, dict) and 'name' in sk:
+                        nm_skills.append(sk['name'])
+                    elif isinstance(sk, list):
+                        for item in sk:
+                            if isinstance(item, dict) and 'name' in item:
+                                nm_skills.append(item['name'])
             
             final_skills = list(set(nm_skills))
-            corpus = ", ".join(final_skills)
+            skills_text = ", ".join(final_skills)
             
+            corpus = f"{career_name} {s.get('bio', '') or ''} {skills_text}".strip()
+            if not corpus:
+                corpus = "estudiante sin detalles"
+
             vector_300 = engine.get_text_embedding(corpus)
             supabase.table("student_profiles").update({"embedding": vector_300}).eq("id", student_id).execute()
             print(f"[THREAD] OK: Estudiante {student_id} re-vectorizado con éxito.")
