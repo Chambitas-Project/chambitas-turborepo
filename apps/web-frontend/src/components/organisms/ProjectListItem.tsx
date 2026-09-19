@@ -34,7 +34,7 @@ export function ProjectListItem({ project }: { project: EmployerProject }) {
       <CardContent className="p-6 flex items-center justify-between">
         <div className="space-y-3 flex-1 pr-4 sm:pr-8">
           <div className="flex items-center gap-3 flex-wrap">
-            <h3 className="font-bold text-lg text-slate-800">{project.title}</h3>
+            <h3 className="font-bold text-lg text-slate-800 line-clamp-2">{project.title}</h3>
             <Badge className={cn(
               "text-[9px] font-black uppercase tracking-widest px-2 py-1",
               isActive ? "bg-emerald-100 text-emerald-700" :

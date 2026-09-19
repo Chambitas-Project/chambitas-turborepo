@@ -53,6 +53,11 @@ export function ApplicantsList({
     return getUtcTime(b.applied_at || b.created_at) - getUtcTime(a.applied_at || a.created_at);
   });
 
+  const acceptedApplicants = sortedApplicants.filter((a) => a.status === 'accepted');
+  const displayedApplicants = isSelectedStatus
+    ? (acceptedApplicants.length > 0 ? acceptedApplicants : sortedApplicants.slice(0, 1))
+    : sortedApplicants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
@@ -61,7 +66,7 @@ export function ApplicantsList({
             {isSelectedStatus ? 'Estudiante Seleccionado' : 'Postulantes'}
           </h2>
           <Badge className="bg-emerald-50 text-emerald-700 font-black px-2.5 py-0.5 rounded-md">
-            {isSelectedStatus ? '1' : applicants.length}
+            {isSelectedStatus ? displayedApplicants.length : applicants.length}
           </Badge>
         </div>
       </div>
@@ -79,10 +84,7 @@ export function ApplicantsList({
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-4">
-            {(isSelectedStatus
-              ? sortedApplicants.filter((a) => a.status === 'accepted')
-              : sortedApplicants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-            ).map((app) => {
+            {displayedApplicants.map((app) => {
               const dateStr = app.applied_at || app.created_at || '';
               const utcDateStr = dateStr ? (dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : `${dateStr}Z`) : 0;
               const isNew = (Date.now() - new Date(utcDateStr).getTime()) < 1000 * 60 * 60 * 24 * 2; // 48 horas
@@ -91,16 +93,16 @@ export function ApplicantsList({
                 <div
                   key={app.id}
                   className={cn(
-                    "p-6 rounded-md border transition-colors flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative",
-                    app.status === 'accepted'
-                      ? "bg-emerald-50 border-emerald-200"
+                    "p-6 rounded-xl border transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden",
+                    (app.status === 'accepted' || (isSelectedStatus && displayedApplicants.length === 1))
+                      ? "bg-emerald-50/60 border-emerald-200 shadow-sm"
                       : app.status === 'rejected'
-                        ? "bg-red-50 border-red-100 opacity-60"
-                        : "bg-white border-slate-100 hover:border-emerald-200 shadow-sm group"
+                        ? "bg-rose-50/60 border-rose-100 opacity-60"
+                        : "bg-white border-slate-200/80 hover:border-emerald-300 shadow-sm group"
                   )}
                 >
-                  {app.status === 'accepted' && (
-                    <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-500 rounded-l-md" />
+                  {(app.status === 'accepted' || (isSelectedStatus && displayedApplicants.length === 1)) && (
+                    <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-500" />
                   )}
 
                   <div className="flex items-start gap-4">

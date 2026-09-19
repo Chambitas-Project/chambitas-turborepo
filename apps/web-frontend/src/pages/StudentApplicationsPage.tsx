@@ -154,7 +154,7 @@ export function StudentApplicationsPage() {
 
                   <div className="flex-1 space-y-3">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                      <h3 className="text-xl font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors">
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors line-clamp-2">
                         {app.project_title || "Proyecto sin título"}
                       </h3>
                       <Badge className={cn("px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 w-fit border", statusConfig.classes)}>

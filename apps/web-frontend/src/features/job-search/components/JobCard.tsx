@@ -77,8 +77,8 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
                 <span className="text-white font-bold text-lg tracking-wider">{initials}</span>
               )}
             </div>
-            <div className="space-y-1 mt-0.5">
-              <h4 className="text-[19px] font-bold text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors duration-300">
+            <div className="space-y-1 mt-0.5 min-w-0">
+              <h4 className="text-[19px] font-bold text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors duration-300 line-clamp-2">
                 {project.title}
               </h4>
               <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
@@ -108,7 +108,7 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
         </div>
 
         {/* Description */}
-        <p className="text-[15px] text-slate-500 font-medium leading-relaxed">
+        <p className="text-[15px] text-slate-500 font-medium leading-relaxed line-clamp-2">
           {project.description}
         </p>
 
