@@ -27,7 +27,8 @@ export function CreateProjectPage() {
     budget: "",
     service_category: "Software y Tecnología",
     deadline: "",
-    max_hours_week: ""
+    max_hours_week: "",
+    schedule_mode: "async"
   });
 
   const [availableSkills, setAvailableSkills] = useState<Skill[]>([]);
@@ -108,7 +109,8 @@ export function CreateProjectPage() {
           mandatory: true
         })),
         deadline: formData.deadline || undefined,
-        max_hours_week: formData.max_hours_week ? Number(formData.max_hours_week) : undefined
+        max_hours_week: formData.max_hours_week ? Number(formData.max_hours_week) : undefined,
+        schedule_constraints: formData.schedule_mode === "specific" && formData.schedule_constraints ? formData.schedule_constraints : undefined
       });
       // Redirect on success
       completeStep();

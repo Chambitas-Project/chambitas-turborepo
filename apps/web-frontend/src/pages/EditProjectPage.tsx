@@ -63,13 +63,25 @@ export function EditProjectPage() {
         setIsLoading(true);
         const res = await apiClient.get(`/marketplace/projects/${id}`);
         const p = res.data;
+        let constraints: Record<string, string> | undefined = undefined;
+        if (p.schedule_constraints) {
+          try {
+            constraints = typeof p.schedule_constraints === "string" ? JSON.parse(p.schedule_constraints) : p.schedule_constraints;
+          } catch (e) {
+            constraints = undefined;
+          }
+        }
+        const hasSpecificConstraints = constraints && Object.values(constraints).some(val => val.includes("0"));
+
         setFormData({
           title: p.title || "",
           description: p.description || "",
           budget: p.budget ? String(p.budget) : "",
           service_category: p.service_category || "Software y Tecnología",
           deadline: p.deadline ? new Date(p.deadline).toISOString().split('T')[0] : "",
-          max_hours_week: p.max_hours_week ? String(p.max_hours_week) : ""
+          max_hours_week: p.max_hours_week ? String(p.max_hours_week) : "",
+          schedule_mode: hasSpecificConstraints ? "specific" : "async",
+          schedule_constraints: constraints
         });
         if (p.skills) {
           setSelectedSkills(p.skills.map((s: any) => ({
@@ -138,7 +150,8 @@ export function EditProjectPage() {
           mandatory: true
         })),
         deadline: formData.deadline || undefined,
-        max_hours_week: formData.max_hours_week ? Number(formData.max_hours_week) : undefined
+        max_hours_week: formData.max_hours_week ? Number(formData.max_hours_week) : undefined,
+        schedule_constraints: formData.schedule_mode === "specific" && formData.schedule_constraints ? formData.schedule_constraints : undefined
       });
       // Redirect on success
       navigate("/employer/projects");

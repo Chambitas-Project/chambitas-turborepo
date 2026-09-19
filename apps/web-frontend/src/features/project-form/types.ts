@@ -17,4 +17,6 @@ export interface ProjectFormData {
   service_category: string;
   deadline: string;
   max_hours_week: string;
+  schedule_mode?: "async" | "specific";
+  schedule_constraints?: Record<string, string>;
 }
