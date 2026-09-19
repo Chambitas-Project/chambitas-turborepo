@@ -1,5 +1,6 @@
-import { Clock, FileEdit, Megaphone, Rocket, CheckSquare, Check } from "lucide-react";
-import { cn } from "@chambitas/ui";
+import { Clock, FileEdit, Megaphone, Rocket, CheckSquare, Check, Edit2 } from "lucide-react";
+import { Button, cn } from "@chambitas/ui";
+import { useNavigate } from "react-router-dom";
 import type { EmployerProject } from "../types";
 
 interface EmployerProjectHeaderProps {
@@ -7,13 +8,27 @@ interface EmployerProjectHeaderProps {
 }
 
 export function EmployerProjectHeader({ project }: EmployerProjectHeaderProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-white rounded-xl p-8 md:p-10 shadow-sm border border-slate-100 mb-8">
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-8">
         <div className="space-y-4 max-w-3xl flex-1">
-          <div className="flex items-center gap-3 text-emerald-600">
-            <Clock className="h-4 w-4" />
-            <span className="text-xs font-black uppercase tracking-[0.2em]">Publicado {project.createdAt || 'recientemente'}</span>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 text-emerald-600">
+              <Clock className="h-4 w-4" />
+              <span className="text-xs font-black uppercase tracking-[0.2em]">Publicado {project.createdAt || 'recientemente'}</span>
+            </div>
+            {project.status !== 'closed' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/employer/projects/${project.id}/edit`)}
+                className="flex items-center gap-1.5 border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs rounded-lg cursor-pointer"
+              >
+                <Edit2 className="h-3.5 w-3.5" /> Editar Proyecto
+              </Button>
+            )}
           </div>
 
           <h1 className="text-2xl md:text-3xl font-black leading-tight tracking-tight text-slate-900">

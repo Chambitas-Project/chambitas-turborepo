@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, FileText, LayoutGrid, List as ListIcon, Clock, Users, MoreVertical, Edit2, Trash2 } from "lucide-react";
+import { Search, FileText, LayoutGrid, List as ListIcon, Clock, Users, MoreVertical, Edit2, Trash2 } from "lucide-react";
 import { Button, Input, cn } from "@chambitas/ui";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "../layouts/DashboardLayout";
@@ -237,13 +237,6 @@ export function EmployerProjectsPage() {
               <ListIcon className="h-4 w-4" /> Lista
             </button>
           </div>
-
-          <Button
-            onClick={() => navigate("/employer/projects/new")}
-            className="bg-[#065f46] hover:bg-[#064e3b] text-white font-black h-11 px-5 rounded-lg shadow-sm cursor-pointer ml-auto sm:ml-0"
-          >
-            <Plus className="h-4 w-4 mr-1.5" /> Nuevo Microtrabajo
-          </Button>
         </div>
       </div>
 
