@@ -1,5 +1,5 @@
 import { useState, useMemo, type RefObject } from "react";
-import { Banknote, Clock, CheckCircle2, AlertCircle, Search, Plus, Star, X, Calendar, Sparkles, AlertTriangle, Check } from "lucide-react";
+import { Banknote, Clock, CheckCircle2, AlertCircle, Search, Plus, Star, X, Calendar, Sparkles, Check } from "lucide-react";
 import { Input, Badge, Button, cn } from "@chambitas/ui";
 import type { Skill, SelectedSkill, ProjectFormData } from "../types";
 import { DAYS, TIME_SLOTS } from "../../onboarding/types";
