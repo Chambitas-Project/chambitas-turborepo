@@ -113,10 +113,15 @@ export function ProjectSkillsSelector({
   };
 
   const handleSaveModal = () => {
-    const updatedMaxHours =
-      (!formData.max_hours_week || Number(formData.max_hours_week) === 0) && selectedHoursInModal > 0
-        ? String(selectedHoursInModal)
-        : formData.max_hours_week;
+    // Si no había max_hours o si las horas seleccionadas en la matriz superan las horas max configuradas previamente, actualizamos max_hours_week automáticamente
+    const shouldUpdateMaxHours =
+      !formData.max_hours_week ||
+      Number(formData.max_hours_week) === 0 ||
+      selectedHoursInModal > maxHours;
+
+    const updatedMaxHours = shouldUpdateMaxHours && selectedHoursInModal > 0
+      ? String(selectedHoursInModal)
+      : formData.max_hours_week;
 
     setFormData({
       ...formData,
@@ -294,12 +299,12 @@ export function ProjectSkillsSelector({
               </button>
             </div>
 
-            {/* Alerta de exceso de horas */}
+            {/* Alerta de sincronización de horas */}
             {isExceedingHours && (
-              <div className="px-6 py-2.5 bg-amber-50 border-b border-amber-200 text-amber-800 text-xs font-bold flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+              <div className="px-6 py-2.5 bg-emerald-50 border-b border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
                 <span>
-                  Las horas seleccionadas ({selectedHoursInModal} hrs) superan el máximo establecido de {maxHours} hrs/semana. Ajusta tus bloques.
+                  Has seleccionado <strong>{selectedHoursInModal} hrs</strong> (supera las {maxHours} hrs/semana previas). Al guardar, se actualizará el campo <em>Max. Horas / Semana</em> a <strong>{selectedHoursInModal} hrs</strong>.
                 </span>
               </div>
             )}
@@ -382,11 +387,7 @@ export function ProjectSkillsSelector({
                 <Button
                   type="button"
                   onClick={handleSaveModal}
-                  disabled={isExceedingHours}
-                  className={cn(
-                    "h-11 px-6 font-black text-white cursor-pointer transition-all",
-                    isExceedingHours ? "bg-slate-300 cursor-not-allowed" : "bg-[#065f46] hover:bg-[#064e3b]"
-                  )}
+                  className="h-11 px-6 font-black text-white bg-[#065f46] hover:bg-[#064e3b] cursor-pointer transition-all"
                 >
                   Guardar Horario
                 </Button>
