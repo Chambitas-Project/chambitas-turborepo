@@ -91,17 +91,28 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
     # ==========================================
     def _bg_project_embedding(self, project_id):
         try:
-            p_resp = supabase.table("projects").select("title, description").eq("id", project_id).execute()
+            p_resp = supabase.table("projects").select("title, description, requirements").eq("id", project_id).execute()
             if not p_resp.data: return
             p = p_resp.data[0]
             
+            req_skills = p.get('requirements') or []
+            if isinstance(req_skills, str):
+                req_skills = [req_skills]
+            skills_names = list(req_skills)
+
             r_resp = supabase.table("project_required_skills").select("skills(name)").eq("project_id", project_id).execute()
-            skills_names = []
             if r_resp.data:
                 for row in r_resp.data:
-                    if row.get('skills') and isinstance(row['skills'], dict) and 'name' in row['skills']:
-                        skills_names.append(row['skills']['name'])
-            skills_text = ", ".join(skills_names)
+                    sk = row.get('skills')
+                    if isinstance(sk, dict) and 'name' in sk:
+                        skills_names.append(sk['name'])
+                    elif isinstance(sk, list):
+                        for item in sk:
+                            if isinstance(item, dict) and 'name' in item:
+                                skills_names.append(item['name'])
+
+            final_skills = list(set(skills_names))
+            skills_text = ", ".join(final_skills)
             
             corpus = f"{p.get('title','')} {p.get('description','')} {skills_text}".strip()
             vector_300 = engine.get_text_embedding(corpus)
