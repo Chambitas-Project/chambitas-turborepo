@@ -67,12 +67,14 @@ export function ApplicantsList({
       </div>
 
       {applicants.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-md border border-slate-100 shadow-sm">
-          <div className="mx-auto w-16 h-16 bg-emerald-50 rounded-md flex items-center justify-center mb-4">
-            <Users className="h-8 w-8 text-emerald-600" />
+        <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+          <div className="mx-auto w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 border border-emerald-100">
+            <Users className="h-8 w-8" />
           </div>
-          <h3 className="text-lg font-bold text-slate-700">Aún no hay postulantes</h3>
-          <p className="text-slate-500 font-medium mt-1">Los estudiantes que apliquen aparecerán aquí.</p>
+          <h3 className="text-lg font-extrabold text-slate-800">Aún no hay postulantes</h3>
+          <p className="text-slate-500 font-medium mt-1 text-sm max-w-sm mx-auto">
+            Los estudiantes universitarios que apliquen a tu proyecto aparecerán organizados aquí.
+          </p>
         </div>
       ) : (
         <div className="space-y-6">
