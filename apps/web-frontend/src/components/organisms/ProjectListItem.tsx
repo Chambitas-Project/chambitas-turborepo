@@ -10,15 +10,15 @@ function formatTimeAgo(dateString?: string) {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   
-  if (diffInSeconds < 60) return `hace ${diffInSeconds} s`;
+  if (diffInSeconds < 60) return `hace unos segundos`;
   const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `hace ${diffInMinutes} m`;
+  if (diffInMinutes < 60) return `hace ${diffInMinutes} min`;
   const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `hace ${diffInHours} h`;
+  if (diffInHours < 24) return `hace ${diffInHours} ${diffInHours === 1 ? 'hora' : 'horas'}`;
   const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 30) return `hace ${diffInDays} d`;
+  if (diffInDays < 30) return `hace ${diffInDays} día${diffInDays !== 1 ? 's' : ''}`;
   const diffInMonths = Math.floor(diffInDays / 30);
-  return `hace ${diffInMonths} meses`;
+  return `hace ${diffInMonths} mes${diffInMonths !== 1 ? 'es' : ''}`;
 }
 
 export function ProjectListItem({ project }: { project: EmployerProject }) {
