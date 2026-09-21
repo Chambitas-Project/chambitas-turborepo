@@ -93,7 +93,7 @@ export function ApplicantsList({
                 <div
                   key={app.id}
                   className={cn(
-                    "p-6 rounded-xl border transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden",
+                    "p-6 rounded-xl border transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative",
                     (app.status === 'accepted' || (isSelectedStatus && displayedApplicants.length === 1))
                       ? "bg-emerald-50/60 border-emerald-200 shadow-sm"
                       : app.status === 'rejected'
@@ -102,7 +102,7 @@ export function ApplicantsList({
                   )}
                 >
                   {(app.status === 'accepted' || (isSelectedStatus && displayedApplicants.length === 1)) && (
-                    <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-500" />
+                    <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-500 rounded-l-xl" />
                   )}
 
                   <div className="flex items-start gap-4">
@@ -191,11 +191,11 @@ export function ApplicantsList({
                       </Badge>
                     )}
 
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
                       <Button
                         variant="ghost"
                         onClick={() => handleViewProfile(app.student_id || '')}
-                        className="flex-1 sm:flex-none bg-slate-50 text-slate-600 font-bold hover:bg-slate-100 hover:text-slate-900 cursor-pointer rounded-md shadow-none border-none"
+                        className="flex-1 sm:flex-none bg-slate-50 text-slate-600 font-bold hover:bg-slate-100 hover:text-slate-900 cursor-pointer rounded-md shadow-none border-none text-xs px-3 py-2"
                       >
                         Ver Perfil
                       </Button>
@@ -204,7 +204,7 @@ export function ApplicantsList({
                         <Button
                           onClick={handleCompleteProject}
                           disabled={isCompleting}
-                          className="flex-1 sm:flex-none bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold cursor-pointer rounded-md shadow-none border-none"
+                          className="flex-1 sm:flex-none bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold cursor-pointer rounded-md shadow-none border-none text-xs"
                         >
                           {isCompleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
                           Finalizar Proyecto
@@ -214,7 +214,7 @@ export function ApplicantsList({
                       {project.status === 'completed' && app.status === 'accepted' && (
                         <Button
                           onClick={() => handleOpenReview(app.id, app.student_name || '')}
-                          className="flex-1 sm:flex-none bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold cursor-pointer rounded-md shadow-none border-none"
+                          className="flex-1 sm:flex-none bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold cursor-pointer rounded-md shadow-none border-none text-xs"
                         >
                           Dejar Reseña
                         </Button>
@@ -225,7 +225,7 @@ export function ApplicantsList({
                           <Button
                             variant="ghost"
                             onClick={() => setOpenMenuId(openMenuId === app.id ? null : app.id)}
-                            className="p-2 h-10 w-10 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full flex items-center justify-center border-none shadow-none bg-transparent"
+                            className="p-2 h-10 w-10 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full flex items-center justify-center border-none shadow-none bg-transparent cursor-pointer"
                           >
                             <MoreHorizontal className="h-5 w-5" />
                           </Button>
@@ -233,22 +233,22 @@ export function ApplicantsList({
                           {openMenuId === app.id && (
                             <>
                               <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
-                              <div className="absolute right-0 top-full mt-2 min-w-max bg-white rounded-md shadow-md border border-slate-100 py-1.5 z-50 flex flex-col overflow-hidden">
+                              <div className="absolute right-0 top-full mt-2 w-max min-w-50 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 flex flex-col overflow-hidden">
                                 <button
                                   onClick={() => { setOpenMenuId(null); handleUpdateStatus(app.id, 'accepted'); }}
                                   disabled={isProcessingId === app.id}
-                                  className="w-full text-left px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-colors disabled:opacity-50 whitespace-nowrap"
+                                  className="w-full text-left px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2.5 cursor-pointer whitespace-nowrap"
                                 >
-                                  {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}
-                                  Aceptar Postulante
+                                  {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin shrink-0" /> : <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />}
+                                  <span>Aceptar Postulante</span>
                                 </button>
                                 <button
                                   onClick={() => { setOpenMenuId(null); handleUpdateStatus(app.id, 'rejected'); }}
                                   disabled={isProcessingId === app.id}
-                                  className="w-full text-left px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors disabled:opacity-50 whitespace-nowrap"
+                                  className="w-full text-left px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 transition-colors disabled:opacity-50 flex items-center gap-2.5 cursor-pointer whitespace-nowrap"
                                 >
-                                  {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}
-                                  Rechazar Postulante
+                                  {isProcessingId === app.id ? <Loader2 className="h-4 w-4 animate-spin shrink-0" /> : <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
+                                  <span>Rechazar Postulante</span>
                                 </button>
                               </div>
                             </>
