@@ -101,9 +101,12 @@ export class AnalyticsController implements OnModuleInit {
   @Get('sus-status/:userId')
   @ApiOperation({ summary: 'Verificar si un usuario ya registró su encuesta SUS' })
   async getSUSStatus(@Param('userId') userId: string) {
-    const response = await firstValueFrom(this.analyticsService.GetABTestingKPIs({}));
-    // Se delega a verificación de respuesta previa
-    return { hasEvaluated: false };
+    try {
+      const response = await firstValueFrom(this.analyticsService.GetSUSStatus({ userId }));
+      return { hasEvaluated: response?.hasEvaluated ?? false };
+    } catch (err) {
+      return { hasEvaluated: false };
+    }
   }
 
   @Public()

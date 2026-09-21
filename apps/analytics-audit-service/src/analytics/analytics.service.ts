@@ -557,4 +557,21 @@ export class AnalyticsService {
       incomeProgressJson: JSON.stringify(incomeProgress)
     };
   }
+
+  async getSUSStatus(data: { userId: string }): Promise<{ hasEvaluated: boolean }> {
+    if (!data.userId) return { hasEvaluated: false };
+    const client = this.supabase.getAdminClient<Database>();
+    const { data: evals, error } = await client
+      .from('sus_evaluations')
+      .select('id')
+      .eq('user_id', data.userId)
+      .limit(1);
+
+    if (error) {
+      this.logger.error(`Error checking SUS status for user ${data.userId}:`, error.message);
+      return { hasEvaluated: false };
+    }
+
+    return { hasEvaluated: (evals && evals.length > 0) };
+  }
 }

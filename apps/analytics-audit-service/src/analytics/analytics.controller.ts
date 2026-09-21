@@ -32,4 +32,9 @@ export class AnalyticsController {
   getABTestingKPIs(data: any): Observable<any> {
     return this.analyticsService.getABTestingKPIs(data);
   }
+
+  @GrpcMethod('AnalyticsService', 'GetSUSStatus')
+  getSUSStatus(data: { userId: string }): Promise<{ hasEvaluated: boolean }> {
+    return this.analyticsService.getSUSStatus(data);
+  }
 }
