@@ -54,11 +54,19 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
       isTargetMet: false,
     },
     {
-      metric: 'Calificación Promedio SUS',
+      metric: 'Calificación Usabilidad SUS - Estudiantes',
       unit: 'puntos',
       control: 0,
       experimental: 0,
-      targetText: 'Puntaje > 80.0',
+      targetText: 'Puntaje > 80.0 (Excelente)',
+      isTargetMet: false,
+    },
+    {
+      metric: 'Calificación Usabilidad SUS - Empleadores',
+      unit: 'puntos',
+      control: 0,
+      experimental: 0,
+      targetText: 'Puntaje > 80.0 (Excelente)',
       isTargetMet: false,
     }
   ];

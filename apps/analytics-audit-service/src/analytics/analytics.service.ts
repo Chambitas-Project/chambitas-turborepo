@@ -239,29 +239,34 @@ export class AnalyticsService {
 
       const { data: susEvals } = await client
         .from('sus_evaluations')
-        .select('test_group, calculated_score');
+        .select('user_role, calculated_score');
 
-      let susSumControl = 0, susCountControl = 0;
-      let susSumExp = 0, susCountExp = 0;
+      let susSumStudent = 0, susCountStudent = 0;
+      let susSumEmployer = 0, susCountEmployer = 0;
 
       (susEvals || []).forEach(s => {
-        const isExp = s.test_group === 'EXPERIMENTAL';
+        const role = (s.user_role || 'student').toLowerCase();
         if (s.calculated_score) {
-          if (isExp) { susSumExp += s.calculated_score; susCountExp++; }
-          else { susSumControl += s.calculated_score; susCountControl++; }
+          if (role === 'employer') {
+            susSumEmployer += s.calculated_score;
+            susCountEmployer++;
+          } else {
+            susSumStudent += s.calculated_score;
+            susCountStudent++;
+          }
         }
       });
 
       const scheduleConflictControl = 0;
       const scheduleConflictExp = 0;
 
-      const susScoreControl = susCountControl > 0
-        ? Number((susSumControl / susCountControl).toFixed(1))
-        : (csatCountControl > 0 ? Number(((csatSumControl / csatCountControl) * 20).toFixed(1)) : 0);
-
-      const susScoreExp = susCountExp > 0
-        ? Number((susSumExp / susCountExp).toFixed(1))
+      const susScoreStudent = susCountStudent > 0
+        ? Number((susSumStudent / susCountStudent).toFixed(1))
         : (csatCountExp > 0 ? Number(((csatSumExp / csatCountExp) * 20).toFixed(1)) : 0);
+
+      const susScoreEmployer = susCountEmployer > 0
+        ? Number((susSumEmployer / susCountEmployer).toFixed(1))
+        : (csatCountControl > 0 ? Number(((csatSumControl / csatCountControl) * 20).toFixed(1)) : 0);
 
       const metrics = [
         {
@@ -297,12 +302,20 @@ export class AnalyticsService {
           isTargetMet: scheduleConflictExp <= 5.0
         },
         {
-          metric: 'Calificación Promedio SUS',
+          metric: 'Calificación Usabilidad SUS - Estudiantes',
           unit: 'puntos',
-          control: susScoreControl,
-          experimental: susScoreExp,
-          targetText: 'Puntaje > 80.0',
-          isTargetMet: susScoreExp > 80.0
+          control: susScoreStudent,
+          experimental: susScoreStudent,
+          targetText: 'Puntaje > 80.0 (Excelente)',
+          isTargetMet: susScoreStudent > 80.0
+        },
+        {
+          metric: 'Calificación Usabilidad SUS - Empleadores',
+          unit: 'puntos',
+          control: susScoreEmployer,
+          experimental: susScoreEmployer,
+          targetText: 'Puntaje > 80.0 (Excelente)',
+          isTargetMet: susScoreEmployer > 80.0
         }
       ];
 
