@@ -15,7 +15,6 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
   const [loading, setLoading] = useState(true);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 5;
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -67,7 +66,10 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
     );
   }
 
-  const paginatedReviews = reviews.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const totalPages = Math.ceil(reviews.length / itemsPerPage);
+
+  const paginatedReviews = reviews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-sm space-y-6">
@@ -119,42 +121,63 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
         ))}
       </div>
 
-      {reviews.length > ITEMS_PER_PAGE && (
-        <div className="flex items-center justify-center gap-2 pt-4">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className="h-8 w-8 p-0 rounded-xl border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-
-          <div className="flex items-center gap-1">
-            {Array.from({ length: Math.ceil(reviews.length / ITEMS_PER_PAGE) }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentPage(i + 1)}
-                className={cn(
-                  "h-8 w-8 rounded-xl font-bold text-xs transition-colors",
-                  currentPage === i + 1
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "text-slate-500 hover:bg-slate-100"
-                )}
-              >
-                {i + 1}
-              </button>
-            ))}
+      {reviews.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+            <span>Mostrar</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-slate-900"
+            >
+              <option value={3}>3 por página</option>
+              <option value={5}>5 por página</option>
+              <option value={10}>10 por página</option>
+            </select>
+            <span>de {reviews.length} reseñas</span>
           </div>
 
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(prev => Math.min(Math.ceil(reviews.length / ITEMS_PER_PAGE), prev + 1))}
-            disabled={currentPage === Math.ceil(reviews.length / ITEMS_PER_PAGE)}
-            className="h-8 w-8 p-0 rounded-xl border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="h-8 w-8 p-0 rounded-xl border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={cn(
+                      "h-8 w-8 rounded-xl font-bold text-xs transition-colors",
+                      currentPage === i + 1
+                        ? "bg-slate-900 text-white shadow-sm"
+                        : "text-slate-500 hover:bg-slate-100"
+                    )}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="h-8 w-8 p-0 rounded-xl border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
