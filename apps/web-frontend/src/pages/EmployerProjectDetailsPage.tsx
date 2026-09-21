@@ -6,6 +6,8 @@ import { DashboardLayout } from "../layouts/DashboardLayout";
 import { employerApi } from "../api/employer.api";
 import { StudentProfileModal } from "../components/organisms/StudentProfileModal";
 import { ReviewModal } from "../components/organisms/ReviewModal";
+import { SUSSurveyModal } from "../components/organisms/SUSSurveyModal";
+import { useTriggerSUS } from "../hooks/useTriggerSUS";
 
 // Types
 import type { EmployerProject, ApplicationData } from "../features/employer-project/types";
@@ -24,6 +26,15 @@ export function EmployerProjectDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessingId, setIsProcessingId] = useState<string | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
+
+  // SUS Survey Hook
+  const {
+    shouldShowModal,
+    isSubmitting: isSubmittingSUS,
+    triggerSUSCheck,
+    submitSUS,
+    closeModal
+  } = useTriggerSUS();
 
   // Modal state
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -157,9 +168,19 @@ export function EmployerProjectDetailsPage() {
 
       <ReviewModal
         isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
+        onClose={() => {
+          setIsReviewModalOpen(false);
+          triggerSUSCheck();
+        }}
         applicationId={reviewApplicationId || undefined}
         targetName={reviewTargetName}
+      />
+
+      <SUSSurveyModal
+        isOpen={shouldShowModal}
+        onClose={closeModal}
+        onSubmit={submitSUS}
+        isSubmitting={isSubmittingSUS}
       />
     </DashboardLayout>
   );

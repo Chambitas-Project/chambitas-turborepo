@@ -5,6 +5,8 @@ import { Button, Badge } from "@chambitas/ui";
 import { apiClient } from "../api/api-client";
 import { ReviewModal } from "../components/organisms/ReviewModal";
 import { EmployerProfileModal } from "../components/organisms/EmployerProfileModal";
+import { SUSSurveyModal } from "../components/organisms/SUSSurveyModal";
+import { useTriggerSUS } from "../hooks/useTriggerSUS";
 import React from "react";
 
 // Types
@@ -23,6 +25,15 @@ export function ProjectDetailsPage() {
   const navigate = useNavigate();
 
   const { completeStep } = useUxTelemetry('StudentApplication', 'ProjectDetails');
+
+  // SUS Survey Hook
+  const {
+    shouldShowModal,
+    isSubmitting: isSubmittingSUS,
+    triggerSUSCheck,
+    submitSUS,
+    closeModal
+  } = useTriggerSUS();
 
   // Data State
   const [project, setProject] = useState<Project | null>(null);
@@ -106,6 +117,7 @@ export function ProjectDetailsPage() {
       setApplication(res.data);
       completeStep();
       window.scrollTo({ top: 0, behavior: "smooth" });
+      triggerSUSCheck();
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || err.message || "Error de conexión";
       if (err.response?.status === 503) {
@@ -197,7 +209,10 @@ export function ProjectDetailsPage() {
 
       <ReviewModal
         isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
+        onClose={() => {
+          setIsReviewModalOpen(false);
+          triggerSUSCheck();
+        }}
         applicationId={application?.id}
         targetName={companyName}
       />
@@ -209,6 +224,13 @@ export function ProjectDetailsPage() {
         companyName={companyName}
         employerName={employerName}
         employerProfile={employerProfile}
+      />
+
+      <SUSSurveyModal
+        isOpen={shouldShowModal}
+        onClose={closeModal}
+        onSubmit={submitSUS}
+        isSubmitting={isSubmittingSUS}
       />
     </div>
   );
