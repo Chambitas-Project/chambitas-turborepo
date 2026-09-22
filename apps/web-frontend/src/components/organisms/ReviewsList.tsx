@@ -15,6 +15,7 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
   const [loading, setLoading] = useState(true);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(3);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -66,7 +67,6 @@ export function ReviewsList({ userId, role }: ReviewsListProps) {
     );
   }
 
-  const [itemsPerPage, setItemsPerPage] = useState(3);
   const totalPages = Math.ceil(reviews.length / itemsPerPage);
 
   const paginatedReviews = reviews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
