@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Button, Input, Checkbox, RoleSelector, Alert, cn } from "@chambitas/ui";
 import { useRegister } from "../model/use-register";
 import { RegisterSuccessView } from "../../../components/molecules/RegisterSuccessView";
+import { authApi } from "../api/auth.api";
 
 interface RegisterFormProps {
   role: string;
@@ -115,13 +116,41 @@ export function RegisterForm({ role, setRole, onSuccess }: RegisterFormProps) {
         </Button>
       </form>
 
-      <div className="pt-4 space-y-8 text-center border-t border-slate-100">
+      <div className="pt-4 space-y-4 text-center border-t border-slate-100">
         <p className="text-sm font-bold text-slate-500">
           ¿Ya tienes cuenta?{" "}
           <Link to="/login" className="font-extrabold hover:underline" style={{ color: '#065f46' }}>
             Iniciar sesión
           </Link>
         </p>
+
+        {/* Botón Microsoft — Solo para Estudiantes (Oculto temporalmente para piloto) */}
+        {false && role === 'student' && (
+          <div className="space-y-3 pt-2">
+            <div className="relative flex items-center">
+              <div className="flex-1 border-t border-slate-100" />
+              <span className="px-3 text-xs font-medium text-slate-400 bg-white">o regístrate con</span>
+              <div className="flex-1 border-t border-slate-100" />
+            </div>
+            <button
+              type="button"
+              id="microsoft-oauth-register-btn"
+              onClick={() => authApi.loginWithAzure()}
+              className="w-full flex items-center justify-center gap-3 h-12 border border-slate-200 rounded-md bg-white hover:bg-slate-50 active:scale-[0.98] transition-all font-semibold text-sm text-slate-700 shadow-sm"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 23 23">
+                <path fill="#f35325" d="M1 1h10v10H1z" />
+                <path fill="#81bc06" d="M12 1h10v10H12z" />
+                <path fill="#05a6f0" d="M1 12h10v10H1z" />
+                <path fill="#ffba08" d="M12 12h10v10H12z" />
+              </svg>
+              Continuar con Microsoft
+            </button>
+            <p className="text-[10px] text-slate-400 text-center">
+              Solo para estudiantes con correo institucional universitario
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

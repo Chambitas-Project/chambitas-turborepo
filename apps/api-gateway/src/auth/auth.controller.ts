@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Inject, OnModuleInit, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, Res, Inject, OnModuleInit, Req, UnauthorizedException, Get } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import {
   ApiTags,
@@ -9,13 +9,16 @@ import {
 } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from './dto/auth.dto';
+import { OAuthProcessDto } from './dto/oauth-process.dto';
 import { firstValueFrom } from 'rxjs';
 import { Public } from './decorators/public.decorator';
 import {
   IAuthService,
   RegisterResponse,
   IProfileService,
-  AuthResponse
+  AuthResponse,
+  OAuthCallbackRequest,
+  OAuthCallbackResponse,
 } from '@chambitas/proto';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -50,6 +53,59 @@ export class AuthController implements OnModuleInit {
   async register(@Body() registerDto: RegisterDto): Promise<RegisterResponse> {
     const response = await firstValueFrom(this.authService.Register(registerDto));
     return response;
+  }
+
+  @Public()
+  @Post('oauth/process')
+  @ApiOperation({ summary: 'Procesa tokens OAuth de Azure/Microsoft para estudiantes' })
+  @ApiBody({ type: OAuthProcessDto })
+  @ApiResponse({ status: 200, description: 'Sesión OAuth iniciada — cookie seteada' })
+  @ApiResponse({ status: 401, description: 'Token inválido o correo no universitario' })
+  async oauthProcess(
+    @Body() dto: OAuthProcessDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const response = await firstValueFrom<OAuthCallbackResponse>(
+      this.authService.OAuthCallback({
+        access_token: dto.access_token,
+        refresh_token: dto.refresh_token,
+      } as OAuthCallbackRequest)
+    );
+
+    // Setear cookie HttpOnly igual que en login normal
+    res.cookie('access_token', dto.access_token, COOKIE_OPTIONS);
+
+    return {
+      userId: response.userId,
+      email: response.email,
+      role: response.role,
+      isOnboarded: response.isOnboarded,
+    };
+  }
+
+  @Public()
+  @Get('oauth/azure/initiate')
+  @ApiOperation({
+    summary: 'Inicia el flujo OAuth de Azure/Microsoft para estudiantes',
+    description: 'Redirige el navegador a la URL de autorización de Supabase+Azure. ' +
+      'El frontend no necesita SDK de Supabase — solo navega a este endpoint.',
+  })
+  @ApiResponse({ status: 302, description: 'Redirect a Microsoft Login' })
+  oauthAzureInitiate(@Res() res: Response) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+
+    if (!supabaseUrl) {
+      return (res as any).status(500).json({ message: 'SUPABASE_URL no configurado' });
+    }
+
+    // URL de autorización OAuth de Supabase (sin SDK — formato estándar OIDC)
+    // Supabase redirigirá a /auth/callback del frontend tras el login
+    const callbackUrl = encodeURIComponent(`${frontendUrl}/auth/callback`);
+    const scopes = encodeURIComponent('email openid profile');
+    const oauthUrl = `${supabaseUrl}/auth/v1/authorize?provider=azure&redirect_to=${callbackUrl}&scopes=${scopes}`;
+
+    return (res as any).redirect(302, oauthUrl);
   }
 
   @Public()

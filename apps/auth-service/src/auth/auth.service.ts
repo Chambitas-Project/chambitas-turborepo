@@ -375,4 +375,110 @@ export class AuthService implements OnModuleInit {
 
     return { success: true, message: 'Contraseña actualizada exitosamente' };
   }
+
+  async oauthCallback(data: { access_token: string; refresh_token?: string }) {
+    const supabase = this.supabaseService.getClient<Database>();
+
+    // 1. Validar el token OAuth y obtener el usuario de Supabase
+    const { data: userData, error: userError } = await supabase.auth.getUser(data.access_token);
+    if (userError || !userData.user) {
+      throw new RpcException({ code: 16, message: 'Token OAuth inválido o expirado' });
+    }
+
+    const { id: userId, email } = userData.user;
+    if (!email) {
+      throw new RpcException({ code: 3, message: 'La cuenta de Microsoft no tiene un correo electrónico asociado' });
+    }
+
+    // 2. Extraer dominio y validar contra universidades registradas
+    const cleanEmail = email.trim();
+    const [localPart, domain] = cleanEmail.split('@');
+    if (!localPart || !domain) {
+      throw new RpcException({ code: 3, message: 'Formato de correo inválido' });
+    }
+
+    const { data: university, error: uniError } = await supabase
+      .from('universities')
+      .select('id, email_domain, slug')
+      .ilike('email_domain', domain)
+      .eq('is_active', true)
+      .single();
+
+    if (uniError || !university) {
+      throw new RpcException({
+        code: 3,
+        message: `El correo ${cleanEmail} no pertenece a ninguna universidad registrada en Chambitas`,
+      });
+    }
+
+    // 3. Validar regex del localPart (igual que en register() para students)
+    if (university.slug) {
+      const slugKey = university.slug.toUpperCase();
+      const pattern = UNIVERSITY_EMAIL_PATTERNS[slugKey];
+      if (pattern && !pattern.test(localPart)) {
+        this.analyticsService.TrackEvent({
+          eventType: 'SECURITY_ALERT',
+          source: 'auth-service',
+          userId: '',
+          timestamp: Date.now().toString(),
+          payloadJson: JSON.stringify({
+            severity: 'MEDIUM',
+            message: `OAuth login rechazado por regex para universidad ${university.id}: ${cleanEmail}`,
+          }),
+        }).subscribe({
+          error: (err) => console.error('[AuthService] Failed to emit analytics event', err.message),
+        });
+        throw new RpcException({
+          code: 3,
+          message: 'El formato del correo institucional no cumple los requisitos de la universidad',
+        });
+      }
+    }
+
+    // 4. UPSERT en public.users (idempotente: soporta re-logins)
+    const { error: upsertUserError } = await supabase
+      .from('users')
+      .upsert(
+        {
+          id: userId,
+          email: cleanEmail,
+          role: 'student' as any,
+          university_id: university.id,
+          created_at: new Date().toISOString(),
+          is_onboarded: false,
+        },
+        { onConflict: 'id', ignoreDuplicates: false },
+      );
+
+    if (upsertUserError) {
+      console.error('[AuthService] Error en upsert de public.users (OAuth):', upsertUserError.message);
+    }
+
+    // 5. Obtener is_onboarded real (puede ser true si ya hizo onboarding antes)
+    const { data: appUser } = await supabase
+      .from('users')
+      .select('is_onboarded')
+      .eq('id', userId)
+      .single();
+
+    // 6. UPSERT en student_profiles (idempotente)
+    const { error: profileError } = await supabase
+      .from('student_profiles')
+      .upsert(
+        { id: userId, university_id: university.id },
+        { onConflict: 'id', ignoreDuplicates: true },
+      );
+
+    if (profileError) {
+      console.warn('[AuthService] Error en upsert de student_profiles (OAuth):', profileError.message);
+    }
+
+    return {
+      userId,
+      email: cleanEmail,
+      role: 'student',
+      isOnboarded: appUser?.is_onboarded ?? false,
+      universityId: university.id,
+    };
+  }
 }

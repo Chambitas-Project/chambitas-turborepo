@@ -85,6 +85,19 @@ export interface AuthResponse {
   message: string;
 }
 
+export interface OAuthCallbackRequest {
+  access_token: string;
+  refresh_token?: string;
+}
+
+export interface OAuthCallbackResponse {
+  userId: string;
+  email: string;
+  role: string;
+  isOnboarded: boolean;
+  universityId?: string;
+}
+
 export interface University {
   id: string;
   name: string;
@@ -594,6 +607,7 @@ export interface IAuthService {
   ListUniversities(data: {}, metadata?: any): Observable<UniversityListResponse>;
   ForgotPassword(data: ForgotPasswordRequest, metadata?: any): Observable<AuthResponse>;
   ResetPassword(data: ResetPasswordRequest, metadata?: any): Observable<AuthResponse>;
+  OAuthCallback(data: OAuthCallbackRequest, metadata?: any): Observable<OAuthCallbackResponse>;
 }
 
 export interface IProfileService {

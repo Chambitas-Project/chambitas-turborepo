@@ -5,7 +5,7 @@ import { CurrentUser, IUserContext } from '@chambitas/common';
 
 @Controller()
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @GrpcMethod('AuthService', 'Register')
   async register(@Payload() data: any, @CurrentUser() user: IUserContext) {
@@ -36,5 +36,10 @@ export class AuthController {
   @GrpcMethod('AuthService', 'ResetPassword')
   async resetPassword(@Payload() data: any) {
     return this.authService.resetPassword(data);
+  }
+
+  @GrpcMethod('AuthService', 'OAuthCallback')
+  async oauthCallback(@Payload() data: any) {
+    return this.authService.oauthCallback(data);
   }
 }

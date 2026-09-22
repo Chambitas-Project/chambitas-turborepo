@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button, Input, Alert, RoleSelector } from "@chambitas/ui";
 import { useAuth } from "../context/AuthContext";
+import { authApi } from "../features/auth/api/auth.api";
 
 const loginSchema = z.object({
   email: z.string().email("Ingresa un correo electrónico válido"),
@@ -161,6 +162,35 @@ export function LoginPage() {
               </Link>
             </p>
           </div>
+
+          {/* Botón Microsoft — Solo para Estudiantes (Oculto temporalmente para piloto) */}
+          {false && role === 'student' && (
+            <div className="space-y-3">
+              <div className="relative flex items-center">
+                <div className="flex-1 border-t border-slate-100" />
+                <span className="px-3 text-xs font-medium text-slate-400 bg-white">o continúa con</span>
+                <div className="flex-1 border-t border-slate-100" />
+              </div>
+              <button
+                type="button"
+                id="microsoft-oauth-login-btn"
+                onClick={() => authApi.loginWithAzure()}
+                className="w-full flex items-center justify-center gap-3 h-12 border border-slate-200 rounded-md bg-white hover:bg-slate-50 active:scale-[0.98] transition-all font-semibold text-sm text-slate-700 shadow-sm"
+              >
+                {/* Ícono Microsoft oficial (cuatro cuadrados) */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21" className="w-5 h-5" aria-hidden="true">
+                  <rect x="0" y="0" width="10" height="10" fill="#f25022" />
+                  <rect x="11" y="0" width="10" height="10" fill="#7fba00" />
+                  <rect x="0" y="11" width="10" height="10" fill="#00a4ef" />
+                  <rect x="11" y="11" width="10" height="10" fill="#ffb900" />
+                </svg>
+                Iniciar sesión con Microsoft
+              </button>
+              <p className="text-[10px] text-slate-400 text-center">
+                Solo para correos institucionales universitarios
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
