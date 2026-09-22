@@ -37,6 +37,13 @@ export function useRegister(role: string, onSuccess?: () => void) {
       try {
         const unis = await authApi.getUniversities();
         setUniversities(unis);
+        // Pre-seleccionar UPC como universidad predeterminada
+        const upc = unis.find(u => u.email_domain.toLowerCase().includes("upc") || u.name.toLowerCase().includes("peruana de ciencias"));
+        if (upc) {
+          form.setValue("universityId", upc.id);
+        } else if (unis.length > 0) {
+          form.setValue("universityId", unis[0].id);
+        }
       } catch (error) {
         console.error("Error al cargar universidades:", error);
       } finally {
@@ -44,7 +51,7 @@ export function useRegister(role: string, onSuccess?: () => void) {
       }
     };
     fetchUniversities();
-  }, []);
+  }, [form]);
 
   useEffect(() => {
     if (role === "student" && emailValue && emailValue.includes("@")) {

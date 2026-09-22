@@ -1,7 +1,7 @@
-import { Mail, Lock, Eye, EyeOff, ArrowRight, School } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Input, Checkbox, RoleSelector, Alert, cn } from "@chambitas/ui";
+import { Button, Input, Checkbox, RoleSelector, Alert } from "@chambitas/ui";
 import { useRegister } from "../model/use-register";
 import { RegisterSuccessView } from "../../../components/molecules/RegisterSuccessView";
 
@@ -15,8 +15,6 @@ export function RegisterForm({ role, setRole, onSuccess }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const {
     form,
-    universities,
-    loadingUnis,
     regError,
     onSubmit,
     isSuccess
@@ -44,7 +42,7 @@ export function RegisterForm({ role, setRole, onSuccess }: RegisterFormProps) {
           <label className="text-sm font-bold ml-1 text-slate-700">Correo electrónico</label>
           <Input
             type="email"
-            placeholder={role === 'employer' ? "correo@empresa.com" : "nombre@universidad.edu"}
+            placeholder={role === 'employer' ? "correo@empresa.com" : "codigoalumno@upc.edu.pe"}
             icon={<Mail className="h-4 w-4" />}
             error={errors.email?.message}
             {...register("email")}
@@ -53,34 +51,13 @@ export function RegisterForm({ role, setRole, onSuccess }: RegisterFormProps) {
 
         {role === "student" && (
           <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
-            <label className="text-sm font-bold ml-1 text-slate-700">Universidad / Institución</label>
-            <div className="relative flex items-center">
-              <School className={cn(
-                "absolute left-3 h-4 w-4 z-10 transition-colors",
-                errors.universityId ? "text-destructive-500" : "text-slate-400"
-              )} />
-              <select
-                {...register("universityId")}
-                disabled={loadingUnis}
-                className={cn(
-                  "flex h-12 w-full rounded-md border bg-input pl-10 pr-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 transition-all appearance-none font-medium",
-                  errors.universityId ? "border-destructive-500 text-destructive-500" : "border-border text-foreground",
-                  loadingUnis && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                <option value="" className="text-muted-foreground">
-                  {loadingUnis ? "Cargando universidades..." : "Selecciona tu universidad"}
-                </option>
-                {universities.map(u => (
-                  <option key={u.id} value={u.id} className="text-foreground">{u.name}</option>
-                ))}
-              </select>
-              <div className="absolute right-3 pointer-events-none text-slate-400">
-                <ArrowRight className="h-4 w-4 rotate-90" />
-              </div>
+            <label className="text-sm font-bold ml-1 text-slate-700">Universidad</label>
+            <div className="flex items-center gap-3 h-12 w-full rounded-md border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm font-semibold text-slate-800 shadow-xs">
+              <img src="/upc-logo.webp" alt="Logo UPC" className="h-6 w-6 object-contain rounded-xs" />
+              <span className="truncate">Universidad Peruana de Ciencias Aplicadas</span>
             </div>
             {errors.universityId && <p className="text-[11px] font-bold text-destructive-500 ml-1">{errors.universityId.message}</p>}
-            <p className="text-[10px] text-slate-500 ml-1">Se detectará automáticamente según tu correo institucional.</p>
+            <p className="text-[10px] text-slate-500 ml-1">Válido únicamente para estudiantes con correo institucional @upc.edu.pe</p>
           </div>
         )}
 
