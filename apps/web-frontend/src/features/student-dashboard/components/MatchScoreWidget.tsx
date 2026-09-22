@@ -62,15 +62,15 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
 
                 {maxMatchScore >= 80 ? (
                   <p className="text-[11px] text-slate-500 font-bold leading-relaxed">
-                    ¡Excelente! Hay proyectos de <span className="text-slate-900">{profile?.career || 'tu área'}</span> que hacen un <span className="text-emerald-600">match casi perfecto</span> con tus habilidades actuales. ¡Aprovecha y postula!
+                    ¡Excelente! Encontré una tarea en <span className="text-slate-900">{profile?.career || 'tu área'}</span> con una <span className="text-emerald-600">compatibilidad del {maxMatchScore}%</span> con tus habilidades. ¡Aprovecha y postula!
                   </p>
                 ) : maxMatchScore >= 40 ? (
                   <p className="text-[11px] text-slate-500 font-bold leading-relaxed">
-                    Hemos encontrado tareas de <span className="text-slate-900">{profile?.career || 'tu área'}</span> con <span className="text-amber-600">compatibilidad media</span>. Añade más habilidades a tu perfil para encontrar tu trabajo ideal.
+                    Tu mejor coincidencia en <span className="text-slate-900">{profile?.career || 'tu área'}</span> es del <span className="text-amber-600">{maxMatchScore}% (compatibilidad media)</span>. Agrega más habilidades a tu perfil para alcanzar el 80%+.
                   </p>
                 ) : (
                   <p className="text-[11px] text-slate-500 font-bold leading-relaxed">
-                    Actualmente, los proyectos disponibles tienen <span className="text-indigo-500">poca compatibilidad</span> con tu perfil. ¡Sigue aprendiendo y agrega más skills para subir este porcentaje!
+                    Las ofertas actuales en el mercado tienen <span className="text-indigo-500">poca coincidencia (máximo {maxMatchScore}%)</span> con tu perfil. ¡Actualiza tus skills para descubrir mejores oportunidades!
                   </p>
                 )}
               </div>
