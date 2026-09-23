@@ -36,13 +36,21 @@ export function useRegister(role: string, onSuccess?: () => void) {
     const fetchUniversities = async () => {
       try {
         const unis = await authApi.getUniversities();
-        setUniversities(unis);
+        const isUpc = (u: any) =>
+          u.email_domain?.toLowerCase().includes("upc") ||
+          u.name?.toLowerCase().includes("peruana de ciencias") ||
+          u.slug?.toUpperCase() === "UPC";
+
+        const upcUnis = unis.filter(isUpc);
+        const filteredList = upcUnis.length > 0 ? upcUnis : unis;
+        setUniversities(filteredList);
+
         // Pre-seleccionar UPC como universidad predeterminada
-        const upc = unis.find(u => u.email_domain.toLowerCase().includes("upc") || u.name.toLowerCase().includes("peruana de ciencias"));
+        const upc = unis.find(isUpc);
         if (upc) {
           form.setValue("universityId", upc.id);
-        } else if (unis.length > 0) {
-          form.setValue("universityId", unis[0].id);
+        } else if (filteredList.length > 0) {
+          form.setValue("universityId", filteredList[0].id);
         }
       } catch (error) {
         console.error("Error al cargar universidades:", error);
