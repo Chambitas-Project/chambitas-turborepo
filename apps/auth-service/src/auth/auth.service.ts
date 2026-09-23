@@ -172,6 +172,13 @@ export class AuthService implements OnModuleInit {
       const profileData: any = { id: userId };
       if (data.role === 'student') {
         profileData.university_id = universityId;
+
+        // Asignación intercalada A/B test_group (CONTROL vs EXPERIMENTAL)
+        const { count } = await supabase
+          .from('student_profiles')
+          .select('*', { count: 'exact', head: true });
+
+        profileData.test_group = (count ?? 0) % 2 === 0 ? 'EXPERIMENTAL' : 'CONTROL';
       } else if (data.role === 'employer') {
         profileData.name = 'Nueva Empresa'; // Valor por defecto temporal para evitar NOT NULL
       }

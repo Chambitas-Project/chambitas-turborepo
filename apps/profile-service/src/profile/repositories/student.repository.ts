@@ -64,6 +64,13 @@ export class StudentRepository {
       return profile;
     }
 
+    if (!data.test_group) {
+      const { count } = await this.client
+        .from('student_profiles')
+        .select('*', { count: 'exact', head: true });
+      data.test_group = (count ?? 0) % 2 === 0 ? 'EXPERIMENTAL' : 'CONTROL';
+    }
+
     const { data: profile, error } = await this.client
       .from('student_profiles')
       .insert(data)
