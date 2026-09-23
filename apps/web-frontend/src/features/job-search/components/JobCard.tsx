@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Building2, CheckCircle2, Check } from "lucide-react";
+import { Building2, CheckCircle2, Check, HelpCircle } from "lucide-react";
 import { Button, Badge, cn } from "@chambitas/ui";
 import { type Project } from "../types";
 
@@ -96,17 +96,23 @@ export function JobCard({ project, matchScore, hasApplied, userSkillNames = [] }
           </div>
 
           <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
-            {matchScore !== undefined && matchScore > 0.05 && (
-              <Badge className={cn(
-                "font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-none border",
-                matchScore >= 0.7 
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
-                  : matchScore >= 0.4 
-                    ? "bg-amber-50 text-amber-700 border-amber-200"
-                    : "bg-slate-100 text-slate-600 border-slate-200"
-              )}>
-                <CheckCircle2 className="h-3.5 w-3.5" /> {(matchScore * 100).toFixed(0)}% de Coincidencia
-              </Badge>
+            {matchScore !== undefined && (
+              matchScore > 0.05 ? (
+                <Badge className={cn(
+                  "font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-none border",
+                  matchScore >= 0.7 
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                    : matchScore >= 0.4 
+                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-slate-100 text-slate-600 border-slate-200"
+                )}>
+                  <CheckCircle2 className="h-3.5 w-3.5" /> {(matchScore * 100).toFixed(0)}% de Coincidencia
+                </Badge>
+              ) : (
+                <Badge className="font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-none border bg-slate-100 text-slate-500 border-slate-200">
+                  <HelpCircle className="h-3.5 w-3.5 text-slate-400" /> Sin coincidencia directa
+                </Badge>
+              )
             )}
             <p className="text-[22px] font-black text-slate-900">S/.{budget}</p>
           </div>
