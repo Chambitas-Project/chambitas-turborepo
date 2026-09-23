@@ -95,16 +95,16 @@ export class MatchingService implements OnModuleInit {
         error: (err) => this.logger.error(`[Analytics] Failed to log recommendation latency`, err.message)
       });
 
-      const studentSkills = (student?.skills || []).map((s: any) =>
+      const studentSkills = (student?.skills || []).map((s: { skill_name?: string; name?: string } | string) =>
         (typeof s === 'string' ? s : s.skill_name || s.name || '').toLowerCase()
       );
 
       // Filter matches to only include 'open' projects that the user hasn't applied to
       let finalMatches = matches || [];
       if (finalMatches.length > 0) {
-        const matchIds = finalMatches.map((m: any) => m.id);
+        const matchIds = finalMatches.map((m: { id: string }) => m.id);
 
-        const { data: validProjects } = await this.supabase.getClient<any>()
+        const { data: validProjects } = await this.supabase.getClient<Database>()
           .from('projects')
           .select('id, project_required_skills(skills(name))')
           .in('id', matchIds)
@@ -117,15 +117,15 @@ export class MatchingService implements OnModuleInit {
           .eq('student_id', userId)
           .in('project_id', matchIds);
 
-        const validProjectMap = new Map((validProjects || []).map((p: any) => [p.id, p]));
+        const validProjectMap = new Map((validProjects || []).map(p => [p.id, p]));
         const appliedProjectIds = new Set((applications || []).map(a => a.project_id));
 
-        finalMatches = finalMatches.filter((m: any) =>
+        finalMatches = finalMatches.filter((m: { id: string; similarity: number; [key: string]: unknown }) =>
           validProjectMap.has(m.id) && !appliedProjectIds.has(m.id)
-        ).map((m: any) => {
+        ).map((m: { id: string; similarity: number; [key: string]: unknown }) => {
           const project = validProjectMap.get(m.id);
           const rawRequiredSkills = project?.project_required_skills || [];
-          const projectSkillsStr = rawRequiredSkills.map((prs: any) =>
+          const projectSkillsStr = rawRequiredSkills.map(prs =>
             (prs.skills?.name || '').toLowerCase()
           ).filter(Boolean);
 

@@ -166,7 +166,7 @@ export class AnalyticsService {
       let nControl = 0;
       let nExperimental = 0;
 
-      (profileCounts || []).forEach(p => {
+      (profileCounts || []).forEach((p: { test_group?: string | null }) => {
         if (p.test_group === 'CONTROL') nControl++;
         else nExperimental++;
       });
@@ -180,7 +180,7 @@ export class AnalyticsService {
       let csatSumControl = 0, csatCountControl = 0;
       let csatSumExp = 0, csatCountExp = 0;
 
-      (telemetry || []).forEach(t => {
+      (telemetry || []).forEach((t: { test_group?: string | null; time_on_step_ms?: number | null; satisfaction_score_csat?: number | null; flow_name?: string | null }) => {
         const isExp = t.test_group === 'EXPERIMENTAL';
         if (t.time_on_step_ms && t.time_on_step_ms > 0) {
           if (isExp) { searchTimeSumExp += t.time_on_step_ms; searchTimeCountExp++; }
@@ -201,14 +201,14 @@ export class AnalyticsService {
         .select('id, test_group');
 
       const studentGroupMap = new Map<string, string>();
-      (studentProfiles || []).forEach(sp => {
-        studentGroupMap.set(sp.id, sp.test_group);
+      (studentProfiles || []).forEach((sp: { id: string; test_group?: string | null }) => {
+        studentGroupMap.set(sp.id, sp.test_group || '');
       });
 
       let totalAppsControl = 0, acceptedAppsControl = 0;
       let totalAppsExp = 0, acceptedAppsExp = 0;
 
-      (apps || []).forEach(a => {
+      (apps || []).forEach((a: { student_id: string; status?: string | null }) => {
         const group = studentGroupMap.get(a.student_id);
         const isExp = group === 'EXPERIMENTAL';
         if (isExp) {
@@ -244,7 +244,7 @@ export class AnalyticsService {
       let susSumStudent = 0, susCountStudent = 0;
       let susSumEmployer = 0, susCountEmployer = 0;
 
-      (susEvals || []).forEach(s => {
+      (susEvals || []).forEach((s: { user_role?: string | null; calculated_score?: number | null }) => {
         const role = (s.user_role || 'student').toLowerCase();
         if (s.calculated_score) {
           if (role === 'employer') {
@@ -346,7 +346,7 @@ export class AnalyticsService {
 
     const now = new Date();
     const formattedRecLogs = (!err2 && recLogs?.length)
-      ? recLogs.map((r, idx) => ({
+      ? recLogs.map((r: { created_at?: string | null; response_ms?: number | null }, idx: number) => ({
         time: r.created_at ? new Date(r.created_at).toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }) : `Req #${idx + 1}`,
         response_ms: Math.round(r.response_ms || 0)
       }))
@@ -372,7 +372,7 @@ export class AnalyticsService {
       { range: '81-100%', count: 0 }
     ];
 
-    (matchesWithScore || []).forEach(m => {
+    (matchesWithScore || []).forEach((m: { score?: number | null }) => {
       const score = (m.score || 0) * 100;
       if (score <= 20 && ranges[0]) ranges[0].count++;
       else if (score <= 40 && ranges[1]) ranges[1].count++;
@@ -429,7 +429,7 @@ export class AnalyticsService {
     if (!err2 && uxLogs?.length) {
       const stepMap = new Map<string, { count: number; totalRate: number; totalTime: number }>();
 
-      uxLogs.forEach(u => {
+      uxLogs.forEach((u: { step_name?: string | null; flow_name?: string | null; abandonment_rate?: number | null; event_type?: string | null; time_on_step_ms?: number | null }) => {
         const step = u.step_name || u.flow_name || 'Desconocido';
         const curr = stepMap.get(step) || { count: 0, totalRate: 0, totalTime: 0 };
         curr.count += 1;
@@ -454,7 +454,7 @@ export class AnalyticsService {
 
     let formattedAlerts: { id: string; severity: string; message: string; service: string; timestamp: string }[] = [];
     if (!err3 && alerts?.length) {
-      formattedAlerts = alerts.map(a => ({
+      formattedAlerts = alerts.map((a: { id: string; severity?: string | null; metadata?: unknown; event_type?: string | null; created_at: string }) => ({
         id: a.id,
         severity: (a.severity || 'info').toUpperCase(),
         message: (a.metadata as { message?: string } | null)?.message || a.event_type || 'Evento de seguridad',
@@ -497,7 +497,7 @@ export class AnalyticsService {
       .select('id, budget');
 
     const projectBudgetMap = new Map<string, number>();
-    (projects || []).forEach(p => {
+    (projects || []).forEach((p: { id: string; budget?: number | null }) => {
       projectBudgetMap.set(p.id, p.budget || 0);
     });
 
@@ -506,7 +506,7 @@ export class AnalyticsService {
     let hiredCount = 0;
     const uniqueStudentsSet = new Set<string>();
 
-    (acceptedApps || []).forEach(app => {
+    (acceptedApps || []).forEach((app: { student_id?: string | null; project_id: string; created_at?: string | null; updated_at?: string | null; status?: string | null }) => {
       hiredCount++;
       if (app.student_id) {
         uniqueStudentsSet.add(app.student_id);
@@ -541,7 +541,7 @@ export class AnalyticsService {
       monthlyMap.set(mIdx, 0);
     }
 
-    (acceptedApps || []).forEach(app => {
+    (acceptedApps || []).forEach((app: { student_id?: string | null; project_id: string; created_at?: string | null; updated_at?: string | null; status?: string | null }) => {
       const budget = projectBudgetMap.get(app.project_id) || 0;
       const dateStr = app.updated_at || app.created_at;
       if (dateStr) {

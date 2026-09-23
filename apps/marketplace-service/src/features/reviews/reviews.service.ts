@@ -85,7 +85,7 @@ export class ReviewsService {
 
     const reviews = reviewsData.map(r => this.mapToProto(r));
     const averageRating = reviews.length > 0
-      ? reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+      ? reviews.reduce((acc: number, curr: { rating: number }) => acc + curr.rating, 0) / reviews.length
       : 0;
 
     return {

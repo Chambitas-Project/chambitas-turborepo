@@ -307,7 +307,7 @@ export class ProfileService implements OnModuleInit {
       }
 
       const skillsFound = existingSkills || [];
-      const foundMap = new Map(skillsFound.map(s => [s.name.toLowerCase(), s.id]));
+      const foundMap = new Map<string, string>(skillsFound.map((s: { id: string; name: string }) => [s.name.toLowerCase(), s.id]));
 
       const notFoundNames = namesToResolve.filter(i => !foundMap.has(i.name.toLowerCase()));
       if (notFoundNames.length > 0) {
