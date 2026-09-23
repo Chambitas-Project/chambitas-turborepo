@@ -51,14 +51,22 @@ export function ProjectDetailsPage() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isEmployerProfileModalOpen, setIsEmployerProfileModalOpen] = useState(false);
 
+  const [userSkillNames, setUserSkillNames] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchProjectAndApplication = async () => {
       try {
-        const [projectRes, appsRes, recsRes] = await Promise.all([
+        const [projectRes, appsRes, recsRes, myProfileRes] = await Promise.all([
           apiClient.get(`/marketplace/projects/${id}`),
           apiClient.get(`/marketplace/applications/my-applications`).catch(() => ({ data: [] })),
-          apiClient.get(`/matching/recommendations/me`).catch(() => ({ data: [] }))
+          apiClient.get(`/matching/recommendations/me`).catch(() => ({ data: [] })),
+          apiClient.get(`/profile/me`).catch(() => ({ data: null }))
         ]);
+
+        if (myProfileRes?.data?.skills && Array.isArray(myProfileRes.data.skills)) {
+          const names = myProfileRes.data.skills.map((s: any) => typeof s === "string" ? s : s.name || s.skill_name).filter(Boolean);
+          setUserSkillNames(names);
+        }
 
         const projData = projectRes.data;
         setProject(projData);
@@ -177,7 +185,7 @@ export function ProjectDetailsPage() {
 
           <div className="lg:col-span-8 2xl:col-span-9 border-r border-slate-100">
             <ProjectHeader project={project} timeAgo={timeAgo} matchScore={matchScore} />
-            <ProjectInfo project={project} />
+            <ProjectInfo project={project} userSkillNames={userSkillNames} />
           </div>
 
           <div className="lg:col-span-4 2xl:col-span-3 bg-slate-50/50 border-l border-slate-100">

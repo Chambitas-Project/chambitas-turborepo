@@ -6,10 +6,16 @@ import { cn } from "@chambitas/ui";
 
 interface ProjectInfoProps {
   project: Project;
+  userSkillNames?: string[];
 }
 
-export function ProjectInfo({ project }: ProjectInfoProps) {
+export function ProjectInfo({ project, userSkillNames = [] }: ProjectInfoProps) {
   const [showScheduleGrid, setShowScheduleGrid] = useState(false);
+
+  const lowerUserSkills = useMemo(
+    () => new Set(userSkillNames.map((s) => s.toLowerCase().trim())),
+    [userSkillNames]
+  );
 
   // Normalizar el objeto schedule_constraints (en caso venga como JSON string o con claves en mayúsculas)
   const normalizedConstraints = useMemo(() => {
@@ -65,14 +71,23 @@ export function ProjectInfo({ project }: ProjectInfoProps) {
       <div className="space-y-8">
         <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Habilidades Requeridas</h3>
         <div className="flex flex-wrap gap-3">
-          {project.skills.map((skill) => (
-            <span
-              key={skill.skill_id}
-              className="px-4 py-2 rounded-md border border-slate-200 bg-transparent text-emerald-600 text-[11px] font-bold tracking-tight hover:scale-105 transition-transform cursor-default"
-            >
-              {skill.skill_name}
-            </span>
-          ))}
+          {project.skills.map((skill) => {
+            const hasUserSkill = lowerUserSkills.has(skill.skill_name.toLowerCase().trim());
+            return (
+              <span
+                key={skill.skill_id}
+                className={cn(
+                  "px-4 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-default",
+                  hasUserSkill
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-xs"
+                    : "bg-slate-50 text-slate-500 border-slate-200"
+                )}
+              >
+                {hasUserSkill && <Check className="h-4 w-4 text-emerald-600 shrink-0" />}
+                <span>{skill.skill_name}</span>
+              </span>
+            );
+          })}
         </div>
       </div>
 

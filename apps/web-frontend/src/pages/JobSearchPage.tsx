@@ -31,7 +31,7 @@ export function JobSearchPage() {
   };
 
   const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
-  const [sortBy, setSortBy] = useState("Más Recientes");
+  const [sortBy, setSortBy] = useState("Mayor Match");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -46,6 +46,7 @@ export function JobSearchPage() {
     return [{ label: "Todos", value: "Todos" }, ...dynamicCats];
   }, [catalogCategories]);
 
+  const [userSkillNames, setUserSkillNames] = useState<string[]>([]);
   const [testGroup, setTestGroup] = useState<string>("EXPERIMENTAL");
 
   useEffect(() => {
@@ -64,6 +65,10 @@ export function JobSearchPage() {
           const prof = profileRes.value.data;
           if (prof?.test_group) {
             setTestGroup(prof.test_group);
+          }
+          if (Array.isArray(prof?.skills)) {
+            const skillNames = prof.skills.map((s: any) => typeof s === "string" ? s : s.name || s.skill_name).filter(Boolean);
+            setUserSkillNames(skillNames);
           }
         }
 
@@ -215,8 +220,8 @@ export function JobSearchPage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="bg-transparent text-sm font-black text-slate-900 outline-none cursor-pointer focus:text-emerald-600 transition-colors"
               >
-                <option value="Más Recientes">Más Recientes</option>
                 <option value="Mayor Match">Mayor Match</option>
+                <option value="Más Recientes">Más Recientes</option>
                 <option value="Mejor Pago">Mejor Pago</option>
               </select>
             </div>
@@ -243,6 +248,7 @@ export function JobSearchPage() {
                       project={project}
                       matchScore={isControl ? undefined : rawScore}
                       hasApplied={hasApplied}
+                      userSkillNames={userSkillNames}
                     />
                   );
                 })}

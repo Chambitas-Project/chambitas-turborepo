@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Building2, CheckCircle2 } from "lucide-react";
+import { Building2, CheckCircle2, Check } from "lucide-react";
 import { Button, Badge, cn } from "@chambitas/ui";
 import { type Project } from "../types";
 
@@ -7,9 +7,10 @@ interface JobCardProps {
   project: Project;
   matchScore?: number;
   hasApplied?: boolean;
+  userSkillNames?: string[];
 }
 
-export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
+export function JobCard({ project, matchScore, hasApplied, userSkillNames = [] }: JobCardProps) {
   const navigate = useNavigate();
   const projectId = project.id || (project as any).project_id || (project as any)._id;
 
@@ -57,6 +58,8 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
 
   const initials = getInitials(company);
 
+  const lowerUserSkills = new Set(userSkillNames.map(s => s.toLowerCase().trim()));
+
   return (
     <div
       onClick={handleNavigate}
@@ -93,14 +96,16 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
           </div>
 
           <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-3 shrink-0">
-            {matchScore !== undefined && (
+            {matchScore !== undefined && matchScore > 0.05 && (
               <Badge className={cn(
                 "font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-none border",
-                matchScore > 0 
-                  ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
-                  : "bg-rose-50 text-rose-600 border-rose-100"
+                matchScore >= 0.7 
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                  : matchScore >= 0.4 
+                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                    : "bg-slate-100 text-slate-600 border-slate-200"
               )}>
-                <CheckCircle2 className="h-3.5 w-3.5" /> {(Math.max(0, matchScore) * 100).toFixed(0)}% de Coincidencia
+                <CheckCircle2 className="h-3.5 w-3.5" /> {(matchScore * 100).toFixed(0)}% de Coincidencia
               </Badge>
             )}
             <p className="text-[22px] font-black text-slate-900">S/.{budget}</p>
@@ -117,9 +122,19 @@ export function JobCard({ project, matchScore, hasApplied }: JobCardProps) {
           <div className="flex flex-wrap gap-2">
             {(project.skills || []).slice(0, 4).map((skill, idx) => {
               const skillName = typeof skill === "string" ? skill : skill.skill_name;
+              const hasUserSkill = lowerUserSkills.has(skillName.toLowerCase().trim());
               return (
-                <span key={idx} className="px-4 py-1.5 rounded-lg bg-slate-50 text-slate-600 text-sm font-medium border border-slate-200">
-                  {skillName}
+                <span
+                  key={idx}
+                  className={cn(
+                    "px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5",
+                    hasUserSkill
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-xs"
+                      : "bg-slate-50 text-slate-600 border-slate-200"
+                  )}
+                >
+                  {hasUserSkill && <Check className="h-3 w-3 text-emerald-600 shrink-0" />}
+                  <span>{skillName}</span>
                 </span>
               );
             })}
