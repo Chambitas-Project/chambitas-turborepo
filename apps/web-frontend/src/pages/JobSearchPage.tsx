@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Filter, ChevronRight, ChevronLeft, X } from "lucide-react";
+import { Search, Filter, ChevronRight, ChevronLeft, X, Sparkles } from "lucide-react";
 import { Button, cn } from "@chambitas/ui";
 import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
 
@@ -16,6 +16,11 @@ export function JobSearchPage() {
   const {
     projects,
     totalCount,
+    otherAreaCount,
+    userCareerCategories,
+    hasMoreOtherAreaProjects,
+    revealOtherAreas,
+    showOtherAreas,
     loading,
     categories,
     searchQuery,
@@ -33,6 +38,8 @@ export function JobSearchPage() {
     applications,
     resetFilters
   } = useJobSearch();
+
+  let firstOtherAreaRendered = false;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 font-sans">
@@ -109,20 +116,66 @@ export function JobSearchPage() {
                   const rawScore = appliedApp?.match_score ?? match?.score ?? 0;
                   const isControl = testGroup === 'CONTROL';
 
+                  const isProjectInArea = userCareerCategories.some(cat =>
+                    (project.service_category || "").toLowerCase() === cat.toLowerCase()
+                  );
+
+                  const showDivider = showOtherAreas && !isProjectInArea && !firstOtherAreaRendered;
+                  if (showDivider) {
+                    firstOtherAreaRendered = true;
+                  }
+
                   return (
-                    <JobCard
-                      key={projectId}
-                      project={project}
-                      matchScore={isControl ? undefined : rawScore}
-                      hasApplied={hasApplied}
-                      userSkillNames={userSkillNames}
-                    />
+                    <div key={projectId} className="space-y-6">
+                      {showDivider && (
+                        <div className="flex items-center gap-4 py-4 my-2">
+                          <div className="h-px bg-slate-200 flex-1" />
+                          <span className="text-xs font-black tracking-wider text-slate-400 uppercase bg-slate-100 px-4 py-1.5 rounded-full border border-slate-200/60 shadow-2xs">
+                            Oportunidades de otras áreas
+                          </span>
+                          <div className="h-px bg-slate-200 flex-1" />
+                        </div>
+                      )}
+                      <JobCard
+                        project={project}
+                        matchScore={isControl ? undefined : rawScore}
+                        hasApplied={hasApplied}
+                        userSkillNames={userSkillNames}
+                      />
+                    </div>
                   );
                 })}
 
+                {/* Discovery Banner for Jobs Outside Student's Primary Area (Only on Last Page) */}
+                {hasMoreOtherAreaProjects && currentPage === totalPages && (
+                  <div className="bg-linear-to-r from-emerald-50/80 via-teal-50/50 to-white rounded-[20px] p-6 shadow-xs border-2 border-emerald-100 space-y-4 my-8 transition-all">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-start gap-3.5">
+                        <div className="p-3 bg-emerald-500/10 text-emerald-600 rounded-2xl shrink-0 mt-0.5 border border-emerald-200/50">
+                          <Sparkles className="h-5 w-5" />
+                        </div>
+                        <div className="space-y-1">
+                          <h4 className="font-extrabold text-slate-900 text-base">¿Deseas explorar más oportunidades?</h4>
+                          <p className="text-slate-600 text-sm font-medium leading-relaxed">
+                            Hemos encontrado <span className="text-emerald-600 font-bold">{otherAreaCount} resultados más</span> de otras categorías que podrían interesarte.
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          revealOtherAreas();
+                        }}
+                        className="w-full sm:w-auto shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 h-11 rounded-xl shadow-sm hover:shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                      >
+                        Ver otros empleos fuera de tu área ({otherAreaCount})
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-3 pt-10">
+                  <div className="flex items-center justify-center gap-3 pt-6">
                     <Button
                       disabled={currentPage === 1}
                       onClick={() => {

@@ -93,9 +93,15 @@ export function useJobSearch() {
     fetchData();
   }, []);
 
+  const [showOtherAreas, setShowOtherAreas] = useState<boolean>(false);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, appliedFilters, sortBy]);
+
+  const revealOtherAreas = () => {
+    setShowOtherAreas(true);
+  };
 
   const categories = useMemo(() => {
     const dynamicCats = catalogCategories.map(cat => ({
@@ -136,53 +142,90 @@ export function useJobSearch() {
     });
   }, [projects, searchQuery, appliedFilters, recommendations]);
 
-  const sortedProjects = useMemo(() => {
-    return [...filteredProjects].sort((a, b) => {
-      if (sortBy === "Más Recientes") {
-        const isAInCareerArea = userCareerCategories.some(cat => 
-          (a.service_category || "").toLowerCase() === cat.toLowerCase()
-        );
-        const isBInCareerArea = userCareerCategories.some(cat => 
-          (b.service_category || "").toLowerCase() === cat.toLowerCase()
-        );
+  const { inAreaProjects, otherAreaProjects } = useMemo(() => {
+    const inArea: Project[] = [];
+    const otherArea: Project[] = [];
 
-        if (isAInCareerArea && !isBInCareerArea) return -1;
-        if (!isAInCareerArea && isBInCareerArea) return 1;
-
-        const dateA = new Date(a.created_at || (a as any).created || 0).getTime();
-        const dateB = new Date(b.created_at || (b as any).created || 0).getTime();
-        return dateB - dateA;
+    filteredProjects.forEach(proj => {
+      const isMatch = userCareerCategories.some(cat =>
+        (proj.service_category || "").toLowerCase() === cat.toLowerCase()
+      );
+      if (isMatch) {
+        inArea.push(proj);
+      } else {
+        otherArea.push(proj);
       }
-      if (sortBy === "Mayor Match") {
-        const idA = a.id || (a as any).project_id || (a as any)._id;
-        const idB = b.id || (b as any).project_id || (b as any)._id;
-        const matchA = recommendations.find(r => r.jobId === idA)?.score || 0;
-        const matchB = recommendations.find(r => r.jobId === idB)?.score || 0;
-        return matchB - matchA;
-      }
-      if (sortBy === "Mejor Pago") {
-        return (b.budget || 0) - (a.budget || 0);
-      }
-      return 0;
     });
-  }, [filteredProjects, sortBy, userCareerCategories, recommendations]);
 
-  const totalPages = Math.ceil(sortedProjects.length / ITEMS_PER_PAGE);
+    return { inAreaProjects: inArea, otherAreaProjects: otherArea };
+  }, [filteredProjects, userCareerCategories]);
+
+  const sortFn = (a: Project, b: Project) => {
+    if (sortBy === "Más Recientes") {
+      const dateA = new Date(a.created_at || (a as any).created || 0).getTime();
+      const dateB = new Date(b.created_at || (b as any).created || 0).getTime();
+      return dateB - dateA;
+    }
+    if (sortBy === "Mayor Match") {
+      const idA = a.id || (a as any).project_id || (a as any)._id;
+      const idB = b.id || (b as any).project_id || (b as any)._id;
+      const matchA = recommendations.find(r => r.jobId === idA)?.score || 0;
+      const matchB = recommendations.find(r => r.jobId === idB)?.score || 0;
+      return matchB - matchA;
+    }
+    if (sortBy === "Mejor Pago") {
+      return (b.budget || 0) - (a.budget || 0);
+    }
+    return 0;
+  };
+
+  const sortedInAreaProjects = useMemo(() => {
+    return [...inAreaProjects].sort(sortFn);
+  }, [inAreaProjects, sortBy, recommendations]);
+
+  const sortedOtherAreaProjects = useMemo(() => {
+    return [...otherAreaProjects].sort(sortFn);
+  }, [otherAreaProjects, sortBy, recommendations]);
+
+  const displayedProjectsList = useMemo(() => {
+    if (appliedFilters.category !== "Todos") {
+      return [...filteredProjects].sort(sortFn);
+    }
+    if (showOtherAreas) {
+      return [...sortedInAreaProjects, ...sortedOtherAreaProjects];
+    }
+    if (sortedInAreaProjects.length > 0) {
+      return [...sortedInAreaProjects];
+    }
+    return [...sortedOtherAreaProjects];
+  }, [filteredProjects, sortedInAreaProjects, sortedOtherAreaProjects, showOtherAreas, appliedFilters.category, sortBy]);
+
+  const totalPages = Math.ceil(displayedProjectsList.length / ITEMS_PER_PAGE);
   const paginatedProjects = useMemo(() => {
-    return sortedProjects.slice(
+    return displayedProjectsList.slice(
       (currentPage - 1) * ITEMS_PER_PAGE,
       currentPage * ITEMS_PER_PAGE
     );
-  }, [sortedProjects, currentPage]);
+  }, [displayedProjectsList, currentPage]);
 
   const resetFilters = () => {
     setSearchQuery("");
     setAppliedFilters(defaultFilters);
+    setShowOtherAreas(false);
   };
+
+  const hasMoreOtherAreaProjects = !showOtherAreas && appliedFilters.category === "Todos" && otherAreaProjects.length > 0 && inAreaProjects.length > 0;
 
   return {
     projects: paginatedProjects,
-    totalCount: filteredProjects.length,
+    totalCount: displayedProjectsList.length,
+    inAreaCount: sortedInAreaProjects.length,
+    otherAreaCount: sortedOtherAreaProjects.length,
+    userCareerCategories,
+    hasMoreOtherAreaProjects,
+    showOtherAreas,
+    setShowOtherAreas,
+    revealOtherAreas,
     loading,
     categories,
     searchQuery,
