@@ -17,6 +17,9 @@ export interface Project {
   created_at: string;
   status: string;
   employer_id?: string;
+  schedule_mode?: "async" | "specific" | string;
+  schedule_constraints?: Record<string, string> | null;
+  max_hours_week?: number | string | null;
 }
 
 export function formatTimeAgo(dateString: string) {
