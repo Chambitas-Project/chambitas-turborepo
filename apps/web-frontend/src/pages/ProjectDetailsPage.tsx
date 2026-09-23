@@ -7,6 +7,7 @@ import { ReviewModal } from "../components/organisms/ReviewModal";
 import { EmployerProfileModal } from "../components/organisms/EmployerProfileModal";
 import { SUSSurveyModal } from "../components/organisms/SUSSurveyModal";
 import { useTriggerSUS } from "../hooks/useTriggerSUS";
+import { useAuth } from "../context/AuthContext";
 import React from "react";
 
 // Types
@@ -23,6 +24,7 @@ import { PiononoLoader } from "../components/atoms/PiononoLoader";
 export function ProjectDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { completeStep } = useUxTelemetry('StudentApplication', 'ProjectDetails');
 
@@ -184,7 +186,7 @@ export function ProjectDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[calc(100vh-80px)]">
 
           <div className="lg:col-span-8 2xl:col-span-9 border-r border-slate-100">
-            <ProjectHeader project={project} timeAgo={timeAgo} matchScore={matchScore} />
+            <ProjectHeader project={project} timeAgo={timeAgo} matchScore={user?.test_group === 'CONTROL' ? undefined : matchScore} />
             <ProjectInfo project={project} userSkillNames={userSkillNames} />
           </div>
 

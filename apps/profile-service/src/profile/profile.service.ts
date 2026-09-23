@@ -524,6 +524,7 @@ export class ProfileService implements OnModuleInit {
         proficiency_level: ss.proficiency_level || 1,
         verified: ss.verified || false,
       })),
+      test_group: student.test_group,
       activity: [], // Por implementar
     };
   }
@@ -542,6 +543,7 @@ export class ProfileService implements OnModuleInit {
       avatar_url: employer.avatar_url || undefined,
       skills: [],
       activity: [],
+      test_group: employer.test_group,
     };
   }
 }

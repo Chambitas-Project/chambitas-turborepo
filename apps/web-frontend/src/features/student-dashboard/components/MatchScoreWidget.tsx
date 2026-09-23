@@ -8,9 +8,10 @@ interface MatchScoreWidgetProps {
   maxMatchScore: number | null;
   profile: Profile | null;
   strength: number;
+  isControl?: boolean;
 }
 
-export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScoreWidgetProps) {
+export function MatchScoreWidget({ maxMatchScore, profile, strength, isControl }: MatchScoreWidgetProps) {
   const [showMissing, setShowMissing] = useState(false);
 
   const missingItems = [];
@@ -30,7 +31,8 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
   return (
     <>
       {/* Match de Mercado */}
-      <div className="space-y-8">
+      {!isControl && (
+        <div className="space-y-8">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center md:text-left">
           Match de Mercado
         </h3>
@@ -107,6 +109,7 @@ export function MatchScoreWidget({ maxMatchScore, profile, strength }: MatchScor
           </div>
         )}
       </div>
+      )}
 
       {/* Nivel de Perfil (Fuerza) */}
       {strength < 100 && (

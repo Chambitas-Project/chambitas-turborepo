@@ -8,6 +8,7 @@ import { StudentProfileModal } from "../components/organisms/StudentProfileModal
 import { ReviewModal } from "../components/organisms/ReviewModal";
 import { SUSSurveyModal } from "../components/organisms/SUSSurveyModal";
 import { useTriggerSUS } from "../hooks/useTriggerSUS";
+import { useAuth } from "../context/AuthContext";
 
 // Types
 import type { EmployerProject, ApplicationData } from "../features/employer-project/types";
@@ -20,6 +21,7 @@ import { PiononoLoader } from "../components/atoms/PiononoLoader";
 export function EmployerProjectDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [project, setProject] = useState<EmployerProject | null>(null);
   const [applicants, setApplicants] = useState<ApplicationData[]>([]);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -158,6 +160,7 @@ export function EmployerProjectDetailsPage() {
         handleViewProfile={handleViewProfile}
         handleCompleteProject={handleCompleteProject}
         handleOpenReview={handleOpenReview}
+        isControl={user?.test_group === 'CONTROL'}
       />
 
       <StudentProfileModal

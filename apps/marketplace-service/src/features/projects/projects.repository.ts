@@ -53,9 +53,13 @@ export class ProjectsRepository {
     limit?: number;
     offset?: number;
   }): Promise<{ data: (Tables<'projects'> & { university_ids: string[]; skills: any[]; company_name?: string; employer_name?: string; employer_avatar_url?: string; applicant_count?: number })[]; total: number }> {
+    const selectFields = filters.employer_id 
+      ? '*, employer_profiles(name, company_name, avatar_url), project_universities!left(university_id), project_required_skills(*, skills(name)), applications(count)'
+      : '*, employer_profiles(name, company_name, avatar_url), project_universities!left(university_id), project_required_skills(*, skills(name))';
+
     let query = this.client
       .from('projects')
-      .select('*, employer_profiles(name, company_name, avatar_url), project_universities!left(university_id), project_required_skills(*, skills(name)), applications(count)', { count: 'exact' })
+      .select(selectFields, { count: 'exact' })
       .is('deleted_at', null);
     
     // ... filtros existentes ...

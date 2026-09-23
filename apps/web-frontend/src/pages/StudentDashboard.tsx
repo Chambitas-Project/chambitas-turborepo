@@ -237,6 +237,7 @@ export function StudentDashboard() {
               maxMatchScore={maxMatchScore}
               profile={profile}
               strength={strength}
+              isControl={user?.test_group === 'CONTROL'}
             />
             <SkillsWidget
               profile={profile}

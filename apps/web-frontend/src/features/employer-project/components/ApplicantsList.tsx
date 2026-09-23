@@ -17,6 +17,7 @@ interface ApplicantsListProps {
   handleViewProfile: (studentId: string) => void;
   handleCompleteProject: () => void;
   handleOpenReview: (appId: string, name?: string) => void;
+  isControl?: boolean;
 }
 
 export function ApplicantsList({
@@ -33,6 +34,7 @@ export function ApplicantsList({
   handleViewProfile,
   handleCompleteProject,
   handleOpenReview,
+  isControl
 }: ApplicantsListProps) {
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const isSelectedStatus = project.status === 'in_progress' || project.status === 'closed';
@@ -119,15 +121,15 @@ export function ApplicantsList({
                             </Badge>
                           )}
                         </h4>
-                        {app.match_score != null ? (
+                        {!isControl && app.match_score != null ? (
                           <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
                             <CheckCircle2 className="h-3.5 w-3.5" /> {(app.match_score * 100).toFixed(0)}% de Coincidencia
                           </Badge>
-                        ) : (
+                        ) : !isControl ? (
                           <Badge className="bg-slate-50 text-slate-500 border border-slate-200 font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-none text-xs">
                             <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculando Coincidencia IA...
                           </Badge>
-                        )}
+                        ) : null}
                       </div>
 
                       <p className="text-sm font-medium text-slate-600 mt-1 line-clamp-3 leading-relaxed">
@@ -185,7 +187,7 @@ export function ApplicantsList({
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 pt-4 sm:pt-0 shrink-0">
-                    {app.match_score !== undefined && app.match_score > 0 && (
+                    {!isControl && app.match_score !== undefined && app.match_score > 0 && (
                       <Badge className="bg-emerald-100 text-emerald-700 font-black px-3 py-1 text-xs flex items-center gap-1.5 rounded-md self-start sm:self-center">
                         <Award className="h-4 w-4" /> MATCH {(app.match_score * 100).toFixed(0)}%
                       </Badge>
