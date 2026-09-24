@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { X, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { Button } from '@chambitas/ui';
 
 interface SUSSurveyModalProps {
@@ -10,16 +10,16 @@ interface SUSSurveyModalProps {
 }
 
 const SUS_QUESTIONS = [
-  '1. Creo que me gustaría usar Chambitas con frecuencia.',
-  '2. Encontré a Chambitas innecesariamente complejo.',
-  '3. Pensé que Chambitas era fácil de usar.',
-  '4. Creo que necesitaría el apoyo de una persona técnica para poder usar Chambitas.',
-  '5. Encontré que las diversas funciones de Chambitas estaban bien integradas.',
-  '6. Pensé que había demasiada inconsistencia en Chambitas.',
-  '7. Imagino que la mayoría de las personas aprenderían a usar Chambitas muy rápidamente.',
-  '8. Encontré a Chambitas muy engorroso de usar.',
-  '9. Me sentí muy seguro usando Chambitas.',
-  '10. Necesité aprender muchas cosas antes de poder empezar a usar Chambitas.'
+  '1. Creo que me gustaría usar esta página web con frecuencia.',
+  '2. Encontré la página web innecesariamente compleja.',
+  '3. Pensé que la página web era fácil de usar.',
+  '4. Creo que necesitaría el apoyo de un técnico para poder usar esta página web.',
+  '5. Encontré que las diversas funciones de la página web estaban bien integradas.',
+  '6. Pensé que había demasiada inconsistencia en esta página web.',
+  '7. Imagino que la mayoría de las personas aprenderían a usar esta página web muy rápidamente.',
+  '8. Encontré la página web muy incómoda de usar.',
+  '9. Me sentí muy seguro(a) usando la página web.',
+  '10. Necesité aprender muchas cosas antes de poder empezar a usar esta página web.'
 ];
 
 export const SUSSurveyModal: React.FC<SUSSurveyModalProps> = ({
@@ -51,7 +51,7 @@ export const SUSSurveyModal: React.FC<SUSSurveyModalProps> = ({
       const responsesArray = Array.from({ length: 10 }, (_, i) => answers[i]);
       await onSubmit(responsesArray);
     } catch (err: any) {
-      setError(err.message || 'Error al guardar la evaluación SUS.');
+      setError(err.message || 'Error al guardar la encuesta.');
     }
   };
 
@@ -59,24 +59,27 @@ export const SUSSurveyModal: React.FC<SUSSurveyModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in overflow-y-auto">
       <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Header Modal */}
-        <div className="bg-slate-900 text-white p-6 sm:p-8 flex items-start justify-between shrink-0">
+        <div className="bg-white text-slate-900 p-6 sm:p-8 flex items-start justify-between shrink-0 border-b border-slate-100">
           <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                Fase 3 • Piloto Experimental UPC
-              </span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
-              Evaluación de Usabilidad (System Usability Scale)
-              <Sparkles className="h-5 w-5 text-emerald-400 shrink-0" />
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
+              Encuesta de Experiencia
             </h2>
-            <p className="text-xs sm:text-sm text-slate-300 font-medium">
-              Ayúdanos a evaluar la plataforma Chambitas respondiendo este cuestionario psicométrico estandarizado de 10 preguntas.
-            </p>
+            <div className="space-y-3">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                Ayúdanos a evaluar la plataforma respondiendo este breve cuestionario de 10 preguntas.
+              </p>
+              <div className="text-[10px] sm:text-xs text-black font-bold flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-6 bg-slate-50/80 p-3 rounded-xl border border-slate-200">
+                <span>1: Totalmente en desacuerdo</span>
+                <span>2: En desacuerdo</span>
+                <span>3: Neutral</span>
+                <span>4: De acuerdo</span>
+                <span>5: Totalmente de acuerdo</span>
+              </div>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-2 rounded-xl hover:bg-slate-800"
+            className="text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-xl hover:bg-slate-100"
           >
             <X className="h-5 w-5" />
           </button>
@@ -110,9 +113,6 @@ export const SUSSurveyModal: React.FC<SUSSurveyModalProps> = ({
                           }`}
                       >
                         <span className="text-base font-black">{val}</span>
-                        <span className="text-[9px] text-center font-medium opacity-80 hidden sm:inline">
-                          {val === 1 ? 'Totalmente en desacuerdo' : val === 5 ? 'Totalmente de acuerdo' : `${val}`}
-                        </span>
                       </button>
                     );
                   })}
@@ -131,7 +131,7 @@ export const SUSSurveyModal: React.FC<SUSSurveyModalProps> = ({
             <Button
               type="submit"
               disabled={!isFormComplete || isSubmitting}
-              className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-md ${isFormComplete && !isSubmitting
+              className={`w-full sm:w-auto px-8 py-3.5 rounded-md font-bold text-sm transition-all ${isFormComplete && !isSubmitting
                   ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
@@ -143,8 +143,7 @@ export const SUSSurveyModal: React.FC<SUSSurveyModalProps> = ({
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Enviar Evaluación SUS
+                  Enviar Encuesta
                 </span>
               )}
             </Button>
