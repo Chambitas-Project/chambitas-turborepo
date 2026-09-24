@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { X, ShieldCheck } from 'lucide-react';
 import { Button } from '@chambitas/ui';
 
 interface SUSSurveyModalProps {
@@ -108,8 +108,8 @@ export const SUSSurveyModal: React.FC<SUSSurveyModalProps> = ({
                         type="button"
                         onClick={() => handleOptionChange(qIdx, val)}
                         className={`py-3 px-2 rounded-xl text-xs font-bold transition-all border flex flex-col items-center justify-center gap-1 ${isSelected
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-md scale-[1.02]'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100'
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-md scale-[1.02]'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100'
                           }`}
                       >
                         <span className="text-base font-black">{val}</span>
@@ -132,8 +132,8 @@ export const SUSSurveyModal: React.FC<SUSSurveyModalProps> = ({
               type="submit"
               disabled={!isFormComplete || isSubmitting}
               className={`w-full sm:w-auto px-8 py-3.5 rounded-md font-bold text-sm transition-all ${isFormComplete && !isSubmitting
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
             >
               {isSubmitting ? (
