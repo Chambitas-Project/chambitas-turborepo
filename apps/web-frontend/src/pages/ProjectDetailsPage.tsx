@@ -156,6 +156,8 @@ export function ProjectDetailsPage() {
   const companyName = project.company_name || project.employer_name || "Empleador Confidencial";
   const employerName = project.employer_name || "Usuario Anónimo";
 
+  const [hasReviewed, setHasReviewed] = useState(false);
+
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
       <nav className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-50">
@@ -211,6 +213,7 @@ export function ProjectDetailsPage() {
                 onSubmit={handleApply}
                 onOpenReviewModal={() => setIsReviewModalOpen(true)}
                 onNavigateBack={() => navigate("/jobs")}
+                hasReviewed={hasReviewed}
               />
             </div>
           </div>
@@ -223,6 +226,7 @@ export function ProjectDetailsPage() {
           setIsReviewModalOpen(false);
           triggerSUSCheck();
         }}
+        onSuccess={() => setHasReviewed(true)}
         applicationId={application?.id}
         targetName={companyName}
       />
