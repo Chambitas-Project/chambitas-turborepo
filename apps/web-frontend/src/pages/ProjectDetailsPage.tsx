@@ -54,6 +54,7 @@ export function ProjectDetailsPage() {
   const [isEmployerProfileModalOpen, setIsEmployerProfileModalOpen] = useState(false);
 
   const [userSkillNames, setUserSkillNames] = useState<string[]>([]);
+  const [hasReviewed, setHasReviewed] = useState(false);
 
   useEffect(() => {
     const fetchProjectAndApplication = async () => {
@@ -155,8 +156,6 @@ export function ProjectDetailsPage() {
   const timeAgo = formatTimeAgo(project.created_at);
   const companyName = project.company_name || project.employer_name || "Empleador Confidencial";
   const employerName = project.employer_name || "Usuario Anónimo";
-
-  const [hasReviewed, setHasReviewed] = useState(false);
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900">
