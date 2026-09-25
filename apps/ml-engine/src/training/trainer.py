@@ -51,7 +51,7 @@ def check_schedule_overlap(est_availability_json, pub_schedule_json):
     except:
         return 0.0
 
-def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_real_data=False):
+def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_real_data=False, scenario=None):
     base_data_path = os.path.join(os.path.dirname(__file__), '../../data')
     
     if use_real_data:
@@ -190,7 +190,7 @@ def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_re
     print("="*50)
 
     # 7. REGISTRO EN SUPABASE
-    scenario_tag = "real_database_extracted" if use_real_data else "upc_standard_academic_limits"
+    scenario_tag = scenario if scenario else ("real_database_extracted" if use_real_data else "upc_standard_academic_limits")
     register_model_version_in_supabase(metrics, "v12.0.0", n_comps, scenario=scenario_tag, n_samples=len(df))
 
 def get_next_version(supabase: Client, base_version="v12.0.0"):
@@ -230,6 +230,7 @@ def register_model_version_in_supabase(metrics, version="v12.0.0", n_comps=300, 
     try:
         supabase: Client = create_client(url, key)
         version_tag = get_next_version(supabase, version)
+        is_real = (scenario == "real_database_extracted")
         h_params = {
             "smote": True, 
             "clusters": 3, 
@@ -237,11 +238,14 @@ def register_model_version_in_supabase(metrics, version="v12.0.0", n_comps=300, 
             "svd_components": n_comps,
             "scenario": scenario,
             "n_samples": n_samples,
+            "use_real_data": is_real,
             "confusion_matrix": metrics.get('confusion_matrix')
         }
 
+        algorithm_name = f"Híbrido - BD Real ({n_samples} regs)" if is_real else f"Híbrido - Sintético ({n_samples} muestras)"
+
         data = {
-            "algorithm": f"Hybrid ({'Real BD Data' if scenario == 'real_database_extracted' else 'Synthetic Data'})",
+            "algorithm": algorithm_name,
             "version_tag": version_tag,
             "f1_score": float(metrics['f1_score']),
             "precision_val": float(metrics['precision']),
@@ -254,12 +258,18 @@ def register_model_version_in_supabase(metrics, version="v12.0.0", n_comps=300, 
         supabase.table("ml_model_versions").update({"active": False}).eq("active", True).execute()
         supabase.table("ml_model_versions").insert(data).execute()
         
-        print(f"\n[OK] Model version '{version_tag}' registered and activated in Supabase.")
+        print(f"\n[OK] Model version '{version_tag}' ({algorithm_name}) registered and activated in Supabase.")
     except Exception as e:
         print(f"\n[ERROR] Failed to register model version in Supabase: {str(e)}")
 
 if __name__ == "__main__":
     import sys
     use_real = "--use-real-data" in sys.argv or "true" in [a.lower() for a in sys.argv]
-    train_tesis_v10_hybrid(use_real_data=use_real)
+    scenario = None
+    if "--scenario" in sys.argv:
+        idx = sys.argv.index("--scenario")
+        if idx + 1 < len(sys.argv):
+            scenario = sys.argv[idx + 1]
+    train_tesis_v10_hybrid(use_real_data=use_real, scenario=scenario)
+
 

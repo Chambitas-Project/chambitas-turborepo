@@ -39,7 +39,7 @@ export const apiClient = {
     }
   },
 
-  async trainMLEngine(useRealData: boolean = true) {
+  async trainMLEngine(useRealData: boolean = true, samples?: number, scenario?: string) {
     try {
       const response = await fetch(`${this.baseURL}/analytics/ml-engine/train`, {
         method: 'POST',
@@ -47,7 +47,7 @@ export const apiClient = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ useRealData })
+        body: JSON.stringify({ useRealData, samples, scenario })
       });
       if (!response.ok) {
         throw new Error(`Error HTTP: ${response.status}`);

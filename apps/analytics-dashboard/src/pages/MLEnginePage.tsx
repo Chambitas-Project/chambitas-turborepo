@@ -13,6 +13,7 @@ export default function MLEnginePage() {
   const [isRunningLatencyTest, setIsRunningLatencyTest] = useState(false);
   const [isTrainingModel, setIsTrainingModel] = useState(false);
   const [trainingMessage, setTrainingMessage] = useState<string | null>(null);
+  const [selectedExperiment, setSelectedExperiment] = useState<string>('real');
   const itemsPerPage = 5;
 
   const handleTrainModel = async () => {
@@ -20,8 +21,30 @@ export default function MLEnginePage() {
       setIsTrainingModel(true);
       setTrainingMessage(null);
       setError(null);
-      const res = await apiClient.trainMLEngine(true);
-      setTrainingMessage(res.message || 'Proceso de entrenamiento iniciado exitosamente con datos de la BD.');
+
+      let useRealData = false;
+      let samples = 5000;
+      let scenario = 'upc_standard_academic_limits';
+
+      if (selectedExperiment === 'real') {
+        useRealData = true;
+        scenario = 'real_database_extracted';
+      } else if (selectedExperiment === 'syn_100') {
+        samples = 100;
+        scenario = 'synthetic_100';
+      } else if (selectedExperiment === 'syn_500') {
+        samples = 500;
+        scenario = 'synthetic_500';
+      } else if (selectedExperiment === 'syn_1000') {
+        samples = 1000;
+        scenario = 'synthetic_1000';
+      } else if (selectedExperiment === 'syn_5000') {
+        samples = 5000;
+        scenario = 'synthetic_5000';
+      }
+
+      const res = await apiClient.trainMLEngine(useRealData, samples, scenario);
+      setTrainingMessage(res.message || 'Proceso de entrenamiento iniciado exitosamente.');
       setTimeout(async () => {
         const result = await apiClient.getMLEngineKPIs();
         setData(result);
@@ -312,21 +335,39 @@ export default function MLEnginePage() {
 
         {/* Model Versions Table */}
         <div className="bg-white rounded-xl border border-[#e5e9e2] p-6 lg:col-span-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-base font-semibold text-[#414941]">Historial de Versiones del Modelo</h3>
-              <p className="text-xs text-[#414941] mt-0.5">Modelos entrenados registrados activamente en el sistema</p>
+              <h3 className="text-base font-semibold text-[#181d19]">Historial de Versiones del Modelo</h3>
+              <p className="text-xs text-[#414941] mt-0.5">Modelos entrenados y registrados activamente en el sistema</p>
             </div>
             
-            <button
-              onClick={handleTrainModel}
-              disabled={isTrainingModel}
-              className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-[#0f6c41] hover:bg-[#002110] rounded-xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-[#002110]/20"
-              title="Re-entrenar modelo usando únicamente los datos reales acumulados en la base de datos Supabase"
-            >
-              <RefreshCw className={`w-4 h-4 text-[#a0f5bd] ${isTrainingModel ? 'animate-spin' : ''}`} />
-              <span>{isTrainingModel ? 'Entrenando en BD...' : 'Entrenar Modelo (BD Real)'}</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 bg-[#f1f5ee] px-3 py-1.5 rounded-xl border border-[#e5e9e2]">
+                <label htmlFor="exp-select" className="text-xs font-bold text-[#414941] uppercase tracking-wider whitespace-nowrap">Modo:</label>
+                <select
+                  id="exp-select"
+                  value={selectedExperiment}
+                  onChange={(e) => setSelectedExperiment(e.target.value)}
+                  className="bg-white border border-[#e5e9e2] text-[#181d19] font-medium text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-[#0f6c41] outline-none cursor-pointer"
+                >
+                  <option value="real">🟢 Datos Reales (Supabase BD)</option>
+                  <option value="syn_100">🟣 Sintético - 100 Muestras</option>
+                  <option value="syn_500">🟣 Sintético - 500 Muestras</option>
+                  <option value="syn_1000">🟣 Sintético - 1,000 Muestras</option>
+                  <option value="syn_5000">🟣 Sintético - 5,000 Muestras</option>
+                </select>
+              </div>
+
+              <button
+                onClick={handleTrainModel}
+                disabled={isTrainingModel}
+                className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-[#0f6c41] hover:bg-[#002110] rounded-xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-[#002110]/20"
+                title="Disparar entrenamiento del modelo con los parámetros configurados"
+              >
+                <RefreshCw className={`w-4 h-4 text-[#a0f5bd] ${isTrainingModel ? 'animate-spin' : ''}`} />
+                <span>{isTrainingModel ? 'Entrenando...' : 'Entrenar Modelo'}</span>
+              </button>
+            </div>
           </div>
 
           {trainingMessage && (
@@ -341,7 +382,7 @@ export default function MLEnginePage() {
               <thead className="text-xs text-[#414941] uppercase bg-[#ebf0e8]">
                 <tr>
                   <th className="px-6 py-3 font-medium">Versión</th>
-                  <th className="px-6 py-3 font-medium">Algoritmo</th>
+                  <th className="px-6 py-3 font-medium">Tipo / Origen</th>
                   <th className="px-6 py-3 font-medium">F1 Score</th>
                   <th className="px-6 py-3 font-medium">Precision</th>
                   <th className="px-6 py-3 font-medium">Recall</th>
@@ -360,41 +401,60 @@ export default function MLEnginePage() {
                     <td colSpan={8} className="px-6 py-4 text-center text-slate-500">No hay datos disponibles</td>
                   </tr>
                 ) : (
-                  currentModelVersions.map((version: any, idx: number) => (
-                    <tr 
-                      key={version.id || idx} 
-                      className="border-b border-[#e5e9e2] hover:bg-[#ebf0e8] transition-colors"
-                    >
-                      <td className="px-6 py-4 font-medium">{version.version_tag}</td>
-                      <td className="px-6 py-4 text-[#414941]">{version.algorithm || '-'}</td>
-                      <td className="px-6 py-4 font-mono text-[#414941]">{version.f1_score}</td>
-                      <td className="px-6 py-4 font-mono text-[#414941]">{version.precision_val}</td>
-                      <td className="px-6 py-4 font-mono text-[#414941]">{version.recall_val}</td>
-                      <td className="px-6 py-4">
-                        {version.active ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#a0f5bd] text-[#002110]">
-                            Activo
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#d3d8d0] text-[#181d19]">
-                            Inactivo
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-[#414941]">
-                        {version.trained_at ? new Date(version.trained_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <button 
-                          onClick={() => setSelectedVersion(version)}
-                          className="p-2 text-[#414941] hover:text-[#002110] hover:bg-[#a0f5bd] rounded-lg transition-colors cursor-pointer"
-                          title="Ver detalles e hiperparámetros"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  currentModelVersions.map((version: any, idx: number) => {
+                    const hParams = typeof version.hyperparameters === 'string' 
+                      ? JSON.parse(version.hyperparameters) 
+                      : (version.hyperparameters || {});
+                    
+                    const isReal = hParams.use_real_data || hParams.scenario === 'real_database_extracted' || (version.algorithm && version.algorithm.includes('BD Real'));
+                    const samplesCount = isReal ? (hParams.n_samples ?? 'BD') : (hParams.n_samples ?? 5000);
+
+                    return (
+                      <tr 
+                        key={version.id || idx} 
+                        className="border-b border-[#e5e9e2] hover:bg-[#ebf0e8] transition-colors"
+                      >
+                        <td className="px-6 py-4 font-medium font-mono">{version.version_tag}</td>
+                        <td className="px-6 py-4">
+                          {isReal ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300">
+                              🟢 BD Real ({samplesCount} reg)
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-900 border border-purple-300">
+                              🟣 Sintético ({samplesCount} reg)
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 font-mono font-bold text-[#0f6c41]">{version.f1_score}</td>
+                        <td className="px-6 py-4 font-mono text-[#414941]">{version.precision_val}</td>
+                        <td className="px-6 py-4 font-mono text-[#414941]">{version.recall_val}</td>
+                        <td className="px-6 py-4">
+                          {version.active ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#a0f5bd] text-[#002110]">
+                              Activo
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#d3d8d0] text-[#181d19]">
+                              Inactivo
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-[#414941]">
+                          {version.trained_at ? new Date(version.trained_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <button 
+                            onClick={() => setSelectedVersion(version)}
+                            className="p-2 text-[#414941] hover:text-[#002110] hover:bg-[#a0f5bd] rounded-lg transition-colors cursor-pointer"
+                            title="Ver detalles e hiperparámetros"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

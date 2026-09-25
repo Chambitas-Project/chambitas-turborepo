@@ -38,21 +38,25 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
 
     def TrainModel(self, request, context):
         use_real = getattr(request, 'useRealData', False) or (request.scenario == 'real')
-        print(f"[gRPC] Disparando entrenamiento manual. Datos Reales: {use_real}, Escenario: {request.scenario or 'default'}")
+        scenario = request.scenario or ("real_database_extracted" if use_real else f"synthetic_{request.samples or 5000}")
+        samples = request.samples or 5000
+
+        print(f"[gRPC] Disparando entrenamiento manual. Datos Reales: {use_real}, Muestras: {samples}, Escenario: {scenario}")
         
         try:
             if use_real:
-                # Entrenar directamente desde Supabase sin sintéticos
-                subprocess.Popen([sys.executable, "src/training/trainer.py", "--use-real-data"])
+                subprocess.Popen([sys.executable, "src/training/trainer.py", "--use-real-data", "--scenario", "real_database_extracted"])
             else:
-                # Generar datos sintéticos y luego entrenar
-                subprocess.Popen([sys.executable, "src/training/data_gen.py", str(request.samples or 5000)])
-                subprocess.Popen([sys.executable, "src/training/trainer.py"])
+                # 1. Generar N datos sintéticos
+                gen_proc = subprocess.Popen([sys.executable, "src/training/data_gen.py", str(samples)])
+                gen_proc.wait() # Esperar a que el archivo CSV se genere
+                # 2. Entrenar el modelo con la muestra indicada
+                subprocess.Popen([sys.executable, "src/training/trainer.py", "--scenario", scenario])
             
             return ml_engine_pb2.TrainModelResponse(
                 success=True,
                 versionTag="In Progress",
-                message=f"El proceso de entrenamiento con datos {'reales de la BD' if use_real else 'sintéticos'} ha comenzado."
+                message=f"Entrenamiento {'real (BD)' if use_real else f'sintético ({samples} muestras)'} iniciado."
             )
         except Exception as e:
             return ml_engine_pb2.TrainModelResponse(

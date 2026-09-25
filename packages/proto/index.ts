@@ -14,7 +14,7 @@ export const PROTO_PACKAGE = {
   MATCHING: 'matching',
   NOTIFICATION: 'notification',
   ANALYTICS: 'analytics',
-  ML_ENGINE: 'ml-engine'
+  ML_ENGINE: 'ml_engine'
 };
 
 import { join } from 'path';
