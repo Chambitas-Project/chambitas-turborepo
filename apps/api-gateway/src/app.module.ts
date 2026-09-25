@@ -85,6 +85,16 @@ import { AnalyticsController } from './analytics/analytics.controller';
           loader: { keepCase: true },
         },
       },
+      {
+        name: 'ML_ENGINE_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: PROTO_PACKAGE.ML_ENGINE,
+          protoPath: PROTO_PATH.ML_ENGINE,
+          url: process.env.ML_ENGINE_GRPC_URL || 'localhost:50058',
+          loader: { keepCase: true },
+        },
+      },
     ]),
   ],
   controllers: [

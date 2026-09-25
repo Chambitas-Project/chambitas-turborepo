@@ -11,7 +11,27 @@ export default function MLEnginePage() {
   const [selectedVersion, setSelectedVersion] = useState<any>(null);
   const [selectedCmVersionTag, setSelectedCmVersionTag] = useState<string>('');
   const [isRunningLatencyTest, setIsRunningLatencyTest] = useState(false);
+  const [isTrainingModel, setIsTrainingModel] = useState(false);
+  const [trainingMessage, setTrainingMessage] = useState<string | null>(null);
   const itemsPerPage = 5;
+
+  const handleTrainModel = async () => {
+    try {
+      setIsTrainingModel(true);
+      setTrainingMessage(null);
+      setError(null);
+      const res = await apiClient.trainMLEngine(true);
+      setTrainingMessage(res.message || 'Proceso de entrenamiento iniciado exitosamente con datos de la BD.');
+      setTimeout(async () => {
+        const result = await apiClient.getMLEngineKPIs();
+        setData(result);
+      }, 3000);
+    } catch (err: any) {
+      setError(err.message || 'Error al iniciar el entrenamiento del modelo');
+    } finally {
+      setIsTrainingModel(false);
+    }
+  };
 
   const handleRunLatencyTest = async () => {
     try {
@@ -292,7 +312,30 @@ export default function MLEnginePage() {
 
         {/* Model Versions Table */}
         <div className="bg-white rounded-xl border border-[#e5e9e2] p-6 lg:col-span-2">
-          <h3 className="text-base font-semibold mb-6 text-[#414941]">Historial de Versiones del Modelo</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-base font-semibold text-[#414941]">Historial de Versiones del Modelo</h3>
+              <p className="text-xs text-[#414941] mt-0.5">Modelos entrenados registrados activamente en el sistema</p>
+            </div>
+            
+            <button
+              onClick={handleTrainModel}
+              disabled={isTrainingModel}
+              className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-[#0f6c41] hover:bg-[#002110] rounded-xl transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm border border-[#002110]/20"
+              title="Re-entrenar modelo usando únicamente los datos reales acumulados en la base de datos Supabase"
+            >
+              <RefreshCw className={`w-4 h-4 text-[#a0f5bd] ${isTrainingModel ? 'animate-spin' : ''}`} />
+              <span>{isTrainingModel ? 'Entrenando en BD...' : 'Entrenar Modelo (BD Real)'}</span>
+            </button>
+          </div>
+
+          {trainingMessage && (
+            <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-lg flex items-center justify-between">
+              <span>{trainingMessage}</span>
+              <button onClick={() => setTrainingMessage(null)} className="text-emerald-600 hover:text-emerald-900 ml-2 font-bold cursor-pointer">✕</button>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-[#414941] uppercase bg-[#ebf0e8]">

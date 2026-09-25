@@ -37,22 +37,22 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
         return ml_engine_pb2.PredictBatchResponse(results=results)
 
     def TrainModel(self, request, context):
-        print(f"[gRPC] Disparando entrenamiento manual. Escenario: {request.scenario or 'default'}")
+        use_real = getattr(request, 'useRealData', False) or (request.scenario == 'real')
+        print(f"[gRPC] Disparando entrenamiento manual. Datos Reales: {use_real}, Escenario: {request.scenario or 'default'}")
         
-        # Ejecutar el entrenamiento en un proceso separado para no bloquear gRPC
         try:
-            # 1. Generar datos (opcional si ya existen, pero bueno para el demo)
-            subprocess.Popen([sys.executable, "src/training/data_gen.py", str(request.samples or 5000)])
-            
-            # 2. Entrenar (esto lo lanzamos después o encadenado)
-            # En un entorno real usaríamos una cola de tareas como Celery, 
-            # para la tesis, un Popen es suficiente.
-            subprocess.Popen([sys.executable, "src/training/trainer.py"])
+            if use_real:
+                # Entrenar directamente desde Supabase sin sintéticos
+                subprocess.Popen([sys.executable, "src/training/trainer.py", "--use-real-data"])
+            else:
+                # Generar datos sintéticos y luego entrenar
+                subprocess.Popen([sys.executable, "src/training/data_gen.py", str(request.samples or 5000)])
+                subprocess.Popen([sys.executable, "src/training/trainer.py"])
             
             return ml_engine_pb2.TrainModelResponse(
                 success=True,
                 versionTag="In Progress",
-                message="El proceso de entrenamiento ha comenzado en segundo plano."
+                message=f"El proceso de entrenamiento con datos {'reales de la BD' if use_real else 'sintéticos'} ha comenzado."
             )
         except Exception as e:
             return ml_engine_pb2.TrainModelResponse(

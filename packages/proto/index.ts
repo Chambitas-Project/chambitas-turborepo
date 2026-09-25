@@ -13,7 +13,8 @@ export const PROTO_PACKAGE = {
   MARKETPLACE: 'marketplace',
   MATCHING: 'matching',
   NOTIFICATION: 'notification',
-  ANALYTICS: 'analytics'
+  ANALYTICS: 'analytics',
+  ML_ENGINE: 'ml-engine'
 };
 
 import { join } from 'path';
@@ -767,8 +768,22 @@ export interface EmbeddingResponse {
   message: string;
 }
 
+export interface TrainModelRequest {
+  samples?: number;
+  scenario?: string;
+  baseVersion?: string;
+  useRealData?: boolean;
+}
+
+export interface TrainModelResponse {
+  success: boolean;
+  versionTag: string;
+  message: string;
+}
+
 export interface IMLEngineService {
   GenerateProjectEmbedding(request: { project_id: string }, metadata?: any): Observable<EmbeddingResponse>;
   GenerateStudentEmbedding(request: { student_id: string }, metadata?: any): Observable<EmbeddingResponse>;
   GenerateSkillEmbedding(request: { skill_id: string }, metadata?: any): Observable<EmbeddingResponse>;
+  TrainModel(request: TrainModelRequest, metadata?: any): Observable<TrainModelResponse>;
 }

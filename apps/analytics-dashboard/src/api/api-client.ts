@@ -39,6 +39,26 @@ export const apiClient = {
     }
   },
 
+  async trainMLEngine(useRealData: boolean = true) {
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/ml-engine/train`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ useRealData })
+      });
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error triggering ML Engine training:', error);
+      throw error;
+    }
+  },
+
   async runLatencyTest() {
     try {
       const response = await fetch(`${this.baseURL}/analytics/test-latency`, {

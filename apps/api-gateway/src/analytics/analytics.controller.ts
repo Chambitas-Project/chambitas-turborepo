@@ -1,7 +1,7 @@
-import { Controller, Post, Get, Body, Param, Inject, OnModuleInit } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Inject, OnModuleInit, Optional } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { IAnalyticsService, TrackEventRequest } from '@chambitas/proto';
+import { IAnalyticsService, IMLEngineService, TrackEventRequest } from '@chambitas/proto';
 import { TrackEventDto } from './dto/track-event.dto';
 import { firstValueFrom } from 'rxjs';
 import { Public } from '../auth/decorators/public.decorator';
@@ -10,11 +10,18 @@ import { Public } from '../auth/decorators/public.decorator';
 @Controller('analytics')
 export class AnalyticsController implements OnModuleInit {
   private analyticsService!: IAnalyticsService;
+  private mlEngineService?: IMLEngineService;
 
-  constructor(@Inject('ANALYTICS_PACKAGE') private client: ClientGrpc) {}
+  constructor(
+    @Inject('ANALYTICS_PACKAGE') private client: ClientGrpc,
+    @Optional() @Inject('ML_ENGINE_PACKAGE') private mlClient?: ClientGrpc,
+  ) {}
 
   onModuleInit() {
     this.analyticsService = this.client.getService<IAnalyticsService>('AnalyticsService');
+    if (this.mlClient) {
+      this.mlEngineService = this.mlClient.getService<IMLEngineService>('MLEngineService');
+    }
   }
 
   @Public()
@@ -58,6 +65,23 @@ export class AnalyticsController implements OnModuleInit {
       recommendationLogs: JSON.parse(response.recommendationLogsJson || '[]'),
       matchesDistribution: JSON.parse(response.matchesDistributionJson || '[]')
     };
+  }
+
+  @Public()
+  @Post('ml-engine/train')
+  @ApiOperation({ summary: 'Disparar el entrenamiento del modelo de ML utilizando datos reales de la BD' })
+  async trainMLEngine(@Body() body?: { useRealData?: boolean; scenario?: string; samples?: number }) {
+    if (!this.mlEngineService) {
+      return { success: false, message: 'El servicio ML Engine no está conectado' };
+    }
+    const response = await firstValueFrom(
+      this.mlEngineService.TrainModel({
+        useRealData: body?.useRealData ?? true,
+        scenario: body?.scenario || 'real_database_extracted',
+        samples: body?.samples || 5000,
+      })
+    );
+    return response;
   }
 
   @Public()
