@@ -68,7 +68,7 @@ export const SUSSurveyModal: React.FC<SUSSurveyModalProps> = ({
               <p className="text-xs sm:text-sm text-slate-500 font-medium">
                 Ayúdanos a evaluar la plataforma respondiendo este breve cuestionario de 10 preguntas.
               </p>
-              <div className="text-[10px] sm:text-xs text-black font-bold flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-6 bg-slate-50/80 p-3 rounded-xl border border-slate-200">
+              <div className="text-[10px] sm:text-xs text-black font-bold flex flex-col gap-1.5 bg-slate-50/80 p-4 rounded-xl border border-slate-200 w-fit">
                 <span>1: Totalmente en desacuerdo</span>
                 <span>2: En desacuerdo</span>
                 <span>3: Neutral</span>

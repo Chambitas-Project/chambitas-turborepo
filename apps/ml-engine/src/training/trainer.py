@@ -3,6 +3,11 @@ import numpy as np
 import json
 import joblib
 import os
+import sys
+
+# Permitir importaciones absolutas desde 'src' resolviendo la raíz de ml-engine
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
 import re
 import nltk
 from nltk.corpus import stopwords
@@ -165,12 +170,13 @@ def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_re
     rec = recall_score(y_test, y_pred, zero_division=0)
     
     try:
-        cm = confusion_matrix(y_test, y_pred)
+        # Asegurar matriz 2x2 incluso si falta una clase
+        cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
         cm_dict = {
-            'tn': int(cm[0][0]) if cm.shape == (2,2) else int(cm[0][0]),
-            'fp': int(cm[0][1]) if cm.shape == (2,2) else 0,
-            'fn': int(cm[1][0]) if cm.shape == (2,2) else 0,
-            'tp': int(cm[1][1]) if cm.shape == (2,2) else 0
+            'tn': int(cm[0][0]),
+            'fp': int(cm[0][1]),
+            'fn': int(cm[1][0]),
+            'tp': int(cm[1][1])
         }
     except Exception:
         cm_dict = {'tn': 0, 'fp': 0, 'fn': 0, 'tp': len(y_test)}
@@ -252,7 +258,7 @@ def register_model_version_in_supabase(metrics, version="v12.0.0", n_comps=300, 
             "recall_val": float(metrics['recall']),
             "hyperparameters": h_params,
             "active": True,
-            "trained_at": pd.Timestamp.now().isoformat()
+            "trained_at": pd.Timestamp.now(tz='UTC').isoformat()
         }
         
         supabase.table("ml_model_versions").update({"active": False}).eq("active", True).execute()

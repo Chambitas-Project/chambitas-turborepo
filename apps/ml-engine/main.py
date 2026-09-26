@@ -37,20 +37,20 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
         return ml_engine_pb2.PredictBatchResponse(results=results)
 
     def TrainModel(self, request, context):
+        scenario = getattr(request, 'scenario', '') or 'real_database_extracted'
+        samples = getattr(request, 'samples', 5000) or 5000
         use_real = bool(
             getattr(request, 'use_real_data', False) or 
             getattr(request, 'useRealData', False) or 
-            ('real' in str(request.scenario).lower() if request.scenario else False)
+            ('real' in str(scenario).lower())
         )
-        if use_real:
-            print(f"[gRPC] Disparando entrenamiento manual con DATOS REALES de Supabase. Escenario: {scenario}")
-        else:
-            print(f"[gRPC] Disparando entrenamiento manual SINTÉTICO. Muestras: {samples}, Escenario: {scenario}")
         
         try:
             if use_real:
-                subprocess.Popen([sys.executable, "src/training/trainer.py", "--use-real-data", "--scenario", "real_database_extracted"])
+                print(f"[gRPC] Disparando entrenamiento manual con DATOS REALES de Supabase. Escenario: {scenario}")
+                subprocess.Popen([sys.executable, "src/training/trainer.py", "--use-real-data", "--scenario", scenario])
             else:
+                print(f"[gRPC] Disparando entrenamiento manual SINTÉTICO. Muestras: {samples}, Escenario: {scenario}")
                 # 1. Generar N datos sintéticos
                 gen_proc = subprocess.Popen([sys.executable, "src/training/data_gen.py", str(samples)])
                 gen_proc.wait() # Esperar a que el archivo CSV se genere
@@ -198,7 +198,7 @@ def serve():
     
     server.add_insecure_port(f'[::]:{port}')
     print(f"==================================================")
-    print(f"🚀 Chambitas ML Engine (gRPC) corriendo en puerto {port}")
+    print(f"Chambitas ML Engine (gRPC) corriendo en puerto {port}")
     print(f"Modelo Activo: Híbrido RF + KMeans + KNN V11")
     print(f"==================================================")
     server.start()

@@ -441,7 +441,7 @@ export default function MLEnginePage() {
                           )}
                         </td>
                         <td className="px-6 py-4 text-[#414941]">
-                          {version.trained_at ? new Date(version.trained_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
+                          {version.trained_at ? new Date(version.trained_at).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Lima' }) : '-'}
                         </td>
                         <td className="px-6 py-4">
                           <button 
@@ -665,7 +665,7 @@ export default function MLEnginePage() {
                 <div>
                   <div className="text-xs text-[#414941] uppercase mb-1">Fecha Entrenamiento</div>
                   <div className="font-medium text-[#181d19]">
-                    {selectedVersion.trained_at ? new Date(selectedVersion.trained_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
+                    {selectedVersion.trained_at ? new Date(selectedVersion.trained_at).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Lima' }) : '-'}
                   </div>
                 </div>
               </div>

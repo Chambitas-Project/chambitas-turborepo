@@ -28,7 +28,8 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
     students_res = supabase.table("student_profiles").select("*").execute()
     students = students_res.data if students_res.data else []
 
-    projects_res = supabase.table("projects").select("*").execute()
+    # Solo considerar proyectos que estén en estado 'open'
+    projects_res = supabase.table("projects").select("*").eq("status", "open").execute()
     projects = projects_res.data if projects_res.data else []
 
     apps_res = supabase.table("applications").select("*").execute()
@@ -99,11 +100,52 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
                 else:
                     es_apto = 0
             else:
-                # Si no hay postulación expresa aún, evaluamos coincidencia básica de carrera o categorías
-                s_carrera = (s.get('career') or '').lower()
-                p_cat = (p.get('service_category') or p.get('category') or '').lower()
-                es_apto = 1 if (p_cat in s_carrera or s_carrera in p_cat or len(raw_req) == 0) else 0
-
+                # Lógica realista basada en habilidades, horarios y horas (igual que en datos sintéticos)
+                es_apto = 0
+                s_hours = s.get('hours_available', 20)
+                p_hours = p.get('max_hours', 20)
+                
+                hours_ok = s_hours >= p_hours
+                
+                schedule_ok = False
+                try:
+                    est_sched = json.loads(est_avail) if isinstance(est_avail, str) else est_avail
+                    pub_sch = json.loads(pub_sched) if isinstance(pub_sched, str) else pub_sched
+                    t_req, t_over = 0, 0
+                    for day in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']:
+                        e_bits = est_sched.get(day, "0"*32)
+                        p_bits = pub_sch.get(day, "0"*32)
+                        for eb, pb in zip(e_bits, p_bits):
+                            if pb == '1':
+                                t_req += 1
+                                if eb == '1': t_over += 1
+                    schedule_ok = (t_over / t_req) >= 0.5 if t_req > 0 else True
+                except:
+                    pass
+                
+                if hours_ok and schedule_ok:
+                    match_score = 0
+                    mandatory_fail = False
+                    
+                    est_skills_lower = []
+                    for sk in (raw_h_skills + raw_s_skills):
+                        val = sk.get('name', '').lower() if isinstance(sk, dict) else str(sk).lower()
+                        est_skills_lower.append(val)
+                    
+                    for req in raw_req:
+                        r_name = req.get('name', '').lower() if isinstance(req, dict) else str(req).lower()
+                        is_mand = req.get('mandatory', False) if isinstance(req, dict) else False
+                        
+                        if r_name in est_skills_lower:
+                            match_score += 1
+                        else:
+                            if is_mand:
+                                mandatory_fail = True
+                                
+                    match_ratio = (match_score / len(raw_req)) if len(raw_req) > 0 else 1.0
+                    
+                    if not mandatory_fail and match_ratio >= 0.4: es_apto = 1
+                    elif match_ratio >= 0.7: es_apto = 1
             row = {
                 'est_id': s_id,
                 'est_university_id': s.get('university_id', '59a91332-e18f-4e68-8061-fe83f4c7610f'),

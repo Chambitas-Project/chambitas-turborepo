@@ -118,7 +118,7 @@ def generate_data_tesis_v8(n_samples=5000):
     students_pool = []
     for _ in range(n_unique_students):
         career_obj = np.random.choice(REAL_CAREERS)
-        n_skills = np.random.randint(3, 11)
+        n_skills = np.random.randint(5, 16) # Aumentado para mayor solapamiento natural
         est_skills_objs = get_real_skills_for_career(career_obj['name'], n=n_skills)
         est_skills_data = [{'skill_id': s['id'], 'name': s['name'], 'level': np.random.randint(1, 6), 'type': s['type']} for s in est_skills_objs]
         # Atributos básicos (ESCENARIO UPC V11.0.1)
@@ -150,7 +150,8 @@ def generate_data_tesis_v8(n_samples=5000):
         base_career = np.random.choice(REAL_CAREERS)
         n_req = np.random.randint(2, 5)
         pub_req_skills_objs = get_real_skills_for_career(base_career['name'], n=n_req)
-        pub_req_data = [{'skill_id': s['id'], 'name': s['name'], 'min_proficiency': int(np.random.randint(1, 4)), 'mandatory': bool(np.random.choice([True, False], p=[0.7, 0.3]))} for s in pub_req_skills_objs]
+        # Reducimos la probabilidad de mandatory a 20% para que el azar genere más matches de forma natural
+        pub_req_data = [{'skill_id': s['id'], 'name': s['name'], 'min_proficiency': int(np.random.randint(1, 4)), 'mandatory': bool(np.random.choice([True, False], p=[0.2, 0.8]))} for s in pub_req_skills_objs]
         
         projects_pool.append({
             'pub_id': str(uuid.uuid4()),
@@ -172,13 +173,15 @@ def generate_data_tesis_v8(n_samples=5000):
         
         # LÓGICA DE ETIQUETADO
         es_apto = 0
+        match_ratio = 0.0
+        mandatory_fail = False
+        
         if est['career_obj'].get('university_id', UPC_UNIVERSITY_ID) == pub['university_id']:
             hours_ok = est['hours_available'] >= pub['max_hours']
             schedule_ok = check_schedule_overlap(est['availability'], pub['schedule'])
             
             if hours_ok and schedule_ok:
                 match_score = 0
-                mandatory_fail = False
                 for req in pub['req_data']:
                     est_s = next((s for s in est['skills_data'] if s['skill_id'] == req['skill_id']), None)
                     if est_s:
