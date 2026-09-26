@@ -37,11 +37,15 @@ class MLEngineServicer(ml_engine_pb2_grpc.MLEngineServiceServicer):
         return ml_engine_pb2.PredictBatchResponse(results=results)
 
     def TrainModel(self, request, context):
-        use_real = getattr(request, 'useRealData', False) or (request.scenario == 'real')
-        scenario = request.scenario or ("real_database_extracted" if use_real else f"synthetic_{request.samples or 5000}")
-        samples = request.samples or 5000
-
-        print(f"[gRPC] Disparando entrenamiento manual. Datos Reales: {use_real}, Muestras: {samples}, Escenario: {scenario}")
+        use_real = bool(
+            getattr(request, 'use_real_data', False) or 
+            getattr(request, 'useRealData', False) or 
+            ('real' in str(request.scenario).lower() if request.scenario else False)
+        )
+        if use_real:
+            print(f"[gRPC] Disparando entrenamiento manual con DATOS REALES de Supabase. Escenario: {scenario}")
+        else:
+            print(f"[gRPC] Disparando entrenamiento manual SINTÉTICO. Muestras: {samples}, Escenario: {scenario}")
         
         try:
             if use_real:

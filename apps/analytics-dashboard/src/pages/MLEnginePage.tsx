@@ -43,7 +43,7 @@ export default function MLEnginePage() {
         scenario = 'synthetic_5000';
       }
 
-      const res = await apiClient.trainMLEngine(useRealData, samples, scenario);
+      const res = await apiClient.trainMLEngine(useRealData, useRealData ? undefined : samples, scenario);
       setTrainingMessage(res.message || 'Proceso de entrenamiento iniciado exitosamente.');
       setTimeout(async () => {
         const result = await apiClient.getMLEngineKPIs();

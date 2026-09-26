@@ -4,7 +4,9 @@ import json
 import os
 import uuid
 
-np.random.seed(42)
+import time
+
+np.random.seed(int(time.time() * 1000) % (2**32 - 1))
 
 # Cargar datos reales de los archivos TXT (JSON)
 def load_real_data():

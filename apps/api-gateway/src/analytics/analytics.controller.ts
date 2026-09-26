@@ -78,7 +78,7 @@ export class AnalyticsController implements OnModuleInit {
       this.mlEngineService.TrainModel({
         useRealData: body?.useRealData ?? true,
         scenario: body?.scenario || 'real_database_extracted',
-        samples: body?.samples || 5000,
+        samples: body?.samples || (body?.useRealData ? 0 : 5000),
       })
     );
     return response;
