@@ -53,6 +53,9 @@ export function ResetPasswordPage() {
         password,
         access_token: accessToken
       });
+      // Limpiar sesión previa si existía en storage para forzar login limpio
+      localStorage.removeItem("chambitas_user");
+      localStorage.removeItem("chambitas_token");
       setIsSuccess(true);
     } catch (err: any) {
       setError(err.response?.data?.message || "Ocurrió un error al restablecer la contraseña. El enlace podría haber expirado.");

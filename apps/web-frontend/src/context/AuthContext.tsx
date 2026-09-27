@@ -41,9 +41,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       setUser(fullUser);
       localStorage.setItem('chambitas_user', JSON.stringify(fullUser));
-    } catch {
-      setUser(null);
-      localStorage.removeItem('chambitas_user');
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        setUser(null);
+        localStorage.removeItem('chambitas_user');
+        localStorage.removeItem('chambitas_token');
+      }
     } finally {
       setLoading(false);
     }
@@ -56,6 +59,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (credentials: any) => {
     const response = await apiClient.post('/auth/login', credentials);
     const data = response.data;
+    if (data.accessToken) {
+      localStorage.setItem('chambitas_token', data.accessToken);
+    }
     const fullUser = {
       ...data,
       isOnboarded: data.isOnboarded ?? data.is_onboarded ?? false,
@@ -75,6 +81,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await apiClient.post('/auth/logout');
     } finally {
       setUser(null);
+      localStorage.removeItem('chambitas_user');
+      localStorage.removeItem('chambitas_token');
     }
   };
 
@@ -84,6 +92,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await apiClient.post('/auth/logout');
     } finally {
       setUser(null);
+      localStorage.removeItem('chambitas_user');
+      localStorage.removeItem('chambitas_token');
     }
   };
 

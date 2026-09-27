@@ -8,6 +8,14 @@ export const apiClient = axios.create({
   },
 });
 
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('chambitas_token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const trackEvent = async (eventType: string, payload: any) => {
   try {
     await apiClient.post('/analytics/track', {

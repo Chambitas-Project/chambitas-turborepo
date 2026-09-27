@@ -135,9 +135,10 @@ export class MatchingService implements OnModuleInit {
             overlap = matchCount / projectSkillsStr.length;
           }
 
+          const hybridScore = Number(((m.similarity * 0.7) + (overlap * 0.3)).toFixed(4));
           return {
             ...m,
-            hybridScore: Math.max(m.similarity, overlap)
+            hybridScore
           };
         });
       }

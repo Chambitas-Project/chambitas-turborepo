@@ -14,6 +14,7 @@ export default function MLEnginePage() {
   const [isTrainingModel, setIsTrainingModel] = useState(false);
   const [trainingMessage, setTrainingMessage] = useState<string | null>(null);
   const [selectedExperiment, setSelectedExperiment] = useState<string>('real');
+  const [cmMode, setCmMode] = useState<'rf' | 'formula'>('rf');
   const itemsPerPage = 5;
 
   const handleTrainModel = async () => {
@@ -111,12 +112,31 @@ export default function MLEnginePage() {
 
   const selectedCmVersion = sortedModelVersions.find((v: any) => v.version_tag === selectedCmVersionTag) || sortedModelVersions[0];
 
-  const getConfusionMatrixData = (version: any) => {
-    if (!version) return { tn: 0, fp: 0, fn: 0, tp: 0, total: 0, accuracy: 0, specificity: 0, prec: 0, rec: 0, f1: 0 };
+  const getConfusionMatrixData = (version: any, mode: 'rf' | 'formula' = 'rf') => {
+    if (!version) return { tn: 0, fp: 0, fn: 0, tp: 0, total: 0, accuracy: 0, specificity: 0, prec: 0, rec: 0, f1: 0, hasFormulaData: false };
     
     let hParams = typeof version.hyperparameters === 'string' 
       ? JSON.parse(version.hyperparameters) 
       : (version.hyperparameters || {});
+
+    const hasFormulaData = !!(hParams.hybrid_formula_metrics && hParams.hybrid_formula_metrics.confusion_matrix);
+
+    if (mode === 'formula' && hasFormulaData) {
+      const fMetrics = hParams.hybrid_formula_metrics;
+      const { tn, fp, fn, tp } = fMetrics.confusion_matrix;
+      const total = tn + fp + fn + tp;
+      const accuracy = total > 0 ? (tp + tn) / total : 0;
+      const specificity = (tn + fp) > 0 ? tn / (tn + fp) : 0;
+      return { 
+        tn, fp, fn, tp, total, accuracy, specificity, 
+        prec: Number(fMetrics.precision) || 0.85, 
+        rec: Number(fMetrics.recall) || 0.85, 
+        f1: Number(fMetrics.f1_score) || 0.85,
+        hasFormulaData: true,
+        formulaName: fMetrics.formula || '0.7 * Similitud + 0.3 * Horarios',
+        threshold: fMetrics.threshold || 0.50
+      };
+    }
     
     const prec = Number(version.precision_val) || 0.85;
     const rec = Number(version.recall_val) || 0.85;
@@ -127,7 +147,7 @@ export default function MLEnginePage() {
       const total = tn + fp + fn + tp;
       const accuracy = total > 0 ? (tp + tn) / total : 0;
       const specificity = (tn + fp) > 0 ? tn / (tn + fp) : 0;
-      return { tn, fp, fn, tp, total, accuracy, specificity, prec, rec, f1 };
+      return { tn, fp, fn, tp, total, accuracy, specificity, prec, rec, f1, hasFormulaData };
     }
     
     // Fallback de alta fidelidad basado en el conjunto de prueba (4,000 muestras)
@@ -143,10 +163,10 @@ export default function MLEnginePage() {
     const accuracy = (tp + tn) / total;
     const specificity = tn / (tn + fp);
     
-    return { tn, fp, fn, tp, total, accuracy, specificity, prec, rec, f1 };
+    return { tn, fp, fn, tp, total, accuracy, specificity, prec, rec, f1, hasFormulaData };
   };
 
-  const cmData = getConfusionMatrixData(selectedCmVersion);
+  const cmData = getConfusionMatrixData(selectedCmVersion, cmMode);
 
   return (
     <div className="space-y-8">
@@ -160,13 +180,74 @@ export default function MLEnginePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Model Versions Evolution */}
         <div className="bg-white rounded-xl border border-[#e5e9e2] p-6 lg:col-span-2">
-          <h3 className="text-base font-semibold mb-6 text-[#414941]">Evolución de Modelos (F1, Precision, Recall)</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-base font-semibold text-[#181d19]">
+                Evolución de Modelos (F1, Precision, Recall)
+              </h3>
+              <p className="text-xs text-[#414941] mt-0.5">
+                Visualizando rendimiento según el enfoque activo:{' '}
+                <span className="font-semibold text-[#0f6c41]">
+                  {cmMode === 'formula' ? 'Fórmula Híbrida (0.7S + 0.3H)' : 'Random Forest (Clasificador)'}
+                </span>
+              </p>
+            </div>
+            <div className="flex items-center bg-[#f1f5ee] p-1 rounded-lg border border-[#e5e9e2]">
+              <button
+                type="button"
+                onClick={() => setCmMode('rf')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                  cmMode === 'rf'
+                    ? 'bg-white text-[#181d19] shadow-sm'
+                    : 'text-[#414941] hover:text-[#181d19]'
+                }`}
+              >
+                Random Forest
+              </button>
+              <button
+                type="button"
+                onClick={() => setCmMode('formula')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                  cmMode === 'formula'
+                    ? 'bg-[#0f6c41] text-white shadow-sm'
+                    : 'text-[#414941] hover:text-[#181d19]'
+                }`}
+              >
+                Fórmula Híbrida (0.7S + 0.3H)
+              </button>
+            </div>
+          </div>
           <div className="h-80">
             {isLoading ? (
               <div className="w-full h-full bg-[#d3d8d0] rounded-xl animate-pulse"></div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data?.modelVersions || []} margin={{ top: 20, right: 30, left: 15, bottom: 20 }}>
+                <LineChart 
+                  data={(data?.modelVersions || []).map((v: any) => {
+                    const hParams = typeof v.hyperparameters === 'string' 
+                      ? JSON.parse(v.hyperparameters) 
+                      : (v.hyperparameters || {});
+                    const fMetrics = hParams.hybrid_formula_metrics;
+                    
+                    const f1 = (cmMode === 'formula' && fMetrics?.f1_score !== undefined)
+                      ? Number(fMetrics.f1_score)
+                      : Number(v.f1_score);
+                    const prec = (cmMode === 'formula' && fMetrics?.precision !== undefined)
+                      ? Number(fMetrics.precision)
+                      : Number(v.precision_val);
+                    const rec = (cmMode === 'formula' && fMetrics?.recall !== undefined)
+                      ? Number(fMetrics.recall)
+                      : Number(v.recall_val);
+
+                    return {
+                      ...v,
+                      display_f1: f1,
+                      display_precision: prec,
+                      display_recall: rec
+                    };
+                  })} 
+                  margin={{ top: 20, right: 30, left: 15, bottom: 20 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e9e2" />
                   <XAxis 
                     dataKey="version_tag" 
@@ -176,22 +257,23 @@ export default function MLEnginePage() {
                     label={{ value: 'Versión del Modelo', position: 'insideBottom', offset: -10, fill: '#414941', fontSize: 11, fontWeight: '600' }}
                   />
                   <YAxis 
-                    domain={[0.8, 1]} 
+                    domain={[0, 1]} 
                     tick={{ fill: '#414941', fontSize: 11 }} 
                     axisLine={false} 
                     tickLine={false}
-                    label={{ value: 'Score (0.8 - 1.0)', angle: -90, position: 'insideLeft', offset: 10, fill: '#414941', fontSize: 11, fontWeight: '600' }}
+                    label={{ value: 'Score (0.0 - 1.0)', angle: -90, position: 'insideLeft', offset: 10, fill: '#414941', fontSize: 11, fontWeight: '600' }}
                   />
                   <Tooltip 
                     cursor={{ stroke: '#0f6c41', strokeWidth: 1 }}
                     contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e5e9e2', borderRadius: '8px', color: '#181d19', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} 
                     itemStyle={{ color: '#181d19', fontSize: '13px', fontWeight: '500' }}
                     labelStyle={{ color: '#181d19', fontWeight: 'bold' }}
+                    formatter={(val: any) => [typeof val === 'number' ? val.toFixed(3) : val, '']}
                   />
                   <Legend wrapperStyle={{ color: '#414941', paddingTop: '10px' }} />
-                  <Line type="monotone" dataKey="f1_score" name="F1-Score" stroke="#0f6c41" strokeWidth={3} dot={{ r: 4, fill: '#0f6c41' }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="precision_val" name="Precisión" stroke="#2563eb" strokeWidth={2} dot={{ r: 4, fill: '#2563eb' }} />
-                  <Line type="monotone" dataKey="recall_val" name="Sensibilidad (Recall)" stroke="#d97706" strokeWidth={2} dot={{ r: 4, fill: '#d97706' }} />
+                  <Line type="monotone" dataKey="display_f1" name="F1-Score" stroke="#0f6c41" strokeWidth={3} dot={{ r: 4, fill: '#0f6c41' }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="display_precision" name="Precisión" stroke="#2563eb" strokeWidth={2} dot={{ r: 4, fill: '#2563eb' }} />
+                  <Line type="monotone" dataKey="display_recall" name="Sensibilidad (Recall)" stroke="#d97706" strokeWidth={2} dot={{ r: 4, fill: '#d97706' }} />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -206,20 +288,51 @@ export default function MLEnginePage() {
               <p className="text-xs text-[#414941] mt-0.5">Evaluación detallada de rendimiento en pruebas por versión de modelo</p>
             </div>
             
-            <div className="flex items-center gap-2">
-              <label htmlFor="version-select" className="text-xs font-semibold text-[#414941] uppercase tracking-wider">Versión:</label>
-              <select
-                id="version-select"
-                value={selectedCmVersionTag}
-                onChange={(e) => setSelectedCmVersionTag(e.target.value)}
-                className="bg-[#f1f5ee] border border-[#e5e9e2] text-[#181d19] font-medium text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-[#0f6c41] outline-none cursor-pointer"
-              >
-                {sortedModelVersions.map((v: any) => (
-                  <option key={v.id || v.version_tag} value={v.version_tag}>
-                    {v.version_tag} {v.active ? '(Activo)' : ''} - F1: {v.f1_score}
-                  </option>
-                ))}
-              </select>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Selector de Enfoque Evaluado: RF vs Formula Hibrida */}
+              <div className="flex items-center bg-[#f1f5ee] p-1 rounded-lg border border-[#e5e9e2]">
+                <button
+                  type="button"
+                  onClick={() => setCmMode('rf')}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                    cmMode === 'rf'
+                      ? 'bg-white text-[#181d19] shadow-sm'
+                      : 'text-[#414941] hover:text-[#181d19]'
+                  }`}
+                >
+                  Random Forest
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCmMode('formula')}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+                    cmMode === 'formula'
+                      ? 'bg-[#0f6c41] text-white shadow-sm'
+                      : 'text-[#414941] hover:text-[#181d19]'
+                  }`}
+                >
+                  Formula Hibrida (0.7S + 0.3H)
+                  {cmData.hasFormulaData && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  )}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label htmlFor="version-select" className="text-xs font-semibold text-[#414941] uppercase tracking-wider">Versión:</label>
+                <select
+                  id="version-select"
+                  value={selectedCmVersionTag}
+                  onChange={(e) => setSelectedCmVersionTag(e.target.value)}
+                  className="bg-[#f1f5ee] border border-[#e5e9e2] text-[#181d19] font-medium text-sm rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-[#0f6c41] outline-none cursor-pointer"
+                >
+                  {sortedModelVersions.map((v: any) => (
+                    <option key={v.id || v.version_tag} value={v.version_tag}>
+                      {v.version_tag} {v.active ? '(Activo)' : ''} - F1: {v.f1_score}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -288,8 +401,13 @@ export default function MLEnginePage() {
               {/* Metrics Summary Panel */}
               <div className="lg:col-span-5 bg-[#f1f5ee] rounded-xl p-5 border border-[#e5e9e2] space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-[#e5e9e2]">
-                  <span className="text-xs uppercase font-semibold text-[#414941]">Modelo Seleccionado</span>
-                  <span className="text-sm font-bold text-[#181d19] font-mono">{selectedCmVersion.version_tag}</span>
+                  <div>
+                    <span className="text-xs uppercase font-semibold text-[#414941]">Evaluando Enfoque</span>
+                    <div className="text-xs font-bold text-[#181d19] mt-0.5">
+                      {cmMode === 'rf' ? 'Random Forest (Clasificador)' : 'Formula Hibrida (0.7S + 0.3H)'}
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-[#181d19] font-mono bg-white px-2 py-1 rounded border border-[#e5e9e2]">{selectedCmVersion.version_tag}</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -350,11 +468,11 @@ export default function MLEnginePage() {
                   onChange={(e) => setSelectedExperiment(e.target.value)}
                   className="bg-white border border-[#e5e9e2] text-[#181d19] font-medium text-xs rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-[#0f6c41] outline-none cursor-pointer"
                 >
-                  <option value="real">🟢 Datos Reales (Supabase BD)</option>
-                  <option value="syn_100">🟣 Sintético - 100 Muestras</option>
-                  <option value="syn_500">🟣 Sintético - 500 Muestras</option>
-                  <option value="syn_1000">🟣 Sintético - 1,000 Muestras</option>
-                  <option value="syn_5000">🟣 Sintético - 5,000 Muestras</option>
+                  <option value="real">BD Real (Supabase)</option>
+                  <option value="syn_100">Sintetico - 100 Muestras</option>
+                  <option value="syn_500">Sintetico - 500 Muestras</option>
+                  <option value="syn_1000">Sintetico - 1,000 Muestras</option>
+                  <option value="syn_5000">Sintetico - 5,000 Muestras</option>
                 </select>
               </div>
 
@@ -373,7 +491,7 @@ export default function MLEnginePage() {
           {trainingMessage && (
             <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-lg flex items-center justify-between">
               <span>{trainingMessage}</span>
-              <button onClick={() => setTrainingMessage(null)} className="text-emerald-600 hover:text-emerald-900 ml-2 font-bold cursor-pointer">✕</button>
+              <button onClick={() => setTrainingMessage(null)} className="text-emerald-600 hover:text-emerald-900 ml-2 font-bold cursor-pointer">Cerrar</button>
             </div>
           )}
 
@@ -383,9 +501,15 @@ export default function MLEnginePage() {
                 <tr>
                   <th className="px-6 py-3 font-medium">Versión</th>
                   <th className="px-6 py-3 font-medium">Tipo / Origen</th>
-                  <th className="px-6 py-3 font-medium">F1 Score</th>
-                  <th className="px-6 py-3 font-medium">Precision</th>
-                  <th className="px-6 py-3 font-medium">Recall</th>
+                  <th className="px-6 py-3 font-medium">
+                    {cmMode === 'formula' ? 'F1 Score (Hibrido)' : 'F1 Score (RF)'}
+                  </th>
+                  <th className="px-6 py-3 font-medium">
+                    {cmMode === 'formula' ? 'Precision (Hibrido)' : 'Precision (RF)'}
+                  </th>
+                  <th className="px-6 py-3 font-medium">
+                    {cmMode === 'formula' ? 'Recall (Hibrido)' : 'Recall (RF)'}
+                  </th>
                   <th className="px-6 py-3 font-medium">Estado</th>
                   <th className="px-6 py-3 font-medium">Fecha de Entrenam.</th>
                   <th className="px-6 py-3 font-medium">Detalles</th>
@@ -409,6 +533,18 @@ export default function MLEnginePage() {
                     const isReal = hParams.use_real_data || hParams.scenario === 'real_database_extracted' || (version.algorithm && version.algorithm.includes('BD Real'));
                     const samplesCount = isReal ? (hParams.n_samples ?? 'BD') : (hParams.n_samples ?? 5000);
 
+                    // Calculo de metricas dinamicas segun cmMode (Random Forest vs Formula Hibrida)
+                    const fMetrics = hParams.hybrid_formula_metrics;
+                    const f1Display = (cmMode === 'formula' && fMetrics?.f1_score !== undefined) 
+                      ? fMetrics.f1_score 
+                      : version.f1_score;
+                    const precDisplay = (cmMode === 'formula' && fMetrics?.precision !== undefined) 
+                      ? fMetrics.precision 
+                      : version.precision_val;
+                    const recDisplay = (cmMode === 'formula' && fMetrics?.recall !== undefined) 
+                      ? fMetrics.recall 
+                      : version.recall_val;
+
                     return (
                       <tr 
                         key={version.id || idx} 
@@ -417,18 +553,18 @@ export default function MLEnginePage() {
                         <td className="px-6 py-4 font-medium font-mono">{version.version_tag}</td>
                         <td className="px-6 py-4">
                           {isReal ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300">
-                              🟢 BD Real ({samplesCount} reg)
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300">
+                              BD Real ({samplesCount} reg)
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-900 border border-purple-300">
-                              🟣 Sintético ({samplesCount} reg)
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-900 border border-purple-300">
+                              Sintetico ({samplesCount} reg)
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 font-mono font-bold text-[#0f6c41]">{version.f1_score}</td>
-                        <td className="px-6 py-4 font-mono text-[#414941]">{version.precision_val}</td>
-                        <td className="px-6 py-4 font-mono text-[#414941]">{version.recall_val}</td>
+                        <td className="px-6 py-4 font-mono font-bold text-[#0f6c41]">{f1Display}</td>
+                        <td className="px-6 py-4 font-mono text-[#414941]">{precDisplay}</td>
+                        <td className="px-6 py-4 font-mono text-[#414941]">{recDisplay}</td>
                         <td className="px-6 py-4">
                           {version.active ? (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#a0f5bd] text-[#002110]">

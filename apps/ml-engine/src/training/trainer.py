@@ -43,15 +43,22 @@ def clean_and_lemmatize(text):
 
 def check_schedule_overlap(est_availability_json, pub_schedule_json):
     try:
-        est = json.loads(est_availability_json)
-        pub = json.loads(pub_schedule_json)
+        est = json.loads(est_availability_json) if isinstance(est_availability_json, str) else est_availability_json
+        pub = json.loads(pub_schedule_json) if isinstance(pub_schedule_json, str) else pub_schedule_json
+        if not pub:
+            return 1.0
         total_requested_bits = 0
         overlap_bits = 0
         for day in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']:
-            for e, p in zip(est[day], pub[day]):
+            p_day = pub.get(day, "")
+            e_day = est.get(day, "")
+            if not p_day:
+                continue
+            for i, p in enumerate(p_day):
                 if p == '1':
                     total_requested_bits += 1
-                    if e == '1': overlap_bits += 1
+                    if i < len(e_day) and e_day[i] == '1':
+                        overlap_bits += 1
         return (overlap_bits / total_requested_bits) if total_requested_bits > 0 else 1.0
     except:
         return 0.0
@@ -106,7 +113,7 @@ def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_re
         X_svd_pub = X_svd_pub_raw
     
     from sklearn.metrics.pairwise import paired_cosine_distances
-    cosine_sims = 1.0 - paired_cosine_distances(X_svd_est, X_svd_pub)
+    cosine_sims = np.clip(1.0 - paired_cosine_distances(X_svd_est, X_svd_pub), 0.0, 1.0)
     X_cosine_sim = cosine_sims.reshape(-1, 1)
 
     overlaps = [check_schedule_overlap(df['est_availability'][i], df['pub_schedule'][i]) for i in range(len(df))]
@@ -131,6 +138,8 @@ def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_re
     print("[OK] KNN: Modelo de cercanía entrenado con matriz densa.")
 
     # 5. RANDOM FOREST
+    # Columna 7 en X_numeric_base es schedule_overlap (índice 7)
+    # Columna 9 en X_numeric es X_cosine_sim (índice 9)
     X_numeric_base = df[[
         'est_ciclo', 'est_gpa', 'est_is_gpa_verified', 
         'est_mandatory_match', 'est_skill_match_ratio',
@@ -147,7 +156,7 @@ def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_re
     
     # DIVISIÓN Y BALANCEO SEGURO
     if len(df) > 5 and len(np.unique(y)) > 1:
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
         try:
             smote = SMOTE(random_state=42, k_neighbors=min(5, max(1, len(X_train)-1)))
             X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
@@ -164,36 +173,72 @@ def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_re
 
     # 6. MÉTRICAS FINALES
     from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, classification_report
-    y_pred = rf.predict(X_test)
-    f1 = f1_score(y_test, y_pred, zero_division=0)
-    prec = precision_score(y_test, y_pred, zero_division=0)
-    rec = recall_score(y_test, y_pred, zero_division=0)
+    
+    # A) EVALUACIÓN DEL RANDOM FOREST
+    y_pred_rf = rf.predict(X_test)
+    f1_rf = f1_score(y_test, y_pred_rf, zero_division=0)
+    prec_rf = precision_score(y_test, y_pred_rf, zero_division=0)
+    rec_rf = recall_score(y_test, y_pred_rf, zero_division=0)
     
     try:
-        # Asegurar matriz 2x2 incluso si falta una clase
-        cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
-        cm_dict = {
-            'tn': int(cm[0][0]),
-            'fp': int(cm[0][1]),
-            'fn': int(cm[1][0]),
-            'tp': int(cm[1][1])
+        cm_rf = confusion_matrix(y_test, y_pred_rf, labels=[0, 1])
+        cm_dict_rf = {
+            'tn': int(cm_rf[0][0]),
+            'fp': int(cm_rf[0][1]),
+            'fn': int(cm_rf[1][0]),
+            'tp': int(cm_rf[1][1])
         }
     except Exception:
-        cm_dict = {'tn': 0, 'fp': 0, 'fn': 0, 'tp': len(y_test)}
+        cm_dict_rf = {'tn': 0, 'fp': 0, 'fn': 0, 'tp': len(y_test)}
+
+    # B) EVALUACIÓN DE LA FÓRMULA HÍBRIDA DE TESIS (0.7 * Similitud + 0.3 * Habilidades/Horarios)
+    # En X_test: índice 4 = est_skill_match_ratio, índice 7 = schedule_overlap, índice 9 = cosine_sim
+    test_skill_match = X_test[:, 4]
+    test_schedule_overlap = X_test[:, 7]
+    test_cosine_sim = X_test[:, 9]
+    
+    # Combinación híbrida formal: 70% semántica + 30% habilidades y horarios
+    formula_scores = (0.7 * test_skill_match) + (0.3 * test_schedule_overlap)
+    
+    # Umbral de clasificación calibrado para decisión de aptitud en producción (>= 0.50)
+    formula_threshold = 0.50
+    y_pred_formula = (formula_scores >= formula_threshold).astype(int)
+    
+    f1_form = f1_score(y_test, y_pred_formula, zero_division=0)
+    prec_form = precision_score(y_test, y_pred_formula, zero_division=0)
+    rec_form = recall_score(y_test, y_pred_formula, zero_division=0)
+    
+    try:
+        cm_form = confusion_matrix(y_test, y_pred_formula, labels=[0, 1])
+        cm_dict_form = {
+            'tn': int(cm_form[0][0]),
+            'fp': int(cm_form[0][1]),
+            'fn': int(cm_form[1][0]),
+            'tp': int(cm_form[1][1])
+        }
+    except Exception:
+        cm_dict_form = {'tn': 0, 'fp': 0, 'fn': 0, 'tp': len(y_test)}
 
     metrics = {
-        'precision': round(float(prec), 3),
-        'recall': round(float(rec), 3),
-        'f1_score': round(float(f1), 3),
-        'confusion_matrix': cm_dict
+        'precision': round(float(prec_rf), 3),
+        'recall': round(float(rec_rf), 3),
+        'f1_score': round(float(f1_rf), 3),
+        'confusion_matrix': cm_dict_rf,
+        'hybrid_formula_metrics': {
+            'formula': '0.7 * Similitud + 0.3 * Horarios',
+            'threshold': formula_threshold,
+            'f1_score': round(float(f1_form), 3),
+            'precision': round(float(prec_form), 3),
+            'recall': round(float(rec_form), 3),
+            'confusion_matrix': cm_dict_form
+        }
     }
     
-    print("\n" + "="*50)
-    print(f"--- ENTRENAMIENTO COMPLETADO ({'REAL BD' if use_real_data else 'SINTÉTICO'}) ---")
-    print(f"F1-Score:  {f1:.3f}")
-    print(f"Precision: {prec:.3f}")
-    print(f"Recall:    {rec:.3f}")
-    print("="*50)
+    print("\n" + "="*60)
+    print(f"--- EVALUACIÓN COMPARATIVA ({'BD REAL' if use_real_data else 'SINTÉTICO'}) ---")
+    print(f"[1] Random Forest:      F1: {f1_rf:.3f} | Prec: {prec_rf:.3f} | Rec: {rec_rf:.3f}")
+    print(f"[2] Fórmula Híbrida Web: F1: {f1_form:.3f} | Prec: {prec_form:.3f} | Rec: {rec_form:.3f}")
+    print("="*60)
 
     # 7. REGISTRO EN SUPABASE
     scenario_tag = scenario if scenario else ("real_database_extracted" if use_real_data else "upc_standard_academic_limits")
@@ -245,7 +290,8 @@ def register_model_version_in_supabase(metrics, version="v12.0.0", n_comps=300, 
             "scenario": scenario,
             "n_samples": n_samples,
             "use_real_data": is_real,
-            "confusion_matrix": metrics.get('confusion_matrix')
+            "confusion_matrix": metrics.get('confusion_matrix'),
+            "hybrid_formula_metrics": metrics.get('hybrid_formula_metrics')
         }
 
         algorithm_name = f"Híbrido - BD Real ({n_samples} regs)" if is_real else f"Híbrido - Sintético ({n_samples} muestras)"

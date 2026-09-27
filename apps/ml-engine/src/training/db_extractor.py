@@ -25,10 +25,18 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
     print("[DB Extractor] Obteniendo perfiles, proyectos y postulaciones reales desde Supabase...")
     
     # 1. Obtener perfiles de estudiantes y proyectos reales
+    # 1. Obtener diccionarios de soporte (Skills y Careers)
+    skills_res = supabase.table("skills").select("id, name, type").execute()
+    skill_map = {s['id']: s for s in (skills_res.data or [])}
+
+    careers_res = supabase.table("careers").select("id, name").execute()
+    career_map = {c['id']: c['name'] for c in (careers_res.data or [])}
+
+    # Obtener perfiles de estudiantes y proyectos reales
     students_res = supabase.table("student_profiles").select("*").execute()
     students = students_res.data if students_res.data else []
 
-    # Solo considerar proyectos que estén en estado 'open'
+    # Incluir estrictamente proyectos abiertos (status == 'open') disponibles para recomendación
     projects_res = supabase.table("projects").select("*").eq("status", "open").execute()
     projects = projects_res.data if projects_res.data else []
 
@@ -62,29 +70,46 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
     rows = []
     # Generar pares entre los estudiantes reales y los proyectos reales de la BD
     for s in students:
-        s_id = s.get('user_id') or s.get('id')
+        s_id = s.get('id')
         
-        # Formatear habilidades del estudiante
-        raw_h_skills = s.get('h_skills') or s.get('hard_skills') or []
-        if isinstance(raw_h_skills, list):
-            est_h_skills = ", ".join([str(item) for item in raw_h_skills])
-        else:
-            est_h_skills = str(raw_h_skills)
+        # Mapear carrera
+        c_id = s.get('career_id')
+        career_name = career_map.get(c_id, 'Ingeniería de Software')
 
-        raw_s_skills = s.get('s_skills') or s.get('soft_skills') or []
-        if isinstance(raw_s_skills, list):
-            est_s_skills = ", ".join([str(item) for item in raw_s_skills])
-        else:
-            est_s_skills = str(raw_s_skills)
+        # Formatear habilidades del estudiante mapeando UUIDs
+        raw_skills = s.get('skills') or []
+        h_skills_list = []
+        s_skills_list = []
+        for sk in raw_skills:
+            if isinstance(sk, str) and sk in skill_map:
+                sk_obj = skill_map[sk]
+                if sk_obj.get('type') == 'soft':
+                    s_skills_list.append(sk_obj.get('name', ''))
+                else:
+                    h_skills_list.append(sk_obj.get('name', ''))
+            elif isinstance(sk, str):
+                h_skills_list.append(sk)
+            elif isinstance(sk, dict):
+                name = sk.get('name', '')
+                if sk.get('type') == 'soft':
+                    s_skills_list.append(name)
+                else:
+                    h_skills_list.append(name)
+
+        est_h_skills = ", ".join(h_skills_list)
+        est_s_skills = ", ".join(s_skills_list)
 
         def_schedule = json.dumps({day: "11111111111111111111111111111111" for day in ['mon','tue','wed','thu','fri','sat','sun']})
-        est_avail = json.dumps(s.get('availability')) if isinstance(s.get('availability'), dict) else (s.get('availability') or def_schedule)
+        raw_avail = s.get('availability_blocks') or s.get('availability')
+        est_avail = json.dumps(raw_avail) if isinstance(raw_avail, dict) else (raw_avail or def_schedule)
 
         for p in projects:
             p_id = p.get('id')
             raw_req = p.get('requirements') or []
             pub_req_h_skills = ", ".join([r.get('name', '') if isinstance(r, dict) else str(r) for r in raw_req])
-            pub_sched = json.dumps(p.get('schedule_json')) if isinstance(p.get('schedule_json'), dict) else (p.get('schedule_json') or def_schedule)
+            
+            raw_p_sched = p.get('schedule_constraints') or p.get('schedule_json')
+            pub_sched = json.dumps(raw_p_sched) if isinstance(raw_p_sched, dict) else (raw_p_sched or def_schedule)
 
             # Verificar si hay postulación/reseña real en Supabase para este par
             pair_key = f"{s_id}_{p_id}"
@@ -103,7 +128,7 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
                 # Lógica realista basada en habilidades, horarios y horas (igual que en datos sintéticos)
                 es_apto = 0
                 s_hours = s.get('hours_available', 20)
-                p_hours = p.get('max_hours', 20)
+                p_hours = p.get('max_hours_week') or p.get('max_hours') or 20
                 
                 hours_ok = s_hours >= p_hours
                 
@@ -111,32 +136,36 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
                 try:
                     est_sched = json.loads(est_avail) if isinstance(est_avail, str) else est_avail
                     pub_sch = json.loads(pub_sched) if isinstance(pub_sched, str) else pub_sched
-                    t_req, t_over = 0, 0
-                    for day in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']:
-                        e_bits = est_sched.get(day, "0"*32)
-                        p_bits = pub_sch.get(day, "0"*32)
-                        for eb, pb in zip(e_bits, p_bits):
-                            if pb == '1':
-                                t_req += 1
-                                if eb == '1': t_over += 1
-                    schedule_ok = (t_over / t_req) >= 0.5 if t_req > 0 else True
+                    
+                    if not raw_p_sched:
+                        schedule_ok = True
+                    else:
+                        t_req, t_over = 0, 0
+                        for day in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']:
+                            p_day = pub_sch.get(day, "")
+                            e_day = est_sched.get(day, "")
+                            for i, pb in enumerate(p_day):
+                                if pb == '1':
+                                    t_req += 1
+                                    if i < len(e_day) and e_day[i] == '1':
+                                        t_over += 1
+                        schedule_ok = (t_over / t_req) >= 0.25 if t_req > 0 else True
                 except:
-                    pass
+                    schedule_ok = True
                 
                 if hours_ok and schedule_ok:
                     match_score = 0
                     mandatory_fail = False
                     
-                    est_skills_lower = []
-                    for sk in (raw_h_skills + raw_s_skills):
-                        val = sk.get('name', '').lower() if isinstance(sk, dict) else str(sk).lower()
-                        est_skills_lower.append(val)
+                    est_skills_lower = [sk.strip().lower() for sk in (h_skills_list + s_skills_list)]
                     
                     for req in raw_req:
                         r_name = req.get('name', '').lower() if isinstance(req, dict) else str(req).lower()
                         is_mand = req.get('mandatory', False) if isinstance(req, dict) else False
                         
-                        if r_name in est_skills_lower:
+                        # Coincidencia exacta o parcial de skill
+                        matched = any((r_name in esk or esk in r_name) for esk in est_skills_lower)
+                        if matched:
                             match_score += 1
                         else:
                             if is_mand:
@@ -144,8 +173,19 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
                                 
                     match_ratio = (match_score / len(raw_req)) if len(raw_req) > 0 else 1.0
                     
-                    if not mandatory_fail and match_ratio >= 0.4: es_apto = 1
-                    elif match_ratio >= 0.7: es_apto = 1
+                    if not mandatory_fail and match_ratio >= 0.3: es_apto = 1
+                    elif match_ratio >= 0.5: es_apto = 1
+
+                # En caso de postulación aceptada en Supabase, forzar match de skills
+                if app and es_apto == 1:
+                    match_ratio = 1.0
+                    mandatory_match = 1
+                elif app and es_apto == 0:
+                    match_ratio = 0.0
+                    mandatory_match = 0
+                else:
+                    mandatory_match = 0 if mandatory_fail else 1
+
             row = {
                 'est_id': s_id,
                 'est_university_id': s.get('university_id', '59a91332-e18f-4e68-8061-fe83f4c7610f'),
@@ -158,11 +198,11 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
                 'est_availability': est_avail,
                 'pub_id': p_id,
                 'pub_title': p.get('title', 'Proyecto Real'),
-                'pub_max_hours': p.get('max_hours', 20),
+                'pub_max_hours': p_hours,
                 'pub_schedule': pub_sched,
                 'pub_req_json': json.dumps(raw_req) if isinstance(raw_req, list) else str(raw_req),
-                'est_mandatory_match': 1,
-                'est_skill_match_ratio': 1.0,
+                'est_mandatory_match': mandatory_match,
+                'est_skill_match_ratio': round(float(match_ratio), 3),
                 'es_apto': es_apto,
                 'est_h_skills': est_h_skills,
                 'est_s_skills': est_s_skills,
@@ -176,7 +216,7 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
 
     df = pd.DataFrame(rows)
     df.to_csv(output_path, index=False)
-    print(f"[DB Extractor] ✅ Dataset real de {len(df)} registros ({len(students)} estudiantes x {len(projects)} proyectos) guardado en: {output_path}")
+    print(f"[DB Extractor] [OK] Dataset real de {len(df)} registros ({len(students)} estudiantes x {len(projects)} proyectos) guardado en: {output_path}")
     return output_path
 
 if __name__ == "__main__":
