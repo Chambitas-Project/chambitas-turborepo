@@ -173,16 +173,22 @@ export class AnalyticsService {
 
       const { data: telemetry } = await client
         .from('ux_usability_telemetry')
-        .select('test_group, time_on_step_ms, satisfaction_score_csat, flow_name');
+        .select('test_group, time_on_step_ms, satisfaction_score_csat, flow_name, step_name');
 
       let searchTimeSumControl = 0, searchTimeCountControl = 0;
       let searchTimeSumExp = 0, searchTimeCountExp = 0;
       let csatSumControl = 0, csatCountControl = 0;
       let csatSumExp = 0, csatCountExp = 0;
 
-      (telemetry || []).forEach((t: { test_group?: string | null; time_on_step_ms?: number | null; satisfaction_score_csat?: number | null; flow_name?: string | null }) => {
+      (telemetry || []).forEach((t: { test_group?: string | null; time_on_step_ms?: number | null; satisfaction_score_csat?: number | null; flow_name?: string | null; step_name?: string | null }) => {
         const isExp = t.test_group === 'EXPERIMENTAL';
-        if (t.time_on_step_ms && t.time_on_step_ms > 0) {
+        const flow = (t.flow_name || '').toLowerCase();
+        const step = (t.step_name || '').toLowerCase();
+        
+        // Filtrar específicamente pasos de búsqueda y detalle de proyecto del estudiante (excluir formularios de creación de empleador u onboarding)
+        const isSearchStep = flow === 'project_search' || (flow === 'application' && (step.includes('detail') || step.includes('search') || step.includes('project')));
+        
+        if (t.time_on_step_ms && t.time_on_step_ms > 0 && isSearchStep) {
           if (isExp) { searchTimeSumExp += t.time_on_step_ms; searchTimeCountExp++; }
           else { searchTimeSumControl += t.time_on_step_ms; searchTimeCountControl++; }
         }
@@ -246,12 +252,14 @@ export class AnalyticsService {
 
       (susEvals || []).forEach((s: { user_role?: string | null; calculated_score?: number | null }) => {
         const role = (s.user_role || 'student').toLowerCase();
-        if (s.calculated_score) {
+        const score = s.calculated_score || 0;
+
+        if (score > 0) {
           if (role === 'employer') {
-            susSumEmployer += s.calculated_score;
+            susSumEmployer += score;
             susCountEmployer++;
           } else {
-            susSumStudent += s.calculated_score;
+            susSumStudent += score;
             susCountStudent++;
           }
         }
@@ -260,13 +268,8 @@ export class AnalyticsService {
       const scheduleConflictControl = 0;
       const scheduleConflictExp = 0;
 
-      const susScoreStudent = susCountStudent > 0
-        ? Number((susSumStudent / susCountStudent).toFixed(1))
-        : (csatCountExp > 0 ? Number(((csatSumExp / csatCountExp) * 20).toFixed(1)) : 0);
-
-      const susScoreEmployer = susCountEmployer > 0
-        ? Number((susSumEmployer / susCountEmployer).toFixed(1))
-        : (csatCountControl > 0 ? Number(((csatSumControl / csatCountControl) * 20).toFixed(1)) : 0);
+      const susScoreStudent = susCountStudent > 0 ? Number((susSumStudent / susCountStudent).toFixed(1)) : 0;
+      const susScoreEmployer = susCountEmployer > 0 ? Number((susSumEmployer / susCountEmployer).toFixed(1)) : 0;
 
       const metrics = [
         {
@@ -283,7 +286,7 @@ export class AnalyticsService {
           control: avgSearchTimeMinControl,
           experimental: avgSearchTimeMinExp,
           targetText: 'Reducción ≥ 60%',
-          isTargetMet: ((avgSearchTimeMinControl - avgSearchTimeMinExp) / avgSearchTimeMinControl) >= 0.60
+          isTargetMet: avgSearchTimeMinControl > 0 ? ((avgSearchTimeMinControl - avgSearchTimeMinExp) / avgSearchTimeMinControl) >= 0.60 : false
         },
         {
           metric: 'Tasa de Match Exitoso',

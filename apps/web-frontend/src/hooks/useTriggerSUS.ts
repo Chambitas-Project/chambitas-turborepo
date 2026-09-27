@@ -81,8 +81,20 @@ export function useTriggerSUS() {
         } catch (e) {}
       }
 
+      if (!userId) {
+        try {
+          const profileRes = await apiClient.get('/profile/me');
+          if (profileRes?.data?.id) {
+            userId = profileRes.data.id;
+            userRole = profileRes.data.role || userRole;
+            testGroup = profileRes.data.test_group || testGroup;
+          }
+        } catch (e) {}
+      }
+
       // Guardar evaluación en Supabase
       await apiClient.post('/analytics/sus-evaluations', {
+        user_id: userId,
         responses,
         calculated_score: calculatedScore,
         user_role: userRole,
