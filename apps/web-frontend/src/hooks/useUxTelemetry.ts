@@ -1,6 +1,16 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { trackEvent } from '../api/api-client';
 
+const getSessionId = () => {
+  let sId = localStorage.getItem('session_id');
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!sId || !uuidRegex.test(sId)) {
+    sId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : '00000000-0000-0000-0000-000000000001';
+    localStorage.setItem('session_id', sId);
+  }
+  return sId;
+};
+
 export function useUxTelemetry(flowName: string, stepName: string) {
   const startTime = useRef<number>(Date.now());
   const hasCompleted = useRef<boolean>(false);
@@ -31,7 +41,7 @@ export function useUxTelemetry(flowName: string, stepName: string) {
       user_id: userId,
       abandonment_rate: 0,
       time_on_step_ms: timeSpent,
-      session_id: localStorage.getItem('session_id') || 'session-' + Math.floor(Math.random()*10000)
+      session_id: getSessionId()
     });
   }, [flowName, stepName]);
 
@@ -59,7 +69,7 @@ export function useUxTelemetry(flowName: string, stepName: string) {
           user_id: userId,
           abandonment_rate: 100, // Marcador de abandono
           time_on_step_ms: timeSpent,
-          session_id: localStorage.getItem('session_id') || 'session-' + Math.floor(Math.random()*10000)
+          session_id: getSessionId()
         });
       }
     };

@@ -173,17 +173,22 @@ export class AnalyticsService {
 
       const { data: telemetry } = await client
         .from('ux_usability_telemetry')
-        .select('test_group, time_on_step_ms, satisfaction_score_csat, flow_name');
+        .select('test_group, time_on_step_ms, satisfaction_score_csat, flow_name, step_name');
 
       let searchTimeSumControl = 0, searchTimeCountControl = 0;
       let searchTimeSumExp = 0, searchTimeCountExp = 0;
       let csatSumControl = 0, csatCountControl = 0;
       let csatSumExp = 0, csatCountExp = 0;
 
-      (telemetry || []).forEach((t: { test_group?: string | null; time_on_step_ms?: number | null; satisfaction_score_csat?: number | null; flow_name?: string | null }) => {
+      (telemetry || []).forEach((t: { test_group?: string | null; time_on_step_ms?: number | null; satisfaction_score_csat?: number | null; flow_name?: string | null; step_name?: string | null }) => {
         const isExp = t.test_group === 'EXPERIMENTAL';
         const flow = (t.flow_name || '').toLowerCase();
-        if (t.time_on_step_ms && t.time_on_step_ms > 0 && (flow.includes('project') || flow.includes('search'))) {
+        const step = (t.step_name || '').toLowerCase();
+        
+        // Filtrar específicamente pasos de búsqueda y detalle de proyecto del estudiante (excluir formularios de creación de empleador o onboarding)
+        const isSearchStep = (flow === 'project_search' || flow === 'application') && (step.includes('detail') || step.includes('search') || step.includes('list'));
+        
+        if (t.time_on_step_ms && t.time_on_step_ms > 0 && isSearchStep) {
           if (isExp) { searchTimeSumExp += t.time_on_step_ms; searchTimeCountExp++; }
           else { searchTimeSumControl += t.time_on_step_ms; searchTimeCountControl++; }
         }
