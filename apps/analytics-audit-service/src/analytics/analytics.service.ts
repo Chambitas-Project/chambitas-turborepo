@@ -245,25 +245,22 @@ export class AnalyticsService {
 
       const { data: susEvals } = await client
         .from('sus_evaluations')
-        .select('user_role, test_group, calculated_score');
+        .select('user_role, calculated_score');
 
-      let susSumStudentCtrl = 0, susCountStudentCtrl = 0;
-      let susSumStudentExp = 0, susCountStudentExp = 0;
-      let susSumEmpCtrl = 0, susCountEmpCtrl = 0;
-      let susSumEmpExp = 0, susCountEmpExp = 0;
+      let susSumStudent = 0, susCountStudent = 0;
+      let susSumEmployer = 0, susCountEmployer = 0;
 
-      (susEvals || []).forEach((s: { user_role?: string | null; test_group?: string | null; calculated_score?: number | null }) => {
+      (susEvals || []).forEach((s: { user_role?: string | null; calculated_score?: number | null }) => {
         const role = (s.user_role || 'student').toLowerCase();
-        const isExp = s.test_group === 'EXPERIMENTAL';
         const score = s.calculated_score || 0;
 
         if (score > 0) {
           if (role === 'employer') {
-            if (isExp) { susSumEmpExp += score; susCountEmpExp++; }
-            else { susSumEmpCtrl += score; susCountEmpCtrl++; }
+            susSumEmployer += score;
+            susCountEmployer++;
           } else {
-            if (isExp) { susSumStudentExp += score; susCountStudentExp++; }
-            else { susSumStudentCtrl += score; susCountStudentCtrl++; }
+            susSumStudent += score;
+            susCountStudent++;
           }
         }
       });
@@ -271,10 +268,8 @@ export class AnalyticsService {
       const scheduleConflictControl = 0;
       const scheduleConflictExp = 0;
 
-      const susStudentControl = susCountStudentCtrl > 0 ? Number((susSumStudentCtrl / susCountStudentCtrl).toFixed(1)) : 0;
-      const susStudentExp = susCountStudentExp > 0 ? Number((susSumStudentExp / susCountStudentExp).toFixed(1)) : 0;
-      const susEmployerControl = susCountEmpCtrl > 0 ? Number((susSumEmpCtrl / susCountEmpCtrl).toFixed(1)) : 0;
-      const susEmployerExp = susCountEmpExp > 0 ? Number((susSumEmpExp / susCountEmpExp).toFixed(1)) : 0;
+      const susScoreStudent = susCountStudent > 0 ? Number((susSumStudent / susCountStudent).toFixed(1)) : 0;
+      const susScoreEmployer = susCountEmployer > 0 ? Number((susSumEmployer / susCountEmployer).toFixed(1)) : 0;
 
       const metrics = [
         {
@@ -312,18 +307,18 @@ export class AnalyticsService {
         {
           metric: 'Calificación Usabilidad SUS - Estudiantes',
           unit: 'puntos',
-          control: susStudentControl,
-          experimental: susStudentExp,
+          control: susScoreStudent,
+          experimental: susScoreStudent,
           targetText: 'Puntaje > 80.0 (Excelente)',
-          isTargetMet: susStudentExp > 80.0
+          isTargetMet: susScoreStudent > 80.0
         },
         {
           metric: 'Calificación Usabilidad SUS - Empleadores',
           unit: 'puntos',
-          control: susEmployerControl,
-          experimental: susEmployerExp,
+          control: susScoreEmployer,
+          experimental: susScoreEmployer,
           targetText: 'Puntaje > 80.0 (Excelente)',
-          isTargetMet: susEmployerExp > 80.0
+          isTargetMet: susScoreEmployer > 80.0
         }
       ];
 
