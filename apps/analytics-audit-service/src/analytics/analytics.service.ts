@@ -182,7 +182,8 @@ export class AnalyticsService {
 
       (telemetry || []).forEach((t: { test_group?: string | null; time_on_step_ms?: number | null; satisfaction_score_csat?: number | null; flow_name?: string | null }) => {
         const isExp = t.test_group === 'EXPERIMENTAL';
-        if (t.time_on_step_ms && t.time_on_step_ms > 0) {
+        const flow = (t.flow_name || '').toLowerCase();
+        if (t.time_on_step_ms && t.time_on_step_ms > 0 && (flow.includes('project') || flow.includes('search'))) {
           if (isExp) { searchTimeSumExp += t.time_on_step_ms; searchTimeCountExp++; }
           else { searchTimeSumControl += t.time_on_step_ms; searchTimeCountControl++; }
         }
@@ -239,20 +240,25 @@ export class AnalyticsService {
 
       const { data: susEvals } = await client
         .from('sus_evaluations')
-        .select('user_role, calculated_score');
+        .select('user_role, test_group, calculated_score');
 
-      let susSumStudent = 0, susCountStudent = 0;
-      let susSumEmployer = 0, susCountEmployer = 0;
+      let susSumStudentCtrl = 0, susCountStudentCtrl = 0;
+      let susSumStudentExp = 0, susCountStudentExp = 0;
+      let susSumEmpCtrl = 0, susCountEmpCtrl = 0;
+      let susSumEmpExp = 0, susCountEmpExp = 0;
 
-      (susEvals || []).forEach((s: { user_role?: string | null; calculated_score?: number | null }) => {
+      (susEvals || []).forEach((s: { user_role?: string | null; test_group?: string | null; calculated_score?: number | null }) => {
         const role = (s.user_role || 'student').toLowerCase();
-        if (s.calculated_score) {
+        const isExp = s.test_group === 'EXPERIMENTAL';
+        const score = s.calculated_score || 0;
+
+        if (score > 0) {
           if (role === 'employer') {
-            susSumEmployer += s.calculated_score;
-            susCountEmployer++;
+            if (isExp) { susSumEmpExp += score; susCountEmpExp++; }
+            else { susSumEmpCtrl += score; susCountEmpCtrl++; }
           } else {
-            susSumStudent += s.calculated_score;
-            susCountStudent++;
+            if (isExp) { susSumStudentExp += score; susCountStudentExp++; }
+            else { susSumStudentCtrl += score; susCountStudentCtrl++; }
           }
         }
       });
@@ -260,13 +266,10 @@ export class AnalyticsService {
       const scheduleConflictControl = 0;
       const scheduleConflictExp = 0;
 
-      const susScoreStudent = susCountStudent > 0
-        ? Number((susSumStudent / susCountStudent).toFixed(1))
-        : (csatCountExp > 0 ? Number(((csatSumExp / csatCountExp) * 20).toFixed(1)) : 0);
-
-      const susScoreEmployer = susCountEmployer > 0
-        ? Number((susSumEmployer / susCountEmployer).toFixed(1))
-        : (csatCountControl > 0 ? Number(((csatSumControl / csatCountControl) * 20).toFixed(1)) : 0);
+      const susStudentControl = susCountStudentCtrl > 0 ? Number((susSumStudentCtrl / susCountStudentCtrl).toFixed(1)) : 0;
+      const susStudentExp = susCountStudentExp > 0 ? Number((susSumStudentExp / susCountStudentExp).toFixed(1)) : 0;
+      const susEmployerControl = susCountEmpCtrl > 0 ? Number((susSumEmpCtrl / susCountEmpCtrl).toFixed(1)) : 0;
+      const susEmployerExp = susCountEmpExp > 0 ? Number((susSumEmpExp / susCountEmpExp).toFixed(1)) : 0;
 
       const metrics = [
         {
@@ -283,7 +286,7 @@ export class AnalyticsService {
           control: avgSearchTimeMinControl,
           experimental: avgSearchTimeMinExp,
           targetText: 'Reducción ≥ 60%',
-          isTargetMet: ((avgSearchTimeMinControl - avgSearchTimeMinExp) / avgSearchTimeMinControl) >= 0.60
+          isTargetMet: avgSearchTimeMinControl > 0 ? ((avgSearchTimeMinControl - avgSearchTimeMinExp) / avgSearchTimeMinControl) >= 0.60 : false
         },
         {
           metric: 'Tasa de Match Exitoso',
@@ -304,18 +307,18 @@ export class AnalyticsService {
         {
           metric: 'Calificación Usabilidad SUS - Estudiantes',
           unit: 'puntos',
-          control: susScoreStudent,
-          experimental: susScoreStudent,
+          control: susStudentControl,
+          experimental: susStudentExp,
           targetText: 'Puntaje > 80.0 (Excelente)',
-          isTargetMet: susScoreStudent > 80.0
+          isTargetMet: susStudentExp > 80.0
         },
         {
           metric: 'Calificación Usabilidad SUS - Empleadores',
           unit: 'puntos',
-          control: susScoreEmployer,
-          experimental: susScoreEmployer,
+          control: susEmployerControl,
+          experimental: susEmployerExp,
           targetText: 'Puntaje > 80.0 (Excelente)',
-          isTargetMet: susScoreEmployer > 80.0
+          isTargetMet: susEmployerExp > 80.0
         }
       ];
 
