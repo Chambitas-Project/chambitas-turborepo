@@ -72,6 +72,8 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
   ];
 
   const dataToRender = metrics.length > 0 ? metrics : defaultMetrics;
+  const abMetrics = dataToRender.filter(r => !r.metric.includes('SUS'));
+  const susMetrics = dataToRender.filter(r => r.metric.includes('SUS'));
 
   const calculateDiff = (control: number, experimental: number, unit: string) => {
     if (unit === 'estudiantes') {
@@ -133,7 +135,7 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
         </div>
       </div>
 
-      {/* Tabla Comparativa */}
+      {/* Tabla Comparativa A/B */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -161,7 +163,7 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
 
           <tbody className="divide-y divide-slate-100 text-sm font-medium">
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, idx) => (
+              Array.from({ length: 4 }).map((_, idx) => (
                 <tr key={idx} className="animate-pulse">
                   <td className="py-4 px-4"><div className="h-4 bg-slate-200 rounded w-48"></div></td>
                   <td className="py-4 px-4"><div className="h-4 bg-slate-200 rounded w-16"></div></td>
@@ -172,7 +174,7 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
                 </tr>
               ))
             ) : (
-              dataToRender.map((row, idx) => {
+              abMetrics.map((row, idx) => {
                 const diff = calculateDiff(row.control, row.experimental, row.unit);
                 return (
                   <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
@@ -213,6 +215,63 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Sección Dedicada: Evaluación de Usabilidad General (Escala SUS) */}
+      <div className="pt-4 border-t border-slate-100 space-y-4">
+        <div>
+          <h4 className="text-sm font-bold text-[#181d19] tracking-tight">
+            Evaluación Psicométrica de Usabilidad Global (Escala SUS - ISO 9241-11)
+          </h4>
+          <p className="text-xs text-slate-500">
+            Medición estandarizada de la experiencia de usuario general de la plataforma por rol de usuario.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {susMetrics.map((sus, idx) => {
+            const score = sus.experimental;
+            const isTargetMet = sus.isTargetMet;
+            const isStudent = sus.metric.includes('Estudiantes');
+            return (
+              <div key={idx} className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/80 flex flex-col justify-between space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700">
+                    {isStudent ? '🎓 Usabilidad Estudiantes' : '💼 Usabilidad Empleadores'}
+                  </span>
+                  {isTargetMet ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" /> Cumplido
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                      <XCircle className="w-3 h-3 mr-1 text-rose-600" /> No Cumplido
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-baseline space-x-2">
+                  <span className="text-2xl font-black text-slate-900">{score.toFixed(1)}</span>
+                  <span className="text-xs font-bold text-slate-500">/ 100 pts</span>
+                </div>
+
+                {/* Progress bar */}
+                <div className="space-y-1">
+                  <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                    <div
+                      className={`h-2 rounded-full transition-all ${score >= 80 ? 'bg-emerald-600' : score >= 68 ? 'bg-amber-500' : 'bg-rose-500'}`}
+                      style={{ width: `${Math.min(score, 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+                    <span>Mínimo: 0</span>
+                    <span>Meta Tesis: &gt; 80.0 (Excelente)</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Banner Informativo de Conclusión Metodológica */}
