@@ -5,12 +5,14 @@ import { DashboardNavbar } from "../widgets/navbar/ui/DashboardNavbar";
 
 // Hooks
 import { useJobSearch } from "../features/job-search/hooks/useJobSearch";
+import { useUxTelemetry } from "../hooks/useUxTelemetry";
 
 // Components
 import { JobSearchFilters } from "../features/job-search/components/JobSearchFilters";
 import { JobCard, JobCardSkeleton } from "../features/job-search/components/JobCard";
 
 export function JobSearchPage() {
+  useUxTelemetry("project_search", "ProjectSearch");
   const [showFilters, setShowFilters] = useState(false);
 
   const {

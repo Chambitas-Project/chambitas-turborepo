@@ -185,8 +185,8 @@ export class AnalyticsService {
         const flow = (t.flow_name || '').toLowerCase();
         const step = (t.step_name || '').toLowerCase();
         
-        // Filtrar específicamente pasos de búsqueda y detalle de proyecto del estudiante (excluir formularios de creación de empleador o onboarding)
-        const isSearchStep = (flow === 'project_search' || flow === 'application') && (step.includes('detail') || step.includes('search') || step.includes('list'));
+        // Filtrar específicamente pasos de búsqueda y detalle de proyecto del estudiante (excluir formularios de creación de empleador u onboarding)
+        const isSearchStep = flow === 'project_search' || (flow === 'application' && (step.includes('detail') || step.includes('search') || step.includes('project')));
         
         if (t.time_on_step_ms && t.time_on_step_ms > 0 && isSearchStep) {
           if (isExp) { searchTimeSumExp += t.time_on_step_ms; searchTimeCountExp++; }
