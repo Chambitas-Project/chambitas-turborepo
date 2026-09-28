@@ -309,6 +309,7 @@ export class AnalyticsService {
           unit: 'puntos',
           control: susScoreStudent,
           experimental: susScoreStudent,
+          count: susCountStudent,
           targetText: 'Puntaje > 80.0 (Excelente)',
           isTargetMet: susScoreStudent > 80.0
         },
@@ -317,6 +318,7 @@ export class AnalyticsService {
           unit: 'puntos',
           control: susScoreEmployer,
           experimental: susScoreEmployer,
+          count: susCountEmployer,
           targetText: 'Puntaje > 80.0 (Excelente)',
           isTargetMet: susScoreEmployer > 80.0
         }

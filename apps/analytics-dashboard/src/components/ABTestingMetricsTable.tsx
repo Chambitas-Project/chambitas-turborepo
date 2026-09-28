@@ -6,6 +6,7 @@ export interface ABMetricRow {
   unit: string;
   control: number;
   experimental: number;
+  count?: number;
   targetText: string;
   isTargetMet: boolean;
 }
@@ -58,6 +59,7 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
       unit: 'puntos',
       control: 0,
       experimental: 0,
+      count: 0,
       targetText: 'Puntaje > 80.0 (Excelente)',
       isTargetMet: false,
     },
@@ -66,9 +68,10 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
       unit: 'puntos',
       control: 0,
       experimental: 0,
+      count: 0,
       targetText: 'Puntaje > 80.0 (Excelente)',
       isTargetMet: false,
-    }
+    },
   ];
 
   const dataToRender = metrics.length > 0 ? metrics : defaultMetrics;
@@ -231,14 +234,20 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {susMetrics.map((sus, idx) => {
             const score = sus.experimental;
+            const userCount = sus.count ?? 0;
             const isTargetMet = sus.isTargetMet;
             const isStudent = sus.metric.includes('Estudiantes');
             return (
               <div key={idx} className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/80 flex flex-col justify-between space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700">
-                    {isStudent ? '🎓 Usabilidad Estudiantes' : '💼 Usabilidad Empleadores'}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-bold text-slate-700">
+                      {isStudent ? '🎓 Usabilidad Estudiantes' : '💼 Usabilidad Empleadores'}
+                    </span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">
+                      {userCount} {userCount === 1 ? 'evaluación' : 'evaluaciones'}
+                    </span>
+                  </div>
                   {isTargetMet ? (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                       <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" /> Cumplido
@@ -250,9 +259,14 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
                   )}
                 </div>
 
-                <div className="flex items-baseline space-x-2">
-                  <span className="text-2xl font-black text-slate-900">{score.toFixed(1)}</span>
-                  <span className="text-xs font-bold text-slate-500">/ 100 pts</span>
+                <div className="flex items-baseline justify-between">
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-2xl font-black text-slate-900">{score.toFixed(1)}</span>
+                    <span className="text-xs font-bold text-slate-500">/ 100 pts</span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-slate-500">
+                    Muestra: {userCount} {userCount === 1 ? 'usuario respondió' : 'usuarios respondieron'}
+                  </span>
                 </div>
 
                 {/* Progress bar */}
