@@ -74,8 +74,10 @@ def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_re
         
     df = pd.read_csv(data_path)
     if len(df) == 0:
-        print("[ERROR] No hay datos disponibles en la base de datos para entrenar.")
-        return
+        print("[ADVERTENCIA] No hay perfiles reales suficientes en Supabase con GPA y Ciclo completos. Se utilizará el dataset sintético parametrizado (5,000 muestras) como respaldo.")
+        from src.training.data_gen import generate_dataset
+        synth_path = generate_dataset(5000, "students_data_tesis.csv")
+        df = pd.read_csv(synth_path)
 
     # 1. NLP PIPELINE: LIMPIEZA, LEMATIZACIÓN, TF-IDF Y SVD
     df['combined_est'] = (df['est_h_skills'].fillna('') + " " + df['est_s_skills'].fillna('')).apply(clean_and_lemmatize)
@@ -121,8 +123,12 @@ def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_re
     df['est_is_gpa_verified'] = df['est_is_gpa_verified'].astype(int)
 
     # 3. K-MEANS
-    kmeans_base = df[['est_gpa', 'est_ciclo']].values
-    X_kmeans = np.hstack([kmeans_base, X_svd_est])
+    from sklearn.impute import SimpleImputer
+    imputer = SimpleImputer(strategy='mean')
+    
+    kmeans_base = df[['est_gpa', 'est_ciclo']].fillna({'est_gpa': 15.0, 'est_ciclo': 7}).values
+    X_kmeans_raw = np.hstack([kmeans_base, X_svd_est])
+    X_kmeans = imputer.fit_transform(X_kmeans_raw)
     
     n_clusters = min(3, max(1, len(df)))
     kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
@@ -149,8 +155,9 @@ def train_tesis_v10_hybrid(data_filename='students_data_tesis_final.csv', use_re
     
     X_numeric = np.hstack([X_numeric_base, X_cosine_sim])
     df_cat = pd.get_dummies(df[['est_carrera', 'pub_complexity']])
-    X = np.hstack([X_numeric, df_cat.values])
-    y = df['es_apto'].values
+    X_raw = np.hstack([X_numeric, df_cat.values])
+    X = imputer.fit_transform(X_raw)
+    y = df['es_apto'].fillna(0).values
     
     joblib.dump(list(df_cat.columns), os.path.join(base_data_path, 'model_cat_cols_tesis.pkl'))
     

@@ -47,8 +47,12 @@ export default function MLEnginePage() {
       const res = await apiClient.trainMLEngine(useRealData, useRealData ? undefined : samples, scenario);
       setTrainingMessage(res.message || 'Proceso de entrenamiento iniciado exitosamente.');
       setTimeout(async () => {
-        const result = await apiClient.getMLEngineKPIs();
-        setData(result);
+        try {
+          const result = await apiClient.getMLEngineKPIs();
+          setData(result);
+        } catch (refreshErr) {
+          console.warn('Advertencia al refrescar KPIs del ML Engine post-entrenamiento:', refreshErr);
+        }
       }, 3000);
     } catch (err: any) {
       setError(err.message || 'Error al iniciar el entrenamiento del modelo');

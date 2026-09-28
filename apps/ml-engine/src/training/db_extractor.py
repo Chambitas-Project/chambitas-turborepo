@@ -22,28 +22,38 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
 
     supabase: Client = create_client(url, key)
 
+    def fetch_with_retry(query_fn, max_retries=3, delay=1):
+        for attempt in range(max_retries):
+            try:
+                return query_fn().execute()
+            except Exception as err:
+                print(f"[DB Extractor] Intento {attempt + 1}/{max_retries} falló: {err}")
+                if attempt == max_retries - 1:
+                    raise err
+                import time
+                time.sleep(delay)
+
     print("[DB Extractor] Obteniendo perfiles, proyectos y postulaciones reales desde Supabase...")
     
-    # 1. Obtener perfiles de estudiantes y proyectos reales
     # 1. Obtener diccionarios de soporte (Skills y Careers)
-    skills_res = supabase.table("skills").select("id, name, type").execute()
+    skills_res = fetch_with_retry(lambda: supabase.table("skills").select("id, name, type"))
     skill_map = {s['id']: s for s in (skills_res.data or [])}
 
-    careers_res = supabase.table("careers").select("id, name").execute()
+    careers_res = fetch_with_retry(lambda: supabase.table("careers").select("id, name"))
     career_map = {c['id']: c['name'] for c in (careers_res.data or [])}
 
     # Obtener perfiles de estudiantes y proyectos reales
-    students_res = supabase.table("student_profiles").select("*").execute()
+    students_res = fetch_with_retry(lambda: supabase.table("student_profiles").select("*"))
     students = students_res.data if students_res.data else []
 
     # Incluir estrictamente proyectos abiertos (status == 'open') disponibles para recomendación
-    projects_res = supabase.table("projects").select("*").eq("status", "open").execute()
+    projects_res = fetch_with_retry(lambda: supabase.table("projects").select("*").eq("status", "open"))
     projects = projects_res.data if projects_res.data else []
 
-    apps_res = supabase.table("applications").select("*").execute()
+    apps_res = fetch_with_retry(lambda: supabase.table("applications").select("*"))
     apps = apps_res.data if apps_res.data else []
 
-    reviews_res = supabase.table("reviews").select("*").execute()
+    reviews_res = fetch_with_retry(lambda: supabase.table("reviews").select("*"))
     reviews = reviews_res.data if reviews_res.data else []
 
     if not students or not projects:
@@ -71,6 +81,25 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
     # Generar pares entre los estudiantes reales y los proyectos reales de la BD
     for s in students:
         s_id = s.get('id')
+        
+        # En la BD de Supabase la columna del ciclo se llama academic_cycle (o ciclo)
+        raw_ciclo = s.get('ciclo') if s.get('ciclo') is not None else s.get('academic_cycle')
+        raw_gpa = s.get('gpa')
+
+        try:
+            gpa_val = float(raw_gpa) if raw_gpa is not None else None
+        except (ValueError, TypeError):
+            gpa_val = None
+
+        try:
+            ciclo_val = int(raw_ciclo) if raw_ciclo is not None else None
+        except (ValueError, TypeError):
+            ciclo_val = None
+
+        # Descartar perfil solo si realmente no cuenta con GPA o Ciclo
+        if gpa_val is None or ciclo_val is None:
+            print(f"[DB Extractor] Omitiendo perfil de estudiante {s_id}: falta GPA ({raw_gpa}) o Ciclo ({raw_ciclo}).")
+            continue
         
         # Mapear carrera
         c_id = s.get('career_id')
@@ -190,8 +219,8 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
                 'est_id': s_id,
                 'est_university_id': s.get('university_id', '59a91332-e18f-4e68-8061-fe83f4c7610f'),
                 'est_carrera': s.get('career', 'Ingeniería de Software'),
-                'est_ciclo': s.get('ciclo', 7),
-                'est_gpa': s.get('gpa', 15.0),
+                'est_ciclo': int(ciclo_val),
+                'est_gpa': float(gpa_val),
                 'est_is_gpa_verified': 1 if s.get('is_gpa_verified') else 0,
                 'est_evidence_url': s.get('gpa_evidence_url', ''),
                 'est_hours_available': s.get('hours_available', 20),
@@ -214,7 +243,15 @@ def extract_real_dataset_from_supabase(output_filename="students_data_real.csv")
             }
             rows.append(row)
 
-    df = pd.DataFrame(rows)
+    columns = [
+        'est_id', 'est_university_id', 'est_carrera', 'est_ciclo', 'est_gpa', 
+        'est_is_gpa_verified', 'est_evidence_url', 'est_hours_available', 'est_availability', 
+        'pub_id', 'pub_title', 'pub_max_hours', 'pub_schedule', 'pub_req_json', 
+        'est_mandatory_match', 'est_skill_match_ratio', 'es_apto', 
+        'est_h_skills', 'est_s_skills', 'pub_req_h_skills', 'pub_req_s_skills', 
+        'pub_title_full', 'pub_description', 'pub_complexity'
+    ]
+    df = pd.DataFrame(rows, columns=columns) if rows else pd.DataFrame(columns=columns)
     df.to_csv(output_path, index=False)
     print(f"[DB Extractor] [OK] Dataset real de {len(df)} registros ({len(students)} estudiantes x {len(projects)} proyectos) guardado en: {output_path}")
     return output_path

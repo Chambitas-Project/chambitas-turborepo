@@ -224,7 +224,7 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
       <div className="pt-4 border-t border-slate-100 space-y-4">
         <div>
           <h4 className="text-sm font-bold text-[#181d19] tracking-tight">
-            Evaluación Psicométrica de Usabilidad Global (Escala SUS - ISO 9241-11)
+            Evaluación Psicométrica de Usabilidad Global (Escala SUS)
           </h4>
           <p className="text-xs text-slate-500">
             Medición estandarizada de la experiencia de usuario general de la plataforma por rol de usuario.
