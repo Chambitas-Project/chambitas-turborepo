@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlertTriangle, Eye, X, Zap, RefreshCw } from 'lucide-react';
 import { apiClient } from '../api/api-client';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, LineChart, Line, Legend } from 'recharts';
+import { StatisticalValidationCard } from '../components/StatisticalValidationCard';
 
 export default function MLEnginePage() {
   const [data, setData] = useState<any>(null);
@@ -624,6 +625,11 @@ export default function MLEnginePage() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Validation Estadistica Offline Component */}
+        <div className="lg:col-span-2">
+          <StatisticalValidationCard stats={data?.statisticalValidation} />
         </div>
 
         {/* Inference Latency */}

@@ -20,63 +20,10 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
   metrics = [],
   isLoading = false
 }) => {
-  // Fallback limpio para inicialización o sin datos aún registrados
-  const defaultMetrics: ABMetricRow[] = [
-    {
-      metric: 'Muestra Total (N)',
-      unit: 'estudiantes',
-      control: 0,
-      experimental: 0,
-      targetText: '≥ 40 por cohorte',
-      isTargetMet: false,
-    },
-    {
-      metric: 'Tiempo Promedio de Búsqueda',
-      unit: 'minutos',
-      control: 0,
-      experimental: 0,
-      targetText: 'Reducción ≥ 60%',
-      isTargetMet: false,
-    },
-    {
-      metric: 'Tasa de Match Exitoso',
-      unit: '%',
-      control: 0,
-      experimental: 0,
-      targetText: 'Mejora ≥ 30%',
-      isTargetMet: false,
-    },
-    {
-      metric: 'Postulaciones con Conflicto Horario',
-      unit: '%',
-      control: 0,
-      experimental: 0,
-      targetText: 'Reducción ≤ 5%',
-      isTargetMet: false,
-    },
-    {
-      metric: 'Calificación Usabilidad SUS - Estudiantes',
-      unit: 'puntos',
-      control: 0,
-      experimental: 0,
-      count: 0,
-      targetText: 'Puntaje > 80.0 (Excelente)',
-      isTargetMet: false,
-    },
-    {
-      metric: 'Calificación Usabilidad SUS - Empleadores',
-      unit: 'puntos',
-      control: 0,
-      experimental: 0,
-      count: 0,
-      targetText: 'Puntaje > 80.0 (Excelente)',
-      isTargetMet: false,
-    },
-  ];
-
-  const dataToRender = metrics.length > 0 ? metrics : defaultMetrics;
+  // Renderizar directamente los datos dinámicos provenientes de la base de datos Supabase a través del backend
+  const dataToRender = metrics;
   const abMetrics = dataToRender.filter(r => !r.metric.includes('SUS'));
-  const susMetrics = dataToRender.filter(r => r.metric.includes('SUS'));
+  const susMetrics = dataToRender.filter(r => r.metric.includes('SUS') && !r.metric.includes('Empleadores'));
 
   const calculateDiff = (control: number, experimental: number, unit: string) => {
     if (unit === 'estudiantes') {
@@ -224,25 +171,24 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
       <div className="pt-4 border-t border-slate-100 space-y-4">
         <div>
           <h4 className="text-sm font-bold text-[#181d19] tracking-tight">
-            Evaluación Psicométrica de Usabilidad Global (Escala SUS)
+            Evaluación Psicométrica de Usabilidad Global (Escala SUS - Estudiantes)
           </h4>
           <p className="text-xs text-slate-500">
-            Medición estandarizada de la experiencia de usuario general de la plataforma por rol de usuario.
+            Medición estandarizada de la experiencia de usuario general de la plataforma en la cohorte de estudiantes.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {susMetrics.map((sus, idx) => {
             const score = sus.experimental;
             const userCount = sus.count ?? 0;
             const isTargetMet = sus.isTargetMet;
-            const isStudent = sus.metric.includes('Estudiantes');
             return (
               <div key={idx} className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/80 flex flex-col justify-between space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <span className="text-xs font-bold text-slate-700">
-                      {isStudent ? '🎓 Usabilidad Estudiantes' : '💼 Usabilidad Empleadores'}
+                      🎓 Evaluación de Usabilidad SUS (Estudiantes)
                     </span>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200/80 text-slate-600">
                       {userCount} {userCount === 1 ? 'evaluación' : 'evaluaciones'}
