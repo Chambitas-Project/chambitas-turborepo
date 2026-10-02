@@ -730,6 +730,7 @@ export interface GetABTestingKPIsRequest { }
 
 export interface GetABTestingKPIsResponse {
   abTestingMetricsJson: string;
+  inferentialStatsJson?: string;
 }
 
 export interface RecordSUSEvaluationRequest {

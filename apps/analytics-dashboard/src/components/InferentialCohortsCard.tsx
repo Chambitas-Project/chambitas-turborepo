@@ -160,7 +160,7 @@ export const InferentialCohortsCard: React.FC<InferentialCohortsCardProps> = ({ 
               <div className="flex items-baseline justify-between border-b border-slate-200/60 pb-2">
                 <span className="text-xs font-medium text-slate-600">Estadístico χ² / p-valor:</span>
                 <span className="text-sm font-black text-slate-900">
-                  χ² = {data.chiSquareStat.toFixed(2)} <span className="text-emerald-600 font-bold text-xs">(p &lt; 0.0001)</span>
+                  χ² = {data.chiSquareStat.toFixed(2)} <span className="text-emerald-600 font-bold text-xs">(p = {data.conflictPValue})</span>
                 </span>
               </div>
 

@@ -103,7 +103,8 @@ export class AnalyticsController implements OnModuleInit {
   async getABTestingKPIs() {
     const response = await firstValueFrom(this.analyticsService.GetABTestingKPIs({}));
     return {
-      metrics: JSON.parse(response.abTestingMetricsJson || '[]')
+      metrics: JSON.parse(response.abTestingMetricsJson || '[]'),
+      inferentialStats: JSON.parse(response.inferentialStatsJson || '{}')
     };
   }
 

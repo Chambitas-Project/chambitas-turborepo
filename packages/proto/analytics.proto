@@ -57,6 +57,7 @@ message GetABTestingKPIsRequest {}
 
 message GetABTestingKPIsResponse {
   string abTestingMetricsJson = 1;
+  string inferentialStatsJson = 2;
 }
 
 message RecordSUSEvaluationRequest {
