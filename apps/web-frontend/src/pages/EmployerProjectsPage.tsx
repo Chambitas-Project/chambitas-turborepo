@@ -97,7 +97,19 @@ export function EmployerProjectsPage() {
     });
 
   // Grouping for CRM Columns
-  const activeProjects = filteredProjects.filter(p => p.status === 'active' || p.status === 'open' || !p.status);
+  const activeProjects = filteredProjects
+    .filter(p => p.status === 'active' || p.status === 'open' || !p.status)
+    .sort((a, b) => {
+      const countA = a.applicantsCount || a.applicantCount || (a as any).applicant_count || 0;
+      const countB = b.applicantsCount || b.applicantCount || (b as any).applicant_count || 0;
+      if (countB !== countA) {
+        return countB - countA; // De mayor a menor número de postulantes
+      }
+      const dateA = new Date(a.createdAt || (a as any).created_at || 0).getTime();
+      const dateB = new Date(b.createdAt || (b as any).created_at || 0).getTime();
+      return dateB - dateA;
+    });
+
   const inProgressProjects = filteredProjects.filter(p => p.status === 'in_progress' || p.status === 'pending');
   const completedProjects = filteredProjects.filter(p => p.status === 'completed' || p.status === 'closed');
 
