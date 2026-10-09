@@ -1,0 +1,5 @@
+id,configuration,precision,recall,f1_mean,f1_sd,ci_lower_95,ci_upper_95
+C1,Exact Keyword Matching (Baseline 1 - Control Group),0.437,0.737,0.548,0.025,0.527,0.57
+C2,TF-IDF + Truncated SVD + Cosine (Baseline 2),0.815,0.753,0.782,0.019,0.767,0.801
+C3,SVD + HNSW Vector Indexing (pgvector),0.979,0.562,0.713,0.031,0.686,0.743
+C4,Proposed Framework (SVD + HNSW + Schedule beta = 0.3),1.0,0.8,0.889,0.003,0.887,0.892

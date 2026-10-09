@@ -4,6 +4,7 @@
     "scripts": {
         "dev": ".\\venv\\Scripts\\python.exe main.py",
         "start": ".\\venv\\Scripts\\python.exe main.py",
-        "train": ".\\venv\\Scripts\\python.exe src/training/trainer.py"
+        "train": ".\\venv\\Scripts\\python.exe src/training/trainer.py",
+        "benchmark": ".\\venv\\Scripts\\python.exe src/training/run_ablation_benchmarks.py"
     }
 }
