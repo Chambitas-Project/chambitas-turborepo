@@ -30,10 +30,10 @@ export function ABTestingPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#181d19] tracking-tight">
-            Monitoreo Experimental A/B (Fase 3 y 4)
+            Monitoreo Experimental A/B y Validación Inferencial (Fase 3 y 4)
           </h1>
           <p className="text-sm font-medium text-[#414941]">
-            Validación de hipótesis de tesis: Algoritmo Inteligente vs Búsqueda Tradicional por Cohorte.
+            Validación empírica formal (OE4): Modelo Híbrido Semántico-Temporal vs. Línea Base y Telemetría en Vivo.
           </p>
         </div>
       </div>

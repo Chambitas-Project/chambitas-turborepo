@@ -26,9 +26,17 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
   const susMetrics = dataToRender.filter(r => r.metric.includes('SUS') && !r.metric.includes('Empleadores'));
 
   const calculateDiff = (control: number, experimental: number, unit: string) => {
-    if (unit === 'estudiantes') {
-      const diff = experimental - control;
+    if (unit === 'score') {
+      const diff = Number((experimental - control).toFixed(3));
       return { text: `${diff > 0 ? '+' : ''}${diff}`, isPositive: diff >= 0 };
+    }
+
+    if (unit === 'ms') {
+      const percentChange = Number((((experimental - control) / control) * 100).toFixed(1));
+      return { 
+        text: `${percentChange > 0 ? '+' : ''}${percentChange}%`, 
+        isPositive: experimental <= control 
+      };
     }
 
     if (unit === 'puntos') {
@@ -38,7 +46,13 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
 
     if (unit === '%') {
       const diff = Number((experimental - control).toFixed(1));
-      return { text: `${diff > 0 ? '+' : ''}${diff} pp`, isPositive: diff >= 0 };
+      // Para conflicto horario (%), menos o negativo es mejor (reducción de colisiones)
+      return { text: `${diff > 0 ? '+' : ''}${diff} pp`, isPositive: diff <= 0 };
+    }
+
+    if (unit === 'estudiantes') {
+      const diff = experimental - control;
+      return { text: `${diff > 0 ? '+' : ''}${diff}`, isPositive: diff >= 0 };
     }
 
     if (!control || control === 0) {
@@ -48,7 +62,7 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
       return { text: '0.0 min', isPositive: true };
     }
 
-    // Para Tiempo de Búsqueda (minutos), MENOS es mejor
+    // Para minutos, MENOS es mejor
     const lowerIsBetter = unit === 'minutos';
     const percentChange = ((experimental - control) / control) * 100;
     const formatted = `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}%`;
