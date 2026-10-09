@@ -44,7 +44,12 @@ export function ABTestingPage() {
         </div>
       ) : (
         <>
-          <ABTestingMetricsTable metrics={metrics} isLoading={false} />
+          <ABTestingMetricsTable
+            metrics={metrics}
+            sampleSizeControl={inferentialStats?.sampleSizeControl}
+            sampleSizeExp={inferentialStats?.sampleSizeExp}
+            isLoading={false}
+          />
           <InferentialCohortsCard stats={inferentialStats} />
         </>
       )}

@@ -13,11 +13,15 @@ export interface ABMetricRow {
 
 interface ABTestingMetricsTableProps {
   metrics?: ABMetricRow[];
+  sampleSizeControl?: number;
+  sampleSizeExp?: number;
   isLoading?: boolean;
 }
 
 export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
   metrics = [],
+  sampleSizeControl = 0,
+  sampleSizeExp = 0,
   isLoading = false
 }) => {
   // Renderizar directamente los datos dinámicos provenientes de la base de datos Supabase a través del backend
@@ -91,7 +95,18 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Muestra informativa de cohortes (no evaluada como meta de fallo) */}
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-700 border border-slate-200">
+            <Users className="w-3.5 h-3.5 text-slate-500" />
+            <span>Control:</span>
+            <strong className="text-slate-900">{sampleSizeControl} est.</strong>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#a0f5bd]/25 rounded-full text-xs font-semibold text-[#002110] border border-[#0f6c41]/20">
+            <Sparkles className="w-3.5 h-3.5 text-[#0f6c41]" />
+            <span>Experimental:</span>
+            <strong className="text-[#0f6c41]">{sampleSizeExp} est.</strong>
+          </div>
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#a0f5bd]/40 text-[#002110] border border-[#0f6c41]/20">
             <span className="w-2 h-2 rounded-full bg-[#0f6c41] animate-pulse mr-2"></span>
             Piloto En Vivo
@@ -110,14 +125,14 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
                   <Users className="h-4 w-4" />
                   <span>Grupo Control</span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-normal normal-case">Sin IA (Tradicional)</span>
+                <span className="text-[10px] text-slate-400 font-normal normal-case block mt-0.5">Sin IA (Tradicional)</span>
               </th>
               <th className="py-3.5 px-4 bg-[#a0f5bd]/10">
                 <div className="flex items-center space-x-1.5 text-[#0f6c41]">
                   <Sparkles className="h-4 w-4" />
                   <span>Grupo Experimental</span>
                 </div>
-                <span className="text-[10px] text-[#0f6c41]/70 font-normal normal-case">Con IA (pgvector)</span>
+                <span className="text-[10px] text-[#0f6c41]/70 font-normal normal-case block mt-0.5">Con IA Híbrida (pgvector + Horarios)</span>
               </th>
               <th className="py-3.5 px-4">Variación (Δ)</th>
               <th className="py-3.5 px-4">Criterio de Éxito Tesis</th>
@@ -126,6 +141,31 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
           </thead>
 
           <tbody className="divide-y divide-slate-100 text-sm font-medium">
+            {/* Fila Informativa: Tamaño de Muestra de Cohortes (sin criterio de meta) */}
+            <tr className="bg-slate-50/50 hover:bg-slate-50/80 transition-colors border-b border-slate-100">
+              <td className="py-3.5 px-4 font-semibold text-slate-900">
+                <div className="flex items-center space-x-2">
+                  <Users className="h-4 w-4 text-slate-500" />
+                  <span>Muestra de Estudiantes Participantes</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-normal block pl-6">
+                  Usuarios activos registrados en la plataforma
+                </span>
+              </td>
+              <td className="py-3.5 px-4 text-slate-700 font-semibold">
+                {sampleSizeControl} <span className="text-xs text-slate-400 font-normal">estudiantes</span>
+              </td>
+              <td className="py-3.5 px-4 font-bold text-[#0f6c41] bg-[#a0f5bd]/5">
+                {sampleSizeExp} <span className="text-xs text-[#0f6c41]/70 font-normal">estudiantes</span>
+              </td>
+              <td colSpan={3} className="py-3.5 px-4 text-xs text-slate-400">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200 mr-2">
+                  Informativo
+                </span>
+                <span className="italic text-slate-400">Registro contextual de cohorte en vivo (sin evaluación de meta)</span>
+              </td>
+            </tr>
+
             {isLoading ? (
               Array.from({ length: 4 }).map((_, idx) => (
                 <tr key={idx} className="animate-pulse">
@@ -253,12 +293,12 @@ export const ABTestingMetricsTable: React.FC<ABTestingMetricsTableProps> = ({
         <TrendingUp className="h-5 w-5 text-[#0f6c41] shrink-0 mt-0.5" />
         <div className="text-xs text-slate-600 space-y-1">
           <p className="font-bold text-[#181d19]">
-            Síntesis Estadística para el Capítulo IV (Discusión de Resultados):
+            Síntesis Estadística para el Capítulo 7 (Validación de Resultados) y Artículo Científico:
           </p>
           <p>
-            {dataToRender.some(r => r.experimental > 0) ? (
+            {sampleSizeExp > 0 || dataToRender.some(r => r.experimental > 0) ? (
               <>
-                Se están registrando datos reales en vivo para la cohorte <strong>Grupo Experimental</strong> (con {dataToRender.find(r => r.metric.includes('Muestra Total'))?.experimental || 0} estudiante(s) activo(s)). Las métricas acumuladas de tiempo de búsqueda, tasa de match y evaluación usabilística (SUS) se recalculan dinámicamente conforme los usuarios completan sus interacciones.
+                Se están registrando datos reales en vivo para la cohorte <strong>Grupo Experimental</strong> (con {sampleSizeExp} estudiante(s) activo(s)) frente a <strong>Grupo Control</strong> (con {sampleSizeControl} estudiante(s)). Las métricas acumuladas de exactitud algorítmica, mitigación de conflictos horarios (ΔCR) y latencia P95 se recalculan dinámicamente conforme los usuarios interactúan en la plataforma.
               </>
             ) : (
               <>

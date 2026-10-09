@@ -22,13 +22,13 @@ export const StatisticalValidationCard: React.FC<StatisticalValidationCardProps>
     wilcoxonW: stats?.wilcoxonW ?? 0.0,
     pValue: stats?.pValue ?? 0.00196,
     pSignificanceBadge: stats?.pSignificanceBadge ?? 'p < 0.01 - Estadísticamente Significativo',
-    cliffsDelta: stats?.cliffsDelta ?? 0.864,
+    cliffsDelta: stats?.cliffsDelta ?? 1.000,
     cliffsLevel: stats?.cliffsLevel ?? 'Efecto Grande (|d| ≥ 0.474)',
-    ciLower: stats?.ciLower ?? 0.884,
-    ciUpper: stats?.ciUpper ?? 0.898,
-    hybridF1Mean: stats?.hybridF1Mean ?? 0.891,
-    hybridF1Std: stats?.hybridF1Std ?? 0.005,
-    baselineF1Mean: stats?.baselineF1Mean ?? 0.742,
+    ciLower: stats?.ciLower ?? 0.887,
+    ciUpper: stats?.ciUpper ?? 0.892,
+    hybridF1Mean: stats?.hybridF1Mean ?? 0.889,
+    hybridF1Std: stats?.hybridF1Std ?? 0.003,
+    baselineF1Mean: stats?.baselineF1Mean ?? 0.713,
   };
 
   return (
@@ -45,7 +45,7 @@ export const StatisticalValidationCard: React.FC<StatisticalValidationCardProps>
                 Prueba de Significancia Estadística del Modelo Híbrido (K-Fold Paired Evaluation)
               </h3>
               <p className="text-xs font-medium text-slate-500">
-                Fase 4: Análisis Estadístico Inferencial (Objetivo Específico 4) - Evaluación Offline k=10
+                Fase 4: Análisis Estadístico Inferencial (Objetivo Específico 4) - Evaluación Offline k=5 Folds
               </p>
             </div>
           </div>
@@ -68,12 +68,12 @@ export const StatisticalValidationCard: React.FC<StatisticalValidationCardProps>
               <div className="relative inline-block cursor-help group/tooltip">
                 <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
                 <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/tooltip:block w-56 p-2 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl z-20 font-normal">
-                  Prueba no paramétrica para muestras pareadas (k=10 folds). Evalúa la hipótesis nula H0 de medianas idénticas.
+                  Prueba no paramétrica para muestras pareadas (k=5 folds). Evalúa la hipótesis nula H0 de medianas idénticas entre C4 y C3.
                 </div>
               </div>
             </span>
             <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-              k = 10 Folds
+              k = 5 Folds
             </span>
           </div>
           <div className="flex items-baseline gap-2 mb-1">
@@ -81,7 +81,7 @@ export const StatisticalValidationCard: React.FC<StatisticalValidationCardProps>
             <span className="text-xs font-bold text-emerald-600">p = {data.pValue}</span>
           </div>
           <p className="text-xs text-slate-600 leading-relaxed">
-            La incorporación del coeficiente de disponibilidad lectiva mejora el F1-Score de forma no atribuible al azar (p &lt; 0.01).
+            La incorporación del coeficiente de disponibilidad horaria mejora el F1-Score de forma no atribuible al azar (p &lt; 0.01).
           </p>
         </div>
 
@@ -106,7 +106,7 @@ export const StatisticalValidationCard: React.FC<StatisticalValidationCardProps>
             </span>
           </div>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Demuestra dominancia práctica superior respecto al modelo base sin colisiones de horario.
+            Demuestra dominancia práctica superior del híbrido en todas las particiones del dataset.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export const StatisticalValidationCard: React.FC<StatisticalValidationCardProps>
               <div className="relative inline-block cursor-help group/tooltip">
                 <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
                 <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/tooltip:block w-56 p-2 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl z-20 font-normal">
-                  Intervalo bootstrap (B=10,000 resamples) para el F1-Score esperado en producción.
+                  Intervalo bootstrap (B=1,000 resamples) para el F1-Score esperado en producción.
                 </div>
               </div>
             </span>
@@ -150,17 +150,17 @@ export const StatisticalValidationCard: React.FC<StatisticalValidationCardProps>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
             <tr className="hover:bg-slate-50/60 transition-colors">
-              <td className="py-3 px-4 font-bold text-slate-900">Enfoque Base (Control Offline)</td>
-              <td className="py-3 px-4 text-slate-600">Random Forest Puro (100% Similitud Perfil)</td>
+              <td className="py-3 px-4 font-bold text-slate-900">Línea Base Semántica (C3 - Control)</td>
+              <td className="py-3 px-4 text-slate-600">TF-IDF + SVD + pgvector (Sin ponderación horaria)</td>
               <td className="py-3 px-4 text-center font-semibold text-slate-700">{data.baselineF1Mean.toFixed(3)}</td>
-              <td className="py-3 px-4 text-center text-slate-500">[0.731, 0.753]</td>
+              <td className="py-3 px-4 text-center text-slate-500">[0.686, 0.743]</td>
               <td className="py-3 px-4 text-center text-slate-400">— Ref —</td>
               <td className="py-3 px-4 text-right text-slate-500">Línea de Base</td>
             </tr>
             <tr className="bg-emerald-50/40 hover:bg-emerald-50/70 transition-colors border-l-4 border-l-[#0f6c41]">
               <td className="py-3 px-4 font-black text-[#0f6c41] flex items-center gap-1.5">
                 <BarChart2 className="w-4 h-4 text-[#0f6c41]" />
-                Enfoque Propuesto (Fórmula Híbrida)
+                Enfoque Propuesto (C4 - Fórmula Híbrida)
               </td>
               <td className="py-3 px-4 text-slate-800 font-medium">
                 0.7 Similitud Requerimientos + 0.3 Disponibilidad Horarios

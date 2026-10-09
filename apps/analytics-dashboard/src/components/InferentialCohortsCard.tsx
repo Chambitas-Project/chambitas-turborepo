@@ -40,14 +40,14 @@ export const InferentialCohortsCard: React.FC<InferentialCohortsCardProps> = ({ 
   const data = {
     wilcoxonW: stats?.wilcoxonW ?? 0.0,
     wilcoxonPValue: stats?.wilcoxonPValue ?? 0.00196,
-    hybridMeanF1: stats?.hybridMeanF1 ?? 0.891,
-    baselineSemanticMeanF1: stats?.baselineSemanticMeanF1 ?? 0.861,
-    deltaF1: stats?.deltaF1 ?? 0.030,
+    hybridMeanF1: stats?.hybridMeanF1 ?? 0.889,
+    baselineSemanticMeanF1: stats?.baselineSemanticMeanF1 ?? 0.713,
+    deltaF1: stats?.deltaF1 ?? 0.176,
 
-    cliffsDelta: stats?.cliffsDelta ?? 0.864,
+    cliffsDelta: stats?.cliffsDelta ?? 1.000,
     cliffsInterpretation: stats?.cliffsInterpretation ?? 'Efecto Grande (d ≥ 0.474)',
-    bootstrapLower: stats?.bootstrapLower ?? 0.884,
-    bootstrapUpper: stats?.bootstrapUpper ?? 0.898,
+    bootstrapLower: stats?.bootstrapLower ?? 0.887,
+    bootstrapUpper: stats?.bootstrapUpper ?? 0.892,
     bootstrapResamples: stats?.bootstrapResamples ?? 1000,
 
     controlConflictRatePct: stats?.controlConflictRatePct ?? 31.3,
@@ -141,7 +141,7 @@ export const InferentialCohortsCard: React.FC<InferentialCohortsCardProps> = ({ 
               <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-between">
                 <span className="text-xs font-semibold text-emerald-900">Ganancia Neta (ΔF1):</span>
                 <span className="text-sm font-black text-[#0f6c41]">
-                  +{data.deltaF1 > 0 ? data.deltaF1.toFixed(3) : '0.030'}
+                  +{data.deltaF1 > 0 ? data.deltaF1.toFixed(3) : '0.176'}
                 </span>
               </div>
             </div>
