@@ -1,0 +1,250 @@
+@article{ilo2024,
+  author = {{International Labour Organization}},
+  title = {Global Employment Trends for Youth 2024: Decent work opportunities for a sustainable future},
+  journal = {ILO Report, Geneva, Switzerland},
+  year = {2024},
+  url = {https://www.ilo.org/publications/global-employment-trends-youth-2024}
+}
+
+@article{valencia2023,
+  author = {Valencia-Arias, A. and Cardona-Cano, R. and L{\'o}pez-S{\'a}nchez, J. and Herrera-Giraldo, N. and Valencia, J.},
+  title = {Early labor insertion in Latin America: A perspective from business sector needs},
+  journal = {Cogent Social Sciences},
+  volume = {9},
+  number = {2},
+  pages = {2270717},
+  year = {2023},
+  doi = {10.1080/23311886.2023.2270717}
+}
+
+@article{yang2024,
+  author = {Yang, Y. and Niu, L. and Amin, S. and Yasin, I.},
+  title = {Unemployment and mental health: a global study of unemployment’s influence on diverse mental disorders},
+  journal = {Frontiers in Public Health},
+  volume = {12},
+  pages = {1440403},
+  year = {2024},
+  doi = {10.3389/fpubh.2024.1440403}
+}
+
+@article{dupere2025,
+  author = {Dup{\'e}r{\'e}, V. and others},
+  title = {Employment and the youth mental health crisis in Canada: distinct influences across phases of the school-to-work transition},
+  journal = {Frontiers in Public Health},
+  volume = {13},
+  pages = {1601463},
+  year = {2025},
+  doi = {10.3389/fpubh.2025.1601463}
+}
+
+@article{song2022,
+  author = {Song, Q. C. and Shin, H. J. and Tang, C. and Hanna, A. and Behrend, T.},
+  title = {Investigating machine learning’s capacity to enhance the prediction of career choices},
+  journal = {Personnel Psychology},
+  volume = {77},
+  number = {2},
+  pages = {295--319},
+  year = {2022},
+  doi = {10.1111/peps.12529}
+}
+
+@article{alsaif2022,
+  author = {Alsaif, S. A. and Sassi Hidri, M. and Eleraky, H. A. and Ferjani, I. and Amami, R.},
+  title = {Learning-Based Matched Representation System for Job Recommendation},
+  journal = {Computers},
+  volume = {11},
+  number = {11},
+  pages = {161},
+  year = {2022},
+  doi = {10.3390/computers11110161}
+}
+
+@mastersthesis{rebaza2025,
+  author = {Rebaza Maticorena, G. E. and Huam{\'a}n Ruiz, A. S.},
+  title = {Sistema de recomendaci{\'o}n de empleos tecnol{\'o}gicos basado en el perfil profesional utilizando datos pertenecientes a bolsas de trabajo y bibliotecas de Machine Learning},
+  school = {Facultad de Ingenier{\'i}a, Universidad Peruana de Ciencias Aplicadas (UPC)},
+  year = {2025},
+  address = {Lima, Per{\'u}},
+  doi = {10.19083/TESIS/684610}
+}
+
+@misc{ley29733,
+  author = {{Congreso de la Rep{\'u}blica del Per{\'u}}},
+  title = {Ley N° 29733 - Ley de Protecci{\'o}n de Datos Personales},
+  year = {2011},
+  month = {Jul},
+  address = {Lima, Per{\'u}}
+}
+
+@misc{dl1270,
+  author = {{Presidencia de la Rep{\'u}blica del Per{\'u}}},
+  title = {Decreto Legislativo N° 1270 - Ley que regula los Servicios de las Plataformas Digitales},
+  year = {2016},
+  address = {Lima, Per{\'u}}
+}
+
+@article{alboqmi2025,
+  author = {Alboqmi, R. and Gamble, R. F.},
+  title = {Enhancing Microservice Security Through Vulnerability-Driven Trust in the Service Mesh Architecture},
+  journal = {Information and Software Technology},
+  volume = {183},
+  pages = {914},
+  year = {2025},
+  doi = {10.1016/j.infsof.2025.107732}
+}
+
+@article{ertugrul2025,
+  author = {{\c{C}}elik Ertu{\u{g}}rul, D. and Bitirim, S.},
+  title = {Job recommender systems: a systematic literature review, applications, open issues, and challenges},
+  journal = {Journal of Big Data},
+  volume = {12},
+  number = {1},
+  year = {2025},
+  doi = {10.1186/s40537-025-01173-y}
+}
+
+@article{novella2024,
+  author = {Novella, R. and D{\'i}az, J. J. and Rosas-Shady, D.},
+  title = {The long-term effect of a job training programme for youths in Peru},
+  journal = {Journal of Development Effectiveness},
+  volume = {17},
+  number = {1},
+  pages = {36--49},
+  year = {2024},
+  doi = {10.1080/19439342.2024.2356077}
+}
+
+@inproceedings{gadegaonkar2023,
+  author = {Gadegaonkar, S. and Lakhwani, D. and Marwaha, S. and Salunke, P. A.},
+  title = {Job Recommendation System using Machine Learning},
+  booktitle = {Proceedings of the 3rd International Conference on Artificial Intelligence and Smart Energy (ICAIS)},
+  pages = {596--603},
+  year = {2023},
+  doi = {10.1109/ICAIS56108.2023.10073757}
+}
+
+@article{mohottige2025,
+  author = {Mohottige, T. I. and Polyvyanyy, A. and Fidge, C. and Buyya, R. and Barros, A.},
+  title = {Reengineering software systems into microservices: State-of-the-art and future directions},
+  journal = {Information and Software Technology},
+  volume = {183},
+  pages = {107732},
+  year = {2025},
+  doi = {10.1016/j.infsof.2025.107732}
+}
+
+@article{araujo2024,
+  author = {Araujo, G. and others},
+  title = {Energy Consumption in Microservices Architectures: A Systematic Literature Review},
+  journal = {IEEE Access},
+  volume = {12},
+  pages = {186710--186729},
+  year = {2024},
+  doi = {10.1109/ACCESS.2024.3389064}
+}
+
+@inproceedings{huaman2024,
+  author = {Huam{\'a}n, A. and Rebaza, G. and Subauste, D.},
+  title = {Hybrid job recommendation model based on professional profile using data from job boards and Machine Learning libraries},
+  booktitle = {Proceedings of the International Multi-Conference on Society, Cybernetics and Informatics (IMSCI)},
+  pages = {72--79},
+  year = {2024},
+  doi = {10.54808/IMSCI2024.01.72}
+}
+
+@book{wohlin2012,
+  author = {Wohlin, C. and Runeson, P. and H{\"o}st, M. and Ohlsson, M. C. and Regnell, B. and Wessl{\'e}n, A.},
+  title = {Experimentation in Software Engineering},
+  publisher = {Springer Science \& Business Media},
+  address = {Berlin, Heidelberg},
+  year = {2012}
+}
+
+@article{zhang2024,
+  author = {Zhang, G. and Wang, L. and Wang, X. and Liu, Y.},
+  title = {What are the digital skills sought by scientific employers in potential candidates?},
+  journal = {Journal of Higher Education Policy and Management},
+  volume = {46},
+  number = {4},
+  pages = {567--589},
+  year = {2024},
+  doi = {10.1080/1360080X.2024.2374392}
+}
+
+@article{bangor2008,
+  author = {Bangor, A. and Kortum, P. T. and Miller, J. T.},
+  title = {An empirical evaluation of the System Usability Scale},
+  journal = {International Journal of Human-Computer Interaction},
+  volume = {24},
+  number = {6},
+  pages = {574--594},
+  year = {2008},
+  doi = {10.1080/10447310802205776}
+}
+
+@incollection{brooke1996,
+  author = {Brooke, J.},
+  title = {{SUS}: A `quick and dirty' usability scale},
+  booktitle = {Usability Evaluation in Industry},
+  editor = {Jordan, P. W. and others},
+  publisher = {Taylor \& Francis},
+  address = {London, UK},
+  pages = {189--194},
+  year = {1996}
+}
+
+@article{bisschoff2025,
+  author = {Bisschoff, Z. S. and Massyn, L.},
+  title = {A conceptual soft skills competency framework for enhancing graduate intern employability},
+  journal = {Higher Education, Skills and Work-Based Learning},
+  volume = {15},
+  number = {7},
+  pages = {66--81},
+  year = {2025},
+  doi = {10.1108/HESWBL-08-2023-0239}
+}
+
+@misc{iso27001,
+  author = {{ISO/IEC 27001}},
+  title = {Information security, cybersecurity and privacy protection — Information security management systems — Requirements},
+  organization = {International Organization for Standardization},
+  address = {Geneva, Switzerland},
+  year = {2022}
+}
+
+@article{koren2009,
+  author = {Koren, Y. and Bell, R. and Volinsky, C.},
+  title = {Matrix Factorization Techniques for Recommender Systems},
+  journal = {Computer},
+  volume = {42},
+  number = {8},
+  pages = {30--37},
+  year = {2009},
+  doi = {10.1109/MC.2009.263}
+}
+
+@article{dlouhy2025,
+  author = {Dlouhy, K. and Biemann, T. and Baruch, Y.},
+  title = {A Career Ecosystem Perspective on Societal and Organizational Characteristics and Careers to the Top in Higher Education},
+  journal = {Human Resource Management Journal},
+  volume = {35},
+  number = {3},
+  pages = {561--576},
+  year = {2025},
+  doi = {10.1111/1748-8583.12580}
+}
+
+@book{runeson2012,
+  author = {Runeson, P. and H{\"o}st, M. and Rainer, A. and Regnell, B.},
+  title = {Case Study Research in Software Engineering: Guidelines and Examples},
+  publisher = {John Wiley \& Sons},
+  address = {Hoboken, NJ, USA},
+  year = {2012}
+}
+
+@misc{pgvector2025,
+  author = {{pgvector}},
+  title = {pgvector: Open-source vector similarity search for Postgres – Benchmarks},
+  year = {2025},
+  url = {https://github.com/pgvector/pgvector}
+}
