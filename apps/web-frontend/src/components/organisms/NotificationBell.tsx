@@ -25,9 +25,26 @@ export function NotificationBell() {
 
   useEffect(() => {
     fetchNotifications();
-    // Fetch periodically every 60 seconds
+
+    // Suscripción en tiempo real vía API Gateway SSE Stream
+    const unsubscribe = notificationApi.subscribeToStream((newNotification) => {
+      setNotifications((prev) => {
+        // Evitar duplicados si ya existe
+        if (prev.some((n) => n.id === newNotification.id)) {
+          return prev;
+        }
+        return [newNotification, ...prev];
+      });
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    // Fetch periódico cada 60 segundos como fallback
     const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
+
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {

@@ -69,6 +69,15 @@ export class JwtAuthGuard implements CanActivate {
 
     // 2. Fallback al header Authorization (para Swagger/Insomnia)
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    if (type === 'Bearer' && token) {
+      return token;
+    }
+
+    // 3. Fallback a query parameter (para EventSource / SSE que no pueden enviar custom headers)
+    if (request.query && request.query.token) {
+      return request.query.token as string;
+    }
+
+    return undefined;
   }
 }

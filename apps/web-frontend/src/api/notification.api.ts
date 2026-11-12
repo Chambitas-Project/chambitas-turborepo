@@ -37,5 +37,62 @@ export const notificationApi = {
       console.error("Error marking notification as read:", err);
       return false;
     }
+  },
+
+  subscribeToStream: (onNotification: (notification: NotificationData) => void): (() => void) => {
+    const token = localStorage.getItem('chambitas_token');
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
+    const streamUrl = `${baseUrl}/notifications/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+
+    let eventSource: EventSource | null = null;
+    let reconnectTimeout: any = null;
+    let isClosed = false;
+
+    const connect = () => {
+      if (isClosed) return;
+
+      try {
+        eventSource = new EventSource(streamUrl, { withCredentials: true });
+
+        eventSource.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data?.type === 'NEW_NOTIFICATION' && data.notification) {
+              onNotification(data.notification);
+            }
+          } catch (e) {
+            // Ignorar errores de parseo (e.g. heartbeat ping)
+          }
+        };
+
+        eventSource.onerror = () => {
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+          if (!isClosed) {
+            // Reintentar conexión tras 5 segundos
+            reconnectTimeout = setTimeout(connect, 5000);
+          }
+        };
+      } catch (err) {
+        console.error("Error conectando a stream de notificaciones:", err);
+        if (!isClosed) {
+          reconnectTimeout = setTimeout(connect, 5000);
+        }
+      }
+    };
+
+    connect();
+
+    // Retorna función para desuscribirse
+    return () => {
+      isClosed = true;
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+      }
+    };
   }
 };
