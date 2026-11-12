@@ -1,7 +1,7 @@
-import { Controller, Post, Get, Patch, Delete, Body, Param, Query, Inject, OnModuleInit, UseGuards, Req, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Body, Param, Query, Inject, OnModuleInit, UseGuards, Req, ForbiddenException, Logger } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { IMarketplaceService } from '@chambitas/proto';
+import { IMarketplaceService, INotificationService, NotificationType, NotificationPriority } from '@chambitas/proto';
 import { CreateProjectDto, UpdateProjectDto, ListProjectsDto } from './dto/projects.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OnboardingGuard } from '../auth/guards/onboarding.guard';
@@ -13,12 +13,18 @@ import { firstValueFrom } from 'rxjs';
 @UseGuards(JwtAuthGuard, OnboardingGuard)
 @Controller('marketplace/projects')
 export class ProjectsController implements OnModuleInit {
+  private readonly logger = new Logger(ProjectsController.name);
   private marketplaceService!: IMarketplaceService;
+  private notificationService!: INotificationService;
 
-  constructor(@Inject('MARKETPLACE_PACKAGE') private client: ClientGrpc) { }
+  constructor(
+    @Inject('MARKETPLACE_PACKAGE') private client: ClientGrpc,
+    @Inject('NOTIFICATION_PACKAGE') private notificationClient: ClientGrpc
+  ) { }
 
   onModuleInit() {
     this.marketplaceService = this.client.getService<IMarketplaceService>('MarketplaceService');
+    this.notificationService = this.notificationClient.getService<INotificationService>('NotificationService');
   }
 
   @Post()
@@ -44,7 +50,7 @@ export class ProjectsController implements OnModuleInit {
         service_category: dto.service_category,
         university_ids: dto.university_ids || [],
         deadline: dto.deadline || '',
-        max_hours_week: dto.max_hours_week || 0,
+        max_hours_week: (dto.max_hours_week && dto.max_hours_week > 0) ? dto.max_hours_week : 10,
         employer_id: user.id,
         skills: (dto.skills || []).map(s => ({
           skill_id: s.skill_id,
@@ -149,6 +155,47 @@ export class ProjectsController implements OnModuleInit {
       throw new ForbiddenException('No tienes permiso para completar este proyecto');
     }
 
-    return firstValueFrom(this.marketplaceService.CompleteProject({ id }, metadata));
+    const result = await firstValueFrom(this.marketplaceService.CompleteProject({ id }, metadata));
+
+    // CP028: Notificar al empleador y a los postulantes del cierre para calificar
+    try {
+      // Notificación al empleador para que califique
+      await firstValueFrom(
+        this.notificationService.CreateNotification({
+          user_id: user.id,
+          title: 'Proyecto finalizado',
+          message: `El proyecto "${project.title}" ha sido completado. Recuerda calificar el desempeño del estudiante.`,
+          type: NotificationType.APPLICATION,
+          priority: NotificationPriority.HIGH,
+          metadata_json: JSON.stringify({
+            project_id: id,
+            action: 'rate_student'
+          })
+        })
+      );
+
+      // Notificación al estudiante seleccionado/completado
+      const appsResponse = await firstValueFrom(this.marketplaceService.ListProjectApplications({ project_id: id }));
+      const completedApp = (appsResponse.applications || []).find(a => a.status === 'completed' || a.status === 'accepted');
+      if (completedApp && completedApp.student_id) {
+        await firstValueFrom(
+          this.notificationService.CreateNotification({
+            user_id: completedApp.student_id,
+            title: '¡Proyecto Finalizado!',
+            message: `El proyecto "${project.title}" fue marcado como finalizado. Puedes dejar una reseña al empleador.`,
+            type: NotificationType.APPLICATION,
+            priority: NotificationPriority.HIGH,
+            metadata_json: JSON.stringify({
+              project_id: id,
+              action: 'rate_employer'
+            })
+          })
+        );
+      }
+    } catch (notifErr: any) {
+      this.logger.error(`Error sending completion notifications: ${notifErr.message}`);
+    }
+
+    return result;
   }
 }

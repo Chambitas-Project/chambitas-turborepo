@@ -22,8 +22,18 @@ export function useRegister(role: string, onSuccess?: () => void) {
   const [regError, setRegError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const dynamicSchema = registerSchema.superRefine((data, ctx) => {
+    if (role === "student" && (!data.universityId || data.universityId.trim() === "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["universityId"],
+        message: "Debes seleccionar una universidad",
+      });
+    }
+  });
+
   const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(dynamicSchema),
     defaultValues: {
       terms: false,
       universityId: "",
@@ -44,14 +54,6 @@ export function useRegister(role: string, onSuccess?: () => void) {
         const upcUnis = unis.filter(isUpc);
         const filteredList = upcUnis.length > 0 ? upcUnis : unis;
         setUniversities(filteredList);
-
-        // Pre-seleccionar UPC como universidad predeterminada
-        const upc = unis.find(isUpc);
-        if (upc) {
-          form.setValue("universityId", upc.id);
-        } else if (filteredList.length > 0) {
-          form.setValue("universityId", filteredList[0].id);
-        }
       } catch (error) {
         console.error("Error al cargar universidades:", error);
       } finally {
@@ -62,13 +64,19 @@ export function useRegister(role: string, onSuccess?: () => void) {
   }, [form]);
 
   useEffect(() => {
-    if (role === "student" && emailValue && emailValue.includes("@")) {
-      const domain = emailValue.split("@")[1]?.toLowerCase();
-      if (domain) {
-        const matchedUni = universities.find(u => u.email_domain.toLowerCase() === domain);
-        if (matchedUni) {
-          form.setValue("universityId", matchedUni.id);
+    if (role === "student") {
+      if (emailValue && emailValue.includes("@")) {
+        const domain = emailValue.split("@")[1]?.toLowerCase();
+        if (domain) {
+          const matchedUni = universities.find(u => u.email_domain.toLowerCase() === domain);
+          if (matchedUni) {
+            form.setValue("universityId", matchedUni.id, { shouldValidate: true });
+          } else {
+            form.setValue("universityId", "", { shouldValidate: true });
+          }
         }
+      } else {
+        form.setValue("universityId", "", { shouldValidate: true });
       }
     }
   }, [emailValue, universities, role, form]);

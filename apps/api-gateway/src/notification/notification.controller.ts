@@ -23,9 +23,10 @@ export class NotificationController implements OnModuleInit {
   @Get()
   @ApiOperation({ summary: 'Obtener mis notificaciones' })
   async getMyNotifications(@Request() req: any, @Query('limit') limit?: number, @Query('offset') offset?: number) {
+    const userId = req.user.id || req.user.userId;
     return firstValueFrom(
       this.notificationService.ListNotifications({
-        user_id: req.user.userId,
+        user_id: userId,
         limit: limit ? Number(limit) : 50,
         offset: offset ? Number(offset) : 0,
       })
@@ -35,10 +36,11 @@ export class NotificationController implements OnModuleInit {
   @Patch(':id/read')
   @ApiOperation({ summary: 'Marcar una notificación como leída' })
   async markAsRead(@Request() req: any, @Param('id') id: string) {
+    const userId = req.user.id || req.user.userId;
     return firstValueFrom(
       this.notificationService.MarkAsRead({
         id,
-        user_id: req.user.userId,
+        user_id: userId,
       })
     );
   }

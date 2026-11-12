@@ -21,7 +21,7 @@ export function useJobSearch() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters);
-  const [sortBy, setSortBy] = useState("Mayor Match");
+  const [sortBy, setSortBy] = useState("Más Recientes");
   const [currentPage, setCurrentPage] = useState(1);
   const [catalogCategories, setCatalogCategories] = useState<string[]>([]);
   const [userSkillNames, setUserSkillNames] = useState<string[]>([]);

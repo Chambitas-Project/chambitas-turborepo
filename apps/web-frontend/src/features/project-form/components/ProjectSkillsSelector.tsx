@@ -153,13 +153,14 @@ export function ProjectSkillsSelector({
         </div>
         <div className="space-y-3">
           <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <Clock className="h-4 w-4 text-emerald-600" /> Max. Horas / Semana
+            <Clock className="h-4 w-4 text-emerald-600" /> Max. Horas / Semana <span className="text-red-500">*</span>
           </label>
           <Input
+            required
             type="number"
-            min="0.5"
+            min="1"
             step="0.5"
-            placeholder="Ej. 10.5"
+            placeholder="Ej. 10"
             value={formData.max_hours_week}
             onChange={(e) => setFormData({ ...formData, max_hours_week: e.target.value })}
             className="bg-white border border-slate-200 rounded-md h-12"

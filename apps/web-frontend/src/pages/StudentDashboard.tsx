@@ -112,18 +112,26 @@ export function StudentDashboard() {
   };
 
   useEffect(() => {
-    fetchProfile();
-    const fetchSkills = async () => {
+    let isMounted = true;
+    const loadDashboardData = async () => {
       try {
-        const response = await apiClient.get("/profile/skills");
-        const data = Array.isArray(response.data) ? response.data : (response.data?.skills || []);
-        setAvailableSkills(data);
-      } catch (err) {
-        console.error("Error fetching catalog skills", err);
+        await fetchProfile();
+      } finally {
+        if (isMounted) setLoading(false);
       }
+      // Peticiones complementarias en paralelo que no bloquean la interactividad inicial
+      Promise.allSettled([
+        apiClient.get("/profile/skills").then(res => {
+          if (!isMounted) return;
+          const data = Array.isArray(res.data) ? res.data : (res.data?.skills || []);
+          setAvailableSkills(data);
+        }),
+        fetchRecommendations()
+      ]);
     };
-    fetchSkills();
-    fetchRecommendations();
+
+    loadDashboardData();
+    return () => { isMounted = false; };
   }, []);
 
   const handleUpdateProfile = async (formData: EditProfileFormData) => {

@@ -63,7 +63,8 @@ export class ApplicationsService {
       this.logger.error(`Failed to queue calculate-score job for application ${application.id}. Redis might be down: ${error}`);
     }
 
-    return this.mapToProto(application);
+    const fullApplication = await this.applicationsRepository.findById(application.id);
+    return this.mapToProto(fullApplication || application);
   }
 
   async getApplication(request: GetApplicationRequest): Promise<Application> {
@@ -115,7 +116,8 @@ export class ApplicationsService {
       await this.projectsRepository.updateStatus(application.project_id, 'in_progress');
     }
 
-    return this.mapToProto(application);
+    const fullApplication = await this.applicationsRepository.findById(application.id);
+    return this.mapToProto(fullApplication || application);
   }
 
   async deleteApplication(request: any): Promise<{ success: boolean; message: string }> {
@@ -149,8 +151,8 @@ export class ApplicationsService {
         proficiency_level: ss.proficiency_level,
         verified: ss.verified || false,
       })) || [],
-      student_phone: app.status === 'accepted' ? app.student_profiles?.phone_number || undefined : undefined,
-      student_email: app.status === 'accepted' ? app.student_profiles?.users?.email || undefined : undefined,
+      student_phone: (app.status === 'accepted' || app.status === 'completed') ? app.student_profiles?.phone_number || undefined : undefined,
+      student_email: (app.status === 'accepted' || app.status === 'completed') ? app.student_profiles?.users?.email || undefined : undefined,
       student_avatar_url: app.student_profiles?.users?.avatar_url || app.student_profiles?.avatar_url || undefined,
     };
   }

@@ -32,6 +32,7 @@ export function EmployerProjectsPage() {
   const [projects, setProjects] = useState<EmployerProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("board");
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [deleteModalProjectId, setDeleteModalProjectId] = useState<string | null>(null);
@@ -86,7 +87,20 @@ export function EmployerProjectsPage() {
   };
 
   const filteredProjects = [...projects]
-    .filter(project => project.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter(project => {
+      const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+      if (statusFilter === "closed" || statusFilter === "Cerrados") {
+        return project.status === "closed" || project.status === "completed";
+      }
+      if (statusFilter === "open" || statusFilter === "Activos") {
+        return project.status === "open" || project.status === "active" || !project.status;
+      }
+      if (statusFilter === "in_progress") {
+        return project.status === "in_progress" || project.status === "pending";
+      }
+      return true;
+    })
     .sort((a, b) => {
       const prioA = statusPriority[a.status] || 5;
       const prioB = statusPriority[b.status] || 5;
@@ -135,7 +149,12 @@ export function EmployerProjectsPage() {
       badgeBg: 'bg-slate-100 text-slate-700 border-slate-200',
       projects: completedProjects,
     }
-  ];
+  ].filter(col => {
+    if (statusFilter === "closed" || statusFilter === "Cerrados") return col.id === "completed";
+    if (statusFilter === "open" || statusFilter === "Activos") return col.id === "active";
+    if (statusFilter === "in_progress") return col.id === "in_progress";
+    return true;
+  });
 
   const renderProjectCard = (project: EmployerProject) => {
     const applicantsCount = project.applicantsCount || project.applicantCount || (project as any).applicant_count || 0;
@@ -253,7 +272,7 @@ export function EmployerProjectsPage() {
       </div>
 
       {/* Filter Row */}
-      <div className="mb-6 flex items-center gap-4 max-w-md">
+      <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 max-w-xl">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 z-10 pointer-events-none" />
           <Input
@@ -262,6 +281,18 @@ export function EmployerProjectsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 h-11 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-emerald-500/20"
           />
+        </div>
+        <div className="w-full sm:w-48">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full h-11 px-3 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer"
+          >
+            <option value="all">Todos los estados</option>
+            <option value="open">Convocatorias Activas</option>
+            <option value="in_progress">En Desarrollo</option>
+            <option value="closed">Cerrados</option>
+          </select>
         </div>
       </div>
 

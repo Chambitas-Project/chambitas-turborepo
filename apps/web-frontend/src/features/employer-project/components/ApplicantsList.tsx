@@ -36,13 +36,13 @@ export function ApplicantsList({
   handleOpenReview,
   isControl
 }: ApplicantsListProps) {
-  const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const isSelectedStatus = project.status === 'in_progress' || project.status === 'closed';
 
-  const handleCopy = (text: string) => {
+  const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
-    setCopiedText(text);
-    setTimeout(() => setCopiedText(null), 2000);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
   };
 
   // Ordenar por fecha más reciente
@@ -55,9 +55,9 @@ export function ApplicantsList({
     return getUtcTime(b.applied_at || b.created_at) - getUtcTime(a.applied_at || a.created_at);
   });
 
-  const acceptedApplicants = sortedApplicants.filter((a) => a.status === 'accepted');
+  const acceptedApplicants = sortedApplicants.filter((a) => a.status === 'accepted' || a.status === 'completed');
   const displayedApplicants = isSelectedStatus
-    ? (acceptedApplicants.length > 0 ? acceptedApplicants : sortedApplicants.slice(0, 1))
+    ? (acceptedApplicants.length > 0 ? acceptedApplicants : [])
     : sortedApplicants.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
@@ -96,14 +96,14 @@ export function ApplicantsList({
                   key={app.id}
                   className={cn(
                     "p-6 rounded-xl border transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative",
-                    (app.status === 'accepted' || (isSelectedStatus && displayedApplicants.length === 1))
+                    (app.status === 'accepted' || app.status === 'completed' || (isSelectedStatus && displayedApplicants.length === 1))
                       ? "bg-emerald-50/60 border-emerald-200 shadow-sm"
                       : app.status === 'rejected'
                         ? "bg-rose-50/60 border-rose-100 opacity-60"
                         : "bg-white border-slate-200/80 hover:border-emerald-300 shadow-sm group"
                   )}
                 >
-                  {(app.status === 'accepted' || (isSelectedStatus && displayedApplicants.length === 1)) && (
+                  {(app.status === 'accepted' || app.status === 'completed' || (isSelectedStatus && displayedApplicants.length === 1)) && (
                     <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-emerald-500 rounded-l-xl" />
                   )}
 
@@ -135,27 +135,27 @@ export function ApplicantsList({
                       <p className="text-sm font-medium text-slate-600 mt-1 line-clamp-3 leading-relaxed">
                         "{app.cover_note || "Sin carta de presentación"}"
                       </p>
-                      {app.status === 'accepted' && (app.student_phone || app.student_email) && (
+                      {(app.status === 'accepted' || app.status === 'completed') && (app.student_phone || app.student_email) && (
                         <div className="mt-3 flex flex-col gap-2">
                           {app.student_phone && (
                             <div
-                              onClick={() => handleCopy(app.student_phone!)}
+                              onClick={() => handleCopy(app.student_phone!, `${app.id}-phone`)}
                               className="text-sm font-bold bg-emerald-100/50 text-emerald-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-emerald-200/50 w-fit cursor-pointer hover:bg-emerald-200 transition-colors group"
                               title="Haz clic para copiar"
                             >
                               <Phone className="h-4 w-4" />
-                              {copiedText === app.student_phone ? "¡Copiado!" : `Celular: +51 ${app.student_phone}`}
+                              {copiedKey === `${app.id}-phone` ? "¡Copiado!" : `Celular: +51 ${app.student_phone}`}
                               <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
                             </div>
                           )}
                           {app.student_email && (
                             <div
-                              onClick={() => handleCopy(app.student_email!)}
+                              onClick={() => handleCopy(app.student_email!, `${app.id}-email`)}
                               className="text-sm font-bold bg-blue-100/50 text-blue-800 px-3 py-1.5 rounded-md inline-flex items-center gap-2 border border-blue-200/50 w-fit cursor-pointer hover:bg-blue-200 transition-colors group"
                               title="Haz clic para copiar"
                             >
                               <Mail className="h-4 w-4" />
-                              {copiedText === app.student_email ? "¡Copiado!" : `Email: ${app.student_email}`}
+                              {copiedKey === `${app.id}-email` ? "¡Copiado!" : `Email: ${app.student_email}`}
                               <Copy className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
                             </div>
                           )}

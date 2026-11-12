@@ -96,8 +96,8 @@ export function JobSearchPage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="bg-transparent text-sm font-black text-slate-900 outline-none cursor-pointer focus:text-emerald-600 transition-colors"
               >
-                <option value="Mayor Match">Mayor Match</option>
                 <option value="Más Recientes">Más Recientes</option>
+                <option value="Mayor Match">Mayor Match</option>
                 <option value="Mejor Pago">Mejor Pago</option>
               </select>
             </div>
@@ -226,8 +226,7 @@ export function JobSearchPage() {
                   <Search className="h-8 w-8 text-slate-200" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-black text-slate-900">Sin coincidencias</h3>
-                  <p className="text-sm font-medium text-slate-400">Prueba con otros filtros para ver más opciones.</p>
+                  <h3 className="text-lg font-black text-slate-900">No se encontraron resultados para tu búsqueda. Intenta con otros términos</h3>
                 </div>
                 <Button
                   onClick={resetFilters}

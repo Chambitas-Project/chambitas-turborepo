@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { Button } from "@chambitas/ui";
+import { Menu, X } from "lucide-react";
 import { ProfileModal } from "../../../components/organisms/ProfileModal";
 import { NotificationBell } from "../../../components/organisms/NotificationBell";
 
@@ -12,6 +13,7 @@ interface DashboardNavbarProps {
 export function DashboardNavbar({ role }: DashboardNavbarProps) {
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -60,17 +62,25 @@ export function DashboardNavbar({ role }: DashboardNavbarProps) {
 
         </div>
 
-        <div className="flex items-center gap-4 relative">
+        <div className="flex items-center gap-3 md:gap-4 relative">
           {role === "employer" && (
             <Button 
               onClick={() => navigate("/employer/projects/new")} 
-              className="bg-[#065f46] hover:bg-[#064e3b] text-white rounded-md shadow-none px-4 h-9 text-xs font-bold cursor-pointer"
+              className="bg-[#065f46] hover:bg-[#064e3b] text-white rounded-md shadow-none px-3 sm:px-4 h-9 text-xs font-bold cursor-pointer"
             >
               Publicar un Empleo
             </Button>
           )}
           
           <NotificationBell />
+
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors focus:outline-none"
+            aria-label="Abrir menú"
+          >
+            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
 
           <div className="relative" ref={dropdownRef}>
             <div 
@@ -107,6 +117,63 @@ export function DashboardNavbar({ role }: DashboardNavbarProps) {
           </div>
         </div>
       </div>
+
+      {/* Mobile Drawer / Hamburger Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-slate-200 bg-white px-6 py-4 space-y-3 animate-in fade-in slide-in-from-top-2">
+          {role === "student" && (
+            <button 
+              className={`w-full text-left py-2 text-sm font-bold transition-colors cursor-pointer ${
+                location === "/jobs" ? "text-emerald-600" : "text-slate-600 hover:text-emerald-600"
+              }`}
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                navigate("/jobs");
+              }}
+            >
+              Buscar Empleos
+            </button>
+          )}
+
+          <button 
+            className={`w-full text-left py-2 text-sm font-bold transition-colors cursor-pointer ${
+              location.startsWith("/employer/projects") || location === "/student/applications" 
+                ? "text-emerald-600" 
+                : "text-slate-600 hover:text-emerald-600"
+            }`}
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              navigate(role === "employer" ? "/employer/projects" : "/student/applications");
+            }}
+          >
+            {role === "employer" ? "Mis Publicaciones" : "Mis Postulaciones"}
+          </button>
+
+          <button 
+            className="w-full text-left py-2 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors cursor-pointer"
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              navigate("/dashboard");
+            }}
+          >
+            Mi Perfil
+          </button>
+
+          <div className="h-px bg-slate-100 my-2" />
+
+          <button 
+            className="w-full text-left py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+            onClick={async () => {
+              setIsMobileMenuOpen(false);
+              await logout();
+              navigate("/login");
+            }}
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      )}
+
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
     </nav>
   );
